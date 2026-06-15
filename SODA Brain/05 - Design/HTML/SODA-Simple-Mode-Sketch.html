@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0"/>
+<title>SODA Simple Mode Sketch</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--g:#3BD75C;--dg:#203229;--ch:#0c0d0c;--c1:#161816;--c2:#1d1f1d;--bd:#262826;--bd2:#363936;--pu:#A47BFF;--am:#F59E0B;--t0:#fff;--t1:#c8ccc8;--t2:#74786f;--t3:#3e423e}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--ch);color:var(--t1);line-height:1.5;-webkit-font-smoothing:antialiased}
+::selection{background:var(--g);color:var(--ch)}
+.wrap{max-width:760px;margin:0 auto;padding:30px 18px 80px}
+.brand{font-family:'DM Mono';font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--g);margin-bottom:12px}
+h1{font-family:'Archivo Black';font-size:clamp(26px,6vw,40px);color:var(--t0);text-transform:uppercase;letter-spacing:-.02em;line-height:.95;margin-bottom:14px}
+.sub{font-size:15px;color:var(--t1);font-weight:300;max-width:580px;margin-bottom:6px}
+.own{font-family:'DM Mono';font-size:11px;color:var(--t3);margin-top:10px}
+
+/* host setup mock */
+.setup{background:var(--c1);border:1px solid var(--bd);border-radius:16px;padding:20px;margin:28px 0 14px}
+.setup .lab{font-family:'DM Mono';font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:6px}
+.setup .field{font-size:15px;color:var(--t0);font-weight:600;margin-bottom:18px}
+.setup .field span{color:var(--t2);font-weight:300}
+.modelab{font-family:'DM Mono';font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:10px}
+.toggle{display:flex;gap:8px;background:var(--c2);border:1px solid var(--bd2);border-radius:12px;padding:5px}
+.tg{flex:1;text-align:center;padding:12px 8px;border-radius:9px;cursor:pointer;font-weight:600;font-size:14px;color:var(--t2);transition:all .15s}
+.tg.on{background:var(--g);color:var(--ch)}
+.tg .d{display:block;font-family:'DM Mono';font-size:9px;letter-spacing:.5px;text-transform:uppercase;font-weight:400;margin-top:3px;opacity:.8}
+.readout{margin-top:14px;font-size:13.5px;color:var(--t1);font-weight:300;border-left:3px solid var(--g);padding:4px 0 4px 13px;min-height:24px}
+
+/* flow */
+.phase{font-family:'DM Mono';font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--g);margin:26px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+.flow{display:flex;flex-direction:column;gap:7px}
+.scn{display:flex;align-items:center;gap:13px;background:var(--c1);border:1px solid var(--bd);border-radius:12px;padding:13px 15px;transition:all .2s}
+.scn .n{font-family:'DM Mono';font-size:11px;color:var(--t2);min-width:22px}
+.scn .nm{flex:1;font-size:15px;font-weight:600;color:var(--t0)}
+.scn .role{font-family:'DM Mono';font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.5px}
+.scn .pill{font-family:'DM Mono';font-size:9px;letter-spacing:.5px;text-transform:uppercase;padding:4px 9px;border-radius:100px}
+.scn.on{border-color:rgba(59,215,92,.45)}
+.scn.on .pill{color:var(--g);background:rgba(59,215,92,.12)}
+.scn.off{opacity:.42}
+.scn.off .nm{color:var(--t2)}
+.scn.off .pill{color:var(--t2);background:var(--c2)}
+.scn.opt.on .pill{color:var(--am);background:rgba(245,158,11,.12)}
+
+.note{background:var(--c1);border:1px solid var(--bd);border-radius:14px;padding:17px 18px;margin-top:22px}
+.note h3{font-size:13px;font-family:'DM Mono';letter-spacing:1px;text-transform:uppercase;color:var(--t1);margin-bottom:10px}
+.note p{font-size:14px;color:var(--t1);font-weight:300;margin-bottom:9px}
+.note p b{color:var(--t0);font-weight:600}
+.gaincost{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.gc{flex:1;min-width:220px;border-radius:11px;padding:13px 14px}
+.gc.gain{background:rgba(59,215,92,.06);border:1px solid rgba(59,215,92,.25)}
+.gc.cost{background:rgba(164,123,255,.05);border:1px solid rgba(164,123,255,.25)}
+.gc .h{font-family:'DM Mono';font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:7px}
+.gc.gain .h{color:var(--g)}.gc.cost .h{color:var(--pu)}
+.gc p{font-size:13.5px;color:var(--t1);font-weight:300;margin:0}
+.foot{margin-top:36px;padding-top:22px;border-top:1px solid var(--bd);text-align:center}
+.foot p{font-size:13px;color:var(--t2);font-style:italic}
+</style></head>
+<body><div class="wrap">
+<div class="brand">SODA &#10038; SIMPLE MODE SKETCH</div>
+<h1>One Event,<br>Two Levels of On</h1>
+<p class="sub">A host sets the mode when they create the event. Simple Mode keeps the two scan moments, entry and survey, and lets the live acts go quiet. Flip the switch below to see what stays lit and what steps back.</p>
+<div class="own">A product of Equalpoint, Inc. &#183; A sketch, not a built screen</div>
+
+<div class="setup">
+  <div class="lab">Host setup, when creating the event</div>
+  <div class="field">Creative Meetup <span>&#183; hosted by Futureland</span></div>
+  <div class="modelab">Event mode</div>
+  <div class="toggle">
+    <div class="tg" id="tgFull" onclick="setMode('full')">Full<span class="d">The whole experience</span></div>
+    <div class="tg on" id="tgSimple" onclick="setMode('simple')">Simple<span class="d">Entry and survey only</span></div>
+  </div>
+  <div class="readout" id="readout"></div>
+</div>
+
+<div class="phase">The attendee experience</div>
+<div class="flow" id="flow"></div>
+
+<div class="phase">The host, on the night</div>
+<div class="flow" id="hostflow"></div>
+
+<div class="note">
+  <h3>What Simple Mode is for</h3>
+  <p>It shrinks the first build to the two scan moments, <b>scan to get in</b> and <b>scan to leave feedback</b>, with a quick profile in between. No live timing, no real-time pairing to hold for hours, no critical mass needed in the room.</p>
+  <div class="gaincost">
+    <div class="gc gain"><div class="h">What you gain</div><p>Far less to build and far less to break. You prove the entry and feedback loop at a real event before betting on the acts. The home, contacts, and follow-up nudge still work from whoever scanned in.</p></div>
+    <div class="gc cost"><div class="h">What goes quiet</div><p>The Drop, the Chance, and the Nudge, the moments that make SODA feel different from a sign-in sheet. Simple Mode proves the plumbing; the acts are what prove the product.</p></div>
+  </div>
+  <p style="margin-top:13px"><b>The middle ground:</b> the acts are individual toggles too, so a host can turn the Room View back on, or just the Drop, without going all the way to Full. It is a dial, not a switch.</p>
+</div>
+
+<div class="foot"><p>A name tag knows you showed up. SODA knows who you became to the room, even on the simplest night.</p></div>
+</div>
+
+<script>
+// screen: [num,name,role, state] state: 'core'(always on), 'opt'(optional, amber when on), 'act'(off in simple)
+const ATT=[
+  ['1','Entry QR','scan to get in','core'],
+  ['2','Welcome','host identity','core'],
+  ['3','Sign-In','email + code','core'],
+  ['4','Photo','optional','opt'],
+  ['5','Profile chips','role, offer, need','core'],
+  ['6','Room View','see who is here','act'],
+  ['7','The Drop','one prompt to all','act'],
+  ['8','The Chance','paired intro','act'],
+  ['9','The Nudge','a private match','act'],
+  ['10','Survey','scan to give feedback','core'],
+  ['11','Send-Off','warm close','core'],
+];
+const HOST=[
+  ['','Check-In Panel','add a guest','core'],
+  ['','Live Stat Bar','who scanned in','core'],
+  ['','Sync Control','fire the Drop','act'],
+  ['','Chance Control','pair the room','act'],
+  ['','Nudge Control','send private matches','act'],
+  ['','Intelligence View','read offers and needs','act'],
+  ['','Survey Monitor','watch feedback land','core'],
+  ['','Export Panel','pull the data','core'],
+];
+let mode='simple';
+
+function lit(state){
+  if(mode==='full') return true;            // everything on
+  if(state==='core') return true;           // entry + survey always
+  if(state==='opt') return true;            // optional, stays available
+  return false;                             // acts go quiet in simple
+}
+function rowHtml(s){
+  const [n,nm,role,state]=s;
+  const on=lit(state);
+  const cls=['scn', on?'on':'off', state==='opt'?'opt':''].join(' ');
+  let pill;
+  if(!on) pill='Quiet';
+  else if(state==='opt') pill='Optional';
+  else pill='On';
+  return `<div class="${cls}">${n?`<span class="n">${n}</span>`:''}<span class="nm">${nm}</span><span class="role">${role}</span><span class="pill">${pill}</span></div>`;
+}
+function render(){
+  document.getElementById('flow').innerHTML=ATT.map(rowHtml).join('');
+  document.getElementById('hostflow').innerHTML=HOST.map(rowHtml).join('');
+  document.getElementById('tgFull').classList.toggle('on',mode==='full');
+  document.getElementById('tgSimple').classList.toggle('on',mode==='simple');
+  document.getElementById('readout').innerHTML = mode==='simple'
+    ? 'Event mode: <b style="color:#fff">Simple</b>. Guests scan in, sign in, and scan again for the survey. The live acts stay off.'
+    : 'Event mode: <b style="color:#fff">Full</b>. The whole experience runs, the room and all three acts included.';
+}
+function setMode(m){mode=m;render();}
+render();
+</script>
+</body></html>

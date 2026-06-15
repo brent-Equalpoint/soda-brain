@@ -1,0 +1,35 @@
+<!-- @dsCard group="Spacing" viewport="700x250" name="Breakpoints & fluid type" subtitle="Three breakpoints (480 / 768 / 1024) and a clamp()-scaled display tier. The reading tier stays fixed." -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; background: var(--bg-canvas); padding: 22px; font-family: var(--font-sans); }
+  .lbl { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+  .bps { display: flex; gap: 12px; margin-bottom: 20px; }
+  .bp { flex: 1; background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px 14px; }
+  .bp .n { font-family: var(--font-display); font-size: 19px; color: var(--accent); }
+  .bp .t { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-top: 5px; }
+  .bp .d { font-size: 12px; font-weight: 300; color: var(--text-secondary); margin-top: 4px; }
+  .fl { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .fl .demo { font-family: var(--font-display); text-transform: uppercase; color: var(--text-primary); font-size: var(--fs-display-m); }
+  .fl .nm { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+  .note { font-size: 12px; font-weight: 300; color: var(--text-muted); margin-top: 14px; max-width: 620px; }
+</style>
+</head>
+<body>
+  <div class="lbl">Breakpoints · reference tokens in tokens/spacing.css</div>
+  <div class="bps">
+    <div class="bp"><div class="n">480</div><div class="t">--bp-sm</div><div class="d">Single column, phone</div></div>
+    <div class="bp"><div class="n">768</div><div class="t">--bp-md</div><div class="d">Stacked host tools, tablet</div></div>
+    <div class="bp"><div class="n">1024</div><div class="t">--bp-lg</div><div class="d">Full multi-column host layouts</div></div>
+  </div>
+  <div class="lbl">Fluid display tier · clamp() scales between phone and desktop</div>
+  <div class="fl">
+    <span class="demo">Welcome back</span>
+    <span class="nm">--fs-display-m · clamp(21px, 0.8vw + 18px, 24px)</span>
+  </div>
+  <div class="note">The display tier (hero, display-l/m/s, stat) is fluid. The reading tier (15px body and below) stays fixed for legibility. Media queries cannot read custom properties, so use the literal px values and keep them in sync with the tokens.</div>
+</body>
+</html>

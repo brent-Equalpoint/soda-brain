@@ -1,0 +1,284 @@
+<!-- @dsCard group="Brand" viewport="1060x900" name="QA Audit — specs vs build" subtitle="Full design QA: six spec docs audited against every built surface — coverage, color semantics, states, accessibility, HCD" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SODA · QA Audit — Specs vs Build</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+  html, body { margin: 0; background: var(--bg-canvas); color: var(--text-secondary); }
+  body { font-family: var(--font-sans); font-size: 15px; line-height: 1.55; font-weight: 300; }
+  .page { max-width: 980px; margin: 0 auto; padding: 52px 40px 110px; }
+
+  .eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); }
+  h1 { font-family: var(--font-display); text-transform: uppercase; letter-spacing: var(--ls-display); font-size: 44px; line-height: 1.0; color: var(--text-primary); margin: 14px 0 10px; }
+  .meta { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }
+
+  h2 { font-family: var(--font-display); text-transform: uppercase; letter-spacing: var(--ls-display); font-size: 24px; color: var(--text-primary); margin: 0 0 4px; }
+  .secnum { font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; display: block; margin-bottom: 8px; }
+  section { margin-top: 64px; }
+  .seclede { color: var(--text-secondary); max-width: 760px; margin: 10px 0 22px; }
+  h3 { font-family: var(--font-sans); font-weight: 600; font-size: 16px; color: var(--text-primary); margin: 30px 0 10px; }
+
+  p { margin: 0 0 12px; max-width: 760px; text-wrap: pretty; }
+  b { font-weight: 600; color: var(--text-primary); }
+  code { font-family: var(--font-mono); font-size: 0.86em; background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--text-primary); }
+
+  table { width: 100%; border-collapse: collapse; margin: 14px 0 8px; font-size: 13.5px; }
+  th { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); text-align: left; font-weight: 500; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--border-strong); }
+  td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text-secondary); }
+  td:first-child { color: var(--text-primary); font-weight: 600; white-space: nowrap; }
+
+  .pill { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 10px; border-radius: var(--r-pill); white-space: nowrap; }
+  .pass   { color: var(--accent); background: var(--accent-soft); }
+  .part   { color: var(--warn); background: var(--warn-soft); }
+  .fail   { color: var(--danger); background: var(--danger-soft); }
+  .note   { color: var(--text-muted); background: var(--surface-2); }
+  .p1 { color: var(--danger); background: var(--danger-soft); }
+  .p2 { color: var(--warn); background: var(--warn-soft); }
+  .p3 { color: var(--text-muted); background: var(--surface-2); border: 1px solid var(--border-strong); }
+
+  .scorecard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 24px 0 6px; }
+  .score { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px 17px; }
+  .score .doc { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 9px; min-height: 26px; }
+  .score .verdict { font-family: var(--font-display); text-transform: uppercase; font-size: 21px; line-height: 1; }
+  .score .why { font-size: 12px; color: var(--text-muted); margin-top: 7px; line-height: 1.45; }
+
+  .callout { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 17px 19px; margin: 18px 0; max-width: 760px; }
+  .callout.green { background: var(--surface-green); border-color: transparent; }
+  .callout.purple { background: var(--surface-purple); border: 1px solid var(--private-border); }
+  .callout .tag { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+
+  ul { margin: 0 0 14px; padding-left: 20px; max-width: 760px; }
+  li { margin-bottom: 7px; }
+  li::marker { color: var(--accent); }
+  .swatch { display: inline-block; width: 11px; height: 11px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; border: 1px solid var(--border-strong); }
+  .hr { height: 1px; background: var(--border); margin: 44px 0 0; }
+  .foot { margin-top: 70px; text-align: center; font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-faint); }
+  @media (max-width: 860px) { .scorecard { grid-template-columns: 1fr 1fr; } .page { padding: 36px 22px 80px; } h1 { font-size: 34px; } }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail" data-bg-color="#111111">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#111111"></rect>
+    <text x="600" y="360" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="150" font-weight="900" fill="#F5F5F5" letter-spacing="6">QA</text>
+    <rect x="450" y="430" width="300" height="14" rx="7" fill="#3BD75C"></rect>
+    <rect x="500" y="470" width="200" height="10" rx="5" fill="#333333"></rect>
+  </svg>
+</template>
+<div class="page">
+
+  <header data-screen-label="Audit header">
+    <div class="eyebrow">SODA · Design QA</div>
+    <h1>The audit:<br />specs vs build</h1>
+    <div class="meta">Six documents · five built surfaces · June 10, 2026</div>
+    <p style="margin-top:18px;">Every claim in the uploaded documents — the Component Inventory, the Event Layer, the two flow maps, the Home Screen spec, the states pass, the New Screen Prompts, and the Privacy Policy — checked against what is actually built in this project: the attendee spine, the Home, the Admin, the Command Center, and the ten new screens. Findings are graded <span class="pill p1">P1 · spec break</span> <span class="pill p2">P2 · gap</span> <span class="pill p3">P3 · polish</span>.</p>
+  </header>
+
+  <section data-screen-label="Scorecard">
+    <span class="secnum">00 · Scorecard</span>
+    <h2>Where each document stands</h2>
+    <div class="scorecard">
+      <div class="score"><div class="doc">New Screen Prompts (10)</div><div class="verdict" style="color:var(--accent);">10 / 10 built</div><div class="why">All ten faithful to their prompts. Two copy decisions to confirm, one integration gap.</div></div>
+      <div class="score"><div class="doc">Home Screen spec</div><div class="verdict" style="color:var(--accent);">Strong</div><div class="why">Shell + three tabs match closely. Reserved affordances (scan-to-add, share action) were not reserved.</div></div>
+      <div class="score"><div class="doc">Attendee Flow Map</div><div class="verdict" style="color:var(--warn);">Near-complete</div><div class="why">Full spine + branches built. Sign-in deviates from spec (phone + Google). Event-ended variation missing.</div></div>
+      <div class="score"><div class="doc">Event Layer</div><div class="verdict" style="color:var(--warn);">Partial</div><div class="why">Fields, QR, lifecycle ✓ (plus an undocumented Cancelled state). Identity lock and live-gating not enforced.</div></div>
+      <div class="score"><div class="doc">States pass</div><div class="verdict" style="color:var(--danger);">Thin</div><div class="why">4 of the 5 "happens every event" states are unbuilt — including the early room, the most important one.</div></div>
+      <div class="score"><div class="doc">Component Inventory</div><div class="verdict" style="color:var(--warn);">Drifted</div><div class="why">Six components marked "Built" exist only in legacy prototypes, not in this system's kits.</div></div>
+    </div>
+  </section>
+
+  <section data-screen-label="What holds up">
+    <span class="secnum">01 · What holds up</span>
+    <h2>The foundation is honest</h2>
+    <p>Before the gaps: most of what the documents call sacred is genuinely held in the build.</p>
+    <ul>
+      <li><b>The privacy boundary is honored everywhere.</b> The Nudge renders as a private overlay with <i>"Seen only by you. Nothing public, no announcement."</i> The Command Center's nudge queue carries <i>"Each nudge goes to one recipient only — never to a shared view."</i> No shared surface ever shows a match suggestion. This is the highest-stakes rule in the app and it passes everywhere.</li>
+      <li><b>Color semantics are mostly disciplined.</b> Green appears on interactive and confirming elements; purple holds its "only for you" meaning across the Nudge, follow-up signals, and held containers; amber carries the Chance countdown; red appears only on the failed code, the cancel path, and the cancelled state.</li>
+      <li><b>The brand-agnostic rule reads correctly.</b> Attendee screens wear Futureland (typed name, no logo, graceful fallback); SODA stays a quiet footer credit; the Admin's logo field literally says <i>"No logo — host name shown in type."</i></li>
+      <li><b>The voice survives the build.</b> "You made it in." "Ninety seconds to build your card." "Nothing to review. You are caught up." Copy across the kits matches the docs' warm, plain register, and several states-doc lines are used verbatim.</li>
+      <li><b>HCD basics are real, not decorative:</b> photo skip never blocks (initials fallback), sign-in error is recoverable with resend, chip caps soft-lock instead of erroring, end-of-night destructive action is two-step confirmed with a graceful default.</li>
+      <li><b>The data-ownership clause shows up in UI:</b> the Export panel is titled "Futureland owns its data" — the contract made visible.</li>
+    </ul>
+  </section>
+
+  <section data-screen-label="P1 findings">
+    <span class="secnum">02 · P1 — Spec breaks</span>
+    <h2>Rules the documents state that the build does not enforce</h2>
+
+    <h3>2.1 · Identity fields never lock <span class="pill p1">P1</span></h3>
+    <p>The Event Layer is explicit: <i>"Identity is editable in draft, locked in live, and final in closed."</i> The built Admin shows the rule in the lifecycle seam copy — but the Event name, Host name, and Date inputs stay fully editable in every phase. Flipping to Live or Closed changes the banner, not the fields. The one behavior the lifecycle exists to protect (a stable identity while guests are inside the experience) isn't enforced.</p>
+    <p><b>Fix:</b> pass <code>phase</code> into <code>EventSetup</code>; disable identity inputs when not draft, with a quiet mono line — "Locked while live" / "Final — the event is a record."</p>
+
+    <h3>2.2 · The Command Center can fire acts in any state <span class="pill p1">P1</span></h3>
+    <p>Lifecycle State Awareness (inventory #38) is the gate that <i>"protects the night from misfires"</i>: act controls active only when live, visibly inert otherwise. The built cockpit hardcodes a Live badge and every control is always armed. There is no draft or closed rendering at all, and no way to see what "visibly inert" looks like.</p>
+    <p><b>Fix:</b> give the Command Center a phase (read from the same state the Admin sets), render Fire/Spin/Send disabled with the existing 0.5-opacity disabled treatment plus a one-line reason when not live.</p>
+
+    <h3>2.3 · The lifecycle message has one of its two variations <span class="pill p1">P1</span></h3>
+    <p>The Event Layer defines <i>"a single flexible screen with two text variations"</i> — not-yet-open and event-ended (the ended one carrying a path to the survey). The attendee spine builds only "Doors aren't open yet." A guest scanning a closed event has no designed destination, and the closed state is the one that feeds the survey loop.</p>
+    <p><b>Fix:</b> add the ended variation to the existing <code>Lifecycle</code> screen — headline, one warm line, and a green "Take the survey" path when uncompleted.</p>
+
+    <h3>2.4 · Sign-in collects data the privacy policy doesn't cover <span class="pill p1">P1 · decision needed</span></h3>
+    <p>Every document specifies sign-in as <b>email + six-digit code</b>. The built attendee sign-in adds a phone-number path (default!) and a "Continue with Google" option. The privacy policy states <i>"Your name and email address, entered at sign-in… That is the full list."</i> Phone numbers and a Google identity provider are both outside that list, and Google sign-in also bypasses the "identity is established once, counts once toward MAU" model the inventory describes.</p>
+    <p><b>Fix (either direction):</b> if phone/Google are intentional product evolution, update the privacy policy, flow map, and inventory to match. If not, strip sign-in back to email + code. The build and the legal document cannot disagree.</p>
+  </section>
+
+  <section data-screen-label="P2 findings — states">
+    <span class="secnum">03 · P2 — The states debt</span>
+    <h2>The moments the states doc says happen every event</h2>
+    <p>The states pass names five states to <i>"build first, these happen every time."</i> Two are built. The doc's own rule — <i>"the first guest and the no-match guest are not edge cases"</i> — is currently unmet.</p>
+    <table>
+      <tr><th>Build-first state</th><th>Status</th><th>What exists</th></tr>
+      <tr><td>The early room</td><td><span class="pill fail">Missing</span></td><td>RoomView always renders 12 people. No climbing count, no dimmed placeholders, no "The room is filling. You are early. Good." — called the most important empty state in the app.</td></tr>
+      <tr><td>The Drop waiting wall</td><td><span class="pill part">Partial</span></td><td>The spec copy lives in the input placeholder — a nice touch — but after sending, the wall is instantly full of seeded answers. The empty-wall beat ("yours can be first") never renders.</td></tr>
+      <tr><td>The Nudge no-match</td><td><span class="pill fail">Missing</span></td><td>The attendee Nudge always has a match. No purple-treatment fallback card, despite a paste-ready prompt for it.</td></tr>
+      <tr><td>CC / Admin zero states</td><td><span class="pill part">2 of 8</span></td><td>Chip queue ("Nothing to review. You are caught up." — verbatim ✓) and nudge queue have empties. Stat bar, room, feed, sync, chance, survey, and intel always render full.</td></tr>
+      <tr><td>Sign-in errors</td><td><span class="pill pass">Built</span></td><td>Wrong code → red line with spec copy, field ready to retry, resend offered. Send shows "Sending your code…" locked. Matches the doc.</td></tr>
+    </table>
+    <p style="margin-top:14px;">Lower-priority states, for the record: survey submitting/failed <span class="pill fail">missing</span> (Finish advances instantly; the answers-preserved retry isn't designed) · photo uploading/failed <span class="pill fail">missing</span> (though skip→initials cushions it) · room loading skeleton, reconnecting indicator, connection-badge error <span class="pill fail">missing</span> (badge is permanently "Synced") · Chance unpaired/shuffling <span class="pill fail">missing</span> · export empty <span class="pill fail">missing</span> (export loading <span class="pill pass">built</span> — "Preparing…", control locked) · thin-history recognition <span class="pill fail">missing</span> (Recognition always claims "third event, seven connections").</p>
+    <p><b>Recommendation:</b> a "States" toggle in each kit's Tweaks panel (empty / loading / error / populated) would make every state designable and reviewable without forking screens — and this project already has the Tweaks pattern wired in the Admin.</p>
+  </section>
+
+  <section data-screen-label="P2 findings — inventory drift">
+    <span class="secnum">04 · P2 — Inventory drift</span>
+    <h2>"Built" in the doc, absent in the system</h2>
+    <p>The Component Inventory grounds its statuses in the original prototype screens. Six host-side components it marks <b>Built</b> have no home in this design system's kits — the place a consuming project would actually look:</p>
+    <table>
+      <tr><th>Component (inventory #)</th><th>Claimed</th><th>In this system</th></tr>
+      <tr><td>Prompt &amp; Pairing Settings (#32)</td><td>Built</td><td>Absent — no question bank, pairing slots, anchors, or rotation controls. The Drop prompt is typed ad hoc in Sync Control.</td></tr>
+      <tr><td>Question Creator (#33)</td><td>Built</td><td>Absent.</td></tr>
+      <tr><td>Open Mic Feed (#34)</td><td>Built</td><td>Absent.</td></tr>
+      <tr><td>Broadcast &amp; Announce (#35)</td><td>Built</td><td>Absent — no way to message the whole room from either tool.</td></tr>
+      <tr><td>Room Panel, Admin (#30)</td><td>Built</td><td>Absent — the room grid lives only in the Command Center.</td></tr>
+      <tr><td>Survey Panel, Admin (#31)</td><td>Built</td><td>Absent — survey data lives only in the CC monitor; the host flow map expects the fuller Admin table for the closed-state review.</td></tr>
+    </table>
+    <p>This matters because the Host Flow Map's <b>Part C — "Back in the Admin"</b> (review matches <i>and survey data</i>, then export) can't be walked in the built Admin: matches and export exist, the survey review does not.</p>
+    <p><b>Fix (either direction):</b> port these six panels into the Admin kit, or restate their inventory status as "Built in legacy prototype, not yet in the design system." A status table that can't be trusted decays fast.</p>
+  </section>
+
+  <section data-screen-label="New screens audit">
+    <span class="secnum">05 · The ten new screens</span>
+    <h2>Prompt-by-prompt fidelity</h2>
+    <table>
+      <tr><th>Screen</th><th>Verdict</th><th>Notes</th></tr>
+      <tr><td>01 · Code help state</td><td><span class="pill pass">Faithful</span></td><td>Email + Edit, empty code, calm spam line, countdown→green resend, host-check-in footer. Green only on links.</td></tr>
+      <tr><td>02 · Welcome back</td><td><span class="pill pass">Faithful</span></td><td>Host identity when live, code + sent-to note, CONTINUE, different-email link.</td></tr>
+      <tr><td>03 · Add to home</td><td><span class="pill pass">Faithful</span></td><td>Sheet, grabber, dimmed room behind, "Maybe later" never blocks.</td></tr>
+      <tr><td>04 · Event Mode</td><td><span class="pill part">Faithful, stranded</span></td><td>Toggle, subtitles, live copy swap, "Adjust individual acts" link — all match. But it lives only in the new-screens package; the real Admin EventSetup still shows only the three act toggles. The Full/Simple dial and the acts it abstracts were never reconciled.</td></tr>
+      <tr><td>05 · Host sign-in</td><td><span class="pill pass">Faithful</span></td><td>Quiet mark, sturdier tone, green focus borders, invite-only footer.</td></tr>
+      <tr><td>06 · Host account setup</td><td><span class="pill pass">Faithful</span></td><td>Prefilled fields, read-only granted role pill — granted, not chosen.</td></tr>
+      <tr><td>07 · Collaborator mgmt</td><td><span class="pill pass">Faithful</span></td><td>Deep-green Owner pill, muted Collaborator, "(you)" mark, green-border add control.</td></tr>
+      <tr><td>08 · Collaborator welcome</td><td><span class="pill part">Faithful + copy flag</span></td><td>Built copy says "<b>Future</b> added you…" — verbatim from the prompt doc, but almost certainly a typo for <b>Futureland</b>. Confirm and fix in both places.</td></tr>
+      <tr><td>09 · Collaborator tutorial</td><td><span class="pill pass">Faithful</span></td><td>Progress cue, persistent Skip, NEXT→GOT IT. Three cards vs the prompt's "2 of 4" example — fine; the example wasn't a requirement.</td></tr>
+      <tr><td>10 · Host welcome-back</td><td><span class="pill pass">Faithful</span></td><td>Event rows with green "Live now," routed CTA, quiet see-all.</td></tr>
+    </table>
+    <p style="margin-top:12px;"><b>Integration note <span class="pill p2">P2</span>:</b> screens 5–10 define host accounts, roles, and routing, but nothing connects them to the Admin/Command Center kits (no sign-in gate in front of the Admin; collaborator management isn't an Admin nav item). They read as a parallel universe until wired in.</p>
+  </section>
+
+  <section data-screen-label="Home audit">
+    <span class="secnum">06 · The Home</span>
+    <h2>Home spec compliance</h2>
+    <p>The strongest spec-to-build match in the project. Shell, greeting, recent-events strip, synced-people block, deep-green insight card, dismissible follow-ups overview with the purple "People to reach out to" group, search, signals, and the purple tab dot are all present and correctly toned. Gaps:</p>
+    <ul>
+      <li><b>Reserved affordances were dropped <span class="pill p2">P2</span>.</b> The spec deliberately reserves a scan-to-add icon in the Contacts header and a share/quick action on each contact row so the "soon" features slot in additively. Neither exists, so those features will require layout change later — exactly what the reservation was for.</li>
+      <li><b>Event rows lack the recap/survey affordance <span class="pill p3">P3</span>:</b> "a recap or survey affordance appears where one is available."</li>
+      <li><b>Met-at line format <span class="pill p3">P3</span>:</b> built rows read "Investor · Creative Meetup, Cleveland"; the spec's pattern is "Met at Creative Meetup · Cleveland." Minor, but the "Met at" framing is doing memory work.</li>
+      <li><b>Rows aren't semantic <span class="pill p2">P2 · a11y</span>:</b> contact and event rows are clickable <code>div</code>s — no keyboard path, no focus state. Same applies to the room's person cards.</li>
+    </ul>
+  </section>
+
+  <section data-screen-label="Foundation audit">
+    <span class="secnum">07 · Foundation</span>
+    <h2>Color semantics, contrast, type, touch</h2>
+
+    <h3>7.1 · Color-meaning violations</h3>
+    <table>
+      <tr><th>Where</th><th>Severity</th><th>Finding</th></tr>
+      <tr><td>Send-Off waitlist CTA</td><td><span class="pill p2">P2</span></td><td>"Join the membership waitlist" uses the <span class="swatch" style="background:#A47BFF;"></span>purple button variant. Purple means <i>private, only for you</i> — a marketing CTA dilutes the one color whose meaning the docs call sacred. Use ghost or primary.</td></tr>
+      <tr><td>Home warmth dots</td><td><span class="pill p3">P3 · doc conflict</span></td><td>Cooling contacts show <span class="swatch" style="background:#F59E0B;"></span>amber dots. The token file sanctions this (<code>--am: live countdowns, warmth cooling</code>) but the prompts doc says amber is "only for timers." The two sources disagree — pick one and align the doc.</td></tr>
+      <tr><td>Draft phase pill</td><td><span class="pill p3">P3</span></td><td>Uses <code>--pending</code> (yellow), a token documented as "spec'd-not-built status" for documentation badges — now carrying product meaning (draft). Either bless it in the token comment or give draft its own neutral treatment.</td></tr>
+    </table>
+
+    <h3>7.2 · Contrast (computed against #111111 canvas)</h3>
+    <table>
+      <tr><th>Token</th><th>Ratio</th><th>Verdict</th></tr>
+      <tr><td>--text-primary #F5F5F5</td><td>17.9 : 1</td><td><span class="pill pass">AA + AAA</span></td></tr>
+      <tr><td>--text-secondary #c8ccc8</td><td>11.4 : 1</td><td><span class="pill pass">AA + AAA</span></td></tr>
+      <tr><td>--accent #3BD75C</td><td>10.0 : 1</td><td><span class="pill pass">AA</span> (and 10:1 for #111 on green fills)</td></tr>
+      <tr><td>--private #A47BFF</td><td>6.2 : 1</td><td><span class="pill pass">AA</span></td></tr>
+      <tr><td>--danger #FF5470</td><td>6.1 : 1</td><td><span class="pill pass">AA</span></td></tr>
+      <tr><td>--text-muted #777777</td><td>≈ 4.2 : 1</td><td><span class="pill part">Fails AA 4.5:1 for normal text</span> — and it drops to ≈3.9:1 on --surface-1 cards. It is used at 9–13px for labels, meta, and captions across every kit. Nudging to #8a8a8a (≈5.3:1) preserves the register and passes.</td></tr>
+      <tr><td>--text-faint #4a4d4a</td><td>≈ 2.1 : 1</td><td><span class="pill fail">Fails all thresholds</span> — fine for disabled/placeholder (exempt), but it also carries real content: footer credits, activity timestamps, the "Standalone screen" hint. Real content should floor at muted.</td></tr>
+    </table>
+
+    <h3>7.3 · Type scale and the 8px grid</h3>
+    <ul>
+      <li><b>9–10px mono is everywhere</b> — section labels, signal pills, met-counts, footers. On a real 380px phone these are sub-7pt. The docs' own floor for print is 12pt; nothing is stated for screen, but a stated 11px minimum for mono labels (and reserving 9px for the device mock only) would be worth adding to the type guideline. <span class="pill p3">P3</span></li>
+      <li><b>The "8px grid, 16px margins" claim is loose in practice:</b> paddings of 7, 9, 11, 13, 15, 17px are routine across the kits. The rhythm still reads consistent because it's consistently off — but the docs repeat "8px grid" in every prompt. Either soften the doc (a 4px base grid describes reality better) or sweep the kits. <span class="pill p3">P3</span></li>
+    </ul>
+
+    <h3>7.4 · Touch targets (44px is the docs' own rule)</h3>
+    <table>
+      <tr><th>Control</th><th>Actual</th><th>Verdict</th></tr>
+      <tr><td>Primary buttons (lg)</td><td>≈ 50px</td><td><span class="pill pass">Pass</span></td></tr>
+      <tr><td>Tab bar items</td><td>≈ 48px</td><td><span class="pill pass">Pass</span></td></tr>
+      <tr><td>Chips (role/offer/need)</td><td>≈ 33px</td><td><span class="pill part">Under</span> — the core 90-second interaction. Add ~5px vertical padding or a min-height.</td></tr>
+      <tr><td>Room view toggles (grid/list/flip)</td><td>≈ 31px</td><td><span class="pill part">Under</span></td></tr>
+      <tr><td>Settings gear (Home header)</td><td>30px</td><td><span class="pill part">Under</span></td></tr>
+      <tr><td>Overview dismiss ×</td><td>22px</td><td><span class="pill fail">Well under</span> — smallest target in the app, on a dismissal the spec says must be easy.</td></tr>
+      <tr><td>Survey scale buttons</td><td>34×44px</td><td><span class="pill part">Borderline</span> (height passes, width under)</td></tr>
+    </table>
+  </section>
+
+  <section data-screen-label="Accessibility and HCD">
+    <span class="secnum">08 · Accessibility &amp; HCD</span>
+    <h2>Human-centered checks beyond the visual</h2>
+    <table>
+      <tr><th>Check</th><th>Status</th><th>Detail</th></tr>
+      <tr><td>Keyboard reachability</td><td><span class="pill part">Mixed</span></td><td>Buttons are real <code>&lt;button&gt;</code>s ✓, but person cards, contact rows, and event rows are clickable divs with no tab stop or Enter handling. <span class="pill p2">P2</span></td></tr>
+      <tr><td>Focus visibility</td><td><span class="pill part">Mixed</span></td><td>Inputs swap to a green focus border ✓. Buttons/chips rely on the browser default ring against near-black — define a <code>:focus-visible</code> treatment (the green border is right there). <span class="pill p3">P3</span></td></tr>
+      <tr><td>Screen-reader semantics</td><td><span class="pill part">Mixed</span></td><td>Good: <code>aria-hidden</code> on decorative icons, <code>role=tablist/tab</code> + <code>aria-selected</code> on SegmentedToggle, labeled DS CodeInput. Gaps: the spine's inline code input has no <code>aria-label</code>; BottomSheet/CommentSheet lack <code>role="dialog"</code> + <code>aria-modal</code>; tab bar lacks <code>aria-current</code>; star rating has no group label or per-star names. <span class="pill p2">P2</span></td></tr>
+      <tr><td>Color-independence</td><td><span class="pill pass">Good</span></td><td>Signals pair color with words ("Reached out", "Reach out", "Live now"); the purple dot is reinforced by the grouped list. Nothing reads by hue alone.</td></tr>
+      <tr><td>Motion</td><td><span class="pill pass">Low risk</span></td><td>Animation is sparse and functional. No infinite loops; <code>prefers-reduced-motion</code> unused but little needs gating.</td></tr>
+      <tr><td>Error prevention &amp; recovery</td><td><span class="pill pass">Strong</span></td><td>Two-step cancel with explicit consequences, soft chip caps, disabled-until-valid CTAs, resend paths. Matches "errors are honest and recoverable."</td></tr>
+      <tr><td>User control / consent</td><td><span class="pill pass">Strong in spec, thin in build</span></td><td>Skip paths everywhere ✓. But the spec's "dismissal is a signal" (logged nudge discards) and the nudge frequency cap have no designed surface — no way to turn follow-up nudges off in the Home. The wellbeing section promises "an easy way to turn it off." <span class="pill p2">P2</span></td></tr>
+      <tr><td>Prototype residue</td><td><span class="pill note">Cleanup</span></td><td>"(try 417203)" hint in sign-in; Recognition always claims a third event (the thin-history rule warns against inventing history); CC stat bar (128 scanned) disagrees with the 12-person room — fine for demo, misleading for stakeholder review.</td></tr>
+    </table>
+  </section>
+
+  <section data-screen-label="Hygiene">
+    <span class="secnum">09 · Project hygiene</span>
+    <h2>Housekeeping the audit surfaced</h2>
+    <ul>
+      <li><b>Orphaned root files <span class="pill p2">P2</span>:</b> <code>admin.jsx</code> and <code>panels.jsx</code> sit at the project root — near-duplicates of <code>ui_kits/admin/</code>, but the root copy carries a divergent edit (every AButton forced to <code>width:170px</code>). Nothing loads them. If that width edit was intentional it's currently lost; otherwise these are dead weight inviting confusion about which file is canonical. Say the word and I'll delete (or reconcile) them.</li>
+      <li><b>Duplicate upload <span class="pill p3">P3</span>:</b> <code>SODA-New-Screen-Prompts-5ab7b274.md</code> is byte-identical in content to <code>SODA-New-Screen-Prompts.md</code>.</li>
+      <li><b>Doc self-conflict <span class="pill p3">P3</span>:</b> the prompts doc says "amber is only for timers"; the token file says amber also means warmth cooling (and the Home uses it that way). One sentence needs to change.</li>
+    </ul>
+  </section>
+
+  <section data-screen-label="Priority list">
+    <span class="secnum">10 · Do next</span>
+    <h2>The prioritized list</h2>
+    <table>
+      <tr><th>#</th><th>Fix</th><th>Grade</th><th>Effort</th></tr>
+      <tr><td>1</td><td>Lock identity fields by lifecycle phase in the Admin</td><td><span class="pill p1">P1</span></td><td>Small</td></tr>
+      <tr><td>2</td><td>Gate Command Center act controls on lifecycle (draft/closed = visibly inert)</td><td><span class="pill p1">P1</span></td><td>Small</td></tr>
+      <tr><td>3</td><td>Add the event-ended lifecycle variation with the survey path</td><td><span class="pill p1">P1</span></td><td>Small</td></tr>
+      <tr><td>4</td><td>Decide phone/Google sign-in vs the privacy policy, align both</td><td><span class="pill p1">P1</span></td><td>Decision</td></tr>
+      <tr><td>5</td><td>Build the three build-first attendee states: early room, true waiting wall, no-match nudge (prompts are paste-ready in the docs)</td><td><span class="pill p2">P2</span></td><td>Medium</td></tr>
+      <tr><td>6</td><td>Zero states for CC/Admin panels — ideally via a States tweak per kit</td><td><span class="pill p2">P2</span></td><td>Medium</td></tr>
+      <tr><td>7</td><td>Reconcile the six "Built" inventory claims (port panels or restate status)</td><td><span class="pill p2">P2</span></td><td>Medium</td></tr>
+      <tr><td>8</td><td>Wire the host-access screens to the Admin (sign-in gate, collaborator nav item, Event Mode into EventSetup)</td><td><span class="pill p2">P2</span></td><td>Medium</td></tr>
+      <tr><td>9</td><td>Reserve the Home's scan-to-add and share affordances; fix "Future"→"Futureland"; retire purple from the waitlist CTA</td><td><span class="pill p2">P2</span></td><td>Small</td></tr>
+      <tr><td>10</td><td>A11y sweep: semantic rows, focus-visible, dialog roles, code-input labels; lift --text-muted to ≈5:1; 44px floor on chips, toggles, dismissals</td><td><span class="pill p2">P2</span></td><td>Medium</td></tr>
+      <tr><td>11</td><td>Housekeeping: root orphans, duplicate upload, amber wording, prototype residue</td><td><span class="pill p3">P3</span></td><td>Small</td></tr>
+    </table>
+  </section>
+
+  <div class="hr"></div>
+  <div class="foot">SODA ✦ QA Audit · Specs vs Build · June 10, 2026</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!-- @dsCard group="Brand" viewport="700x260" name="Voice" subtitle="Warm, terse, confident. Short declaratives. You, never I. No emoji." -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; background: var(--bg-canvas); padding: 24px; font-family: var(--font-sans); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 640px; }
+  .q { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 15px; }
+  .q .k { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+  .q .t { font-size: 14px; color: var(--text-primary); font-weight: 300; line-height: 1.4; }
+  .q.priv .k { color: var(--private); }
+  .q.err { border-color: var(--danger); }
+  .q.err .k { color: var(--danger); }
+  .sign { font-style: italic; color: var(--text-muted); font-size: 13px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="grid">
+  <div class="q"><div class="k">Empty · early room</div><div class="t">The room is filling. You are early. Good.</div></div>
+  <div class="q"><div class="k">Empty · waiting wall</div><div class="t">Answers are landing. Yours can be first.</div></div>
+  <div class="q priv"><div class="k">A nudge, for you</div><div class="t">No single match stood out yet. The night is not over. Keep working the room.</div></div>
+  <div class="q err"><div class="k">Error · code</div><div class="t">That code did not match. Check your email or resend.</div></div>
+</div>
+<div class="sign">A name tag knows you showed up. SODA knows who you became to the room.</div>
+</body>
+</html>

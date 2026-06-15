@@ -1,0 +1,128 @@
+<!-- @dsCard group="Admin Panel" viewport="1280x800" name="Admin Panel — back office" subtitle="Create the event, set host identity, moderate, flip the lifecycle, export" -->
+<!-- @startingPoint section="Admin Panel" subtitle="The host's back office for building and closing an event" viewport="1280x800" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SODA · Admin Panel</title>
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html,body{margin:0;background:var(--bg-deep);min-height:100vh;color:var(--text-secondary);}
+  .admin{max-width:1180px;margin:0 auto;padding:20px 24px 48px;}
+  .topbar{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:8px;font-family:var(--font-display);text-transform:uppercase;font-size:18px;color:var(--text-primary);letter-spacing:-.01em;}
+  .brand .s{color:var(--accent);}
+  .evt{font-family:var(--font-mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);}
+  /* lifecycle control */
+  .lifecycle{display:flex;align-items:center;gap:8px;margin-left:auto;}
+  .lc{display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:var(--r-pill);font-family:var(--font-mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;border:1px solid var(--border);color:var(--text-faint);}
+  .lc.on.draft{color:var(--pending);border-color:var(--pending);background:rgba(255,210,63,.1);}
+  .lc.on.live{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);}
+  .lc.on.closed{color:var(--text-secondary);border-color:var(--border-strong);background:var(--surface-2);}
+  .grid{display:grid;grid-template-columns:180px 1fr;gap:18px;align-items:start;margin-top:4px;}
+  .nav{display:flex;flex-direction:column;gap:3px;position:sticky;top:18px;}
+  .nav .gh{font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-faint);margin:14px 0 6px;}
+  .navbtn{text-align:left;background:none;border:none;cursor:pointer;font-family:var(--font-sans);font-size:13.5px;color:var(--text-muted);padding:9px 11px;border-radius:9px;transition:color .12s;}
+  .navbtn:hover{color:var(--text-secondary);}
+  .main{display:flex;flex-direction:column;gap:16px;}
+  .seam{display:flex;align-items:center;gap:12px;background:var(--surface-1);border:1px dashed var(--border-strong);border-radius:var(--r-xl);padding:16px 20px;}
+  .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--accent);color:var(--text-primary);font-size:13px;padding:11px 18px;border-radius:var(--r-pill);box-shadow:var(--shadow-toast);display:flex;align-items:center;gap:8px;z-index:80;}
+  @media(max-width:1024px){.grid{grid-template-columns:1fr;}.nav{flex-direction:row;flex-wrap:wrap;position:static;}}
+  @media(max-width:480px){.admin{padding:14px 12px 40px;}.topbar{gap:10px;}.evt{display:none;}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="admin.jsx"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js" crossorigin="anonymous"></script>
+<script type="text/babel" src="panels.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel">
+const { EventSetup, CheckIn, ChipQueue, MatchesPanel, ExportPanel, QRPanel, AButton, PhasePills, LifecycleSeam } = window;
+const { useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakToggle } = window;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "actionAlign": "center",
+  "actionFill": false
+}/*EDITMODE-END*/;
+
+const SECTIONS=[
+  ['Build · draft',[['setup','Event & identity'],['qr','Check-in QR'],['checkin','Check-in']]],
+  ['Run',[['chips','Chip moderation']]],
+  ['Close · record',[['matches','Matches'],['export','Export']]],
+];
+
+function App(){
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [view,setView]=React.useState('setup');
+  // Narrow layout: stack the lifecycle seam below 768px (--bp-md).
+  const [narrow,setNarrow]=React.useState(()=>window.matchMedia('(max-width: 768px)').matches);
+  React.useEffect(()=>{
+    const mq=window.matchMedia('(max-width: 768px)');
+    const on=(e)=>setNarrow(e.matches);
+    mq.addEventListener('change',on);return ()=>mq.removeEventListener('change',on);
+  },[]);
+  // Event lifecycle: draft | live | closed | cancelled. Persisted to the
+  // shared key the Command Center reads, so both tools see one event state.
+  const PHASE_KEY='soda.eventPhase';
+  const [phase,setPhaseRaw]=React.useState(()=>{
+    try{const v=localStorage.getItem(PHASE_KEY);return ['draft','live','closed','cancelled'].includes(v)?v:'draft';}catch(e){return 'draft';}
+  });
+  const setPhase=(p)=>{setPhaseRaw(p);try{localStorage.setItem(PHASE_KEY,p);}catch(e){}};
+  const [toast,setToast]=React.useState(null);
+  const flash=(m)=>{setToast(m);clearTimeout(window.__t);window.__t=setTimeout(()=>setToast(null),1900);};
+
+  let main;
+  if(view==='setup') main=<EventSetup onToast={flash} phase={phase} actionAlign={t.actionAlign} actionFill={t.actionFill}/>;
+  else if(view==='qr') main=<QRPanel onToast={flash}/>;
+  else if(view==='checkin') main=<CheckIn onToast={flash}/>;
+  else if(view==='chips') main=<ChipQueue onToast={flash}/>;
+  else if(view==='matches') main=<MatchesPanel empty={phase==='draft'}/>;
+  else main=<ExportPanel onToast={flash} empty={phase==='draft'}/>;
+
+  return (
+    <div className="admin">
+      <div className="topbar">
+        <div className="brand">SODA <span className="s">✦</span></div>
+        <div className="evt">Admin · Futureland · Creative Meetup</div>
+        <div className="lifecycle">
+          <PhasePills phase={phase}/>
+        </div>
+      </div>
+
+      <div className="grid">
+        <div className="nav">
+          {SECTIONS.map(([g,items])=>(
+            <div key={g}>
+              <div className="gh">{g}</div>
+              {items.map(([id,lb])=>(
+                <button key={id} className="navbtn" onClick={()=>setView(id)}
+                  style={{color:view===id?'var(--accent)':'var(--text-muted)',background:view===id?'var(--accent-soft)':'transparent'}}>{lb}</button>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="main">
+          {main}
+          <LifecycleSeam phase={phase} setPhase={setPhase} flash={flash} layout={narrow?'mobile':'desktop'}/>
+        </div>
+      </div>
+      {toast&&<div className="toast"><span style={{width:7,height:7,borderRadius:'50%',background:'var(--accent)'}}/>{toast}</div>}
+      <TweaksPanel>
+        <TweakSection label="Setup actions" />
+        <TweakRadio label="Alignment" value={t.actionAlign} options={['left','center','right']}
+          onChange={(v)=>setTweak('actionAlign', v)} />
+        <TweakToggle label="Stretch to fill" value={t.actionFill}
+          onChange={(v)=>setTweak('actionFill', v)} />
+      </TweaksPanel>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

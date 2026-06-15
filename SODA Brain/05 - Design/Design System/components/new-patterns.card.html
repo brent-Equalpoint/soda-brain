@@ -1,0 +1,92 @@
+<!-- @dsCard group="Components" viewport="760x520" name="New patterns — Toggle, Resend, Roles, Sheet, Carousel" subtitle="SegmentedToggle, ResendControl, RolePill, EventRow, BottomSheet, Carousel" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; background: var(--bg-canvas); padding: 24px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px 30px; max-width: 700px; }
+  .col { display: flex; flex-direction: column; gap: 12px; }
+  .lbl { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .sheetbox { position: relative; height: 150px; background: var(--bg-deep); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+<script type="text/babel">
+  const ns = window.SODADesignSystem_3bd687 || {};
+  // Defensive: if the bundle is momentarily pre-rebuild, render a quiet
+  // placeholder instead of crashing the card.
+  const Pending = ({ what }) => <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-faint)' }}>{what} ·  rebuilding…</span>;
+  const get = (name) => ns[name] || (() => <Pending what={name} />);
+  const SegmentedToggle = get('SegmentedToggle');
+  const ResendControl = get('ResendControl');
+  const RolePill = get('RolePill');
+  const EventRow = get('EventRow');
+  const BottomSheet = get('BottomSheet');
+  const Carousel = get('Carousel');
+  const Button = get('Button');
+
+  function Demo() {
+    const [mode, setMode] = React.useState('simple');
+    return (
+      <div className="grid">
+        <div className="col">
+          <div className="lbl">Segmented toggle · Event Mode</div>
+          <SegmentedToggle value={mode} onChange={setMode}
+            options={[{ value: 'full', label: 'Full', subtitle: 'The whole experience' }, { value: 'simple', label: 'Simple', subtitle: 'Entry and survey only' }]} />
+        </div>
+
+        <div className="col">
+          <div className="lbl">Resend control · code screen</div>
+          <div className="row"><ResendControl seconds={8} /></div>
+        </div>
+
+        <div className="col">
+          <div className="lbl">Role pills · granted, not chosen</div>
+          <div className="row">
+            <RolePill tone="granted">Owner</RolePill>
+            <RolePill tone="owner">Owner</RolePill>
+            <RolePill tone="collaborator">Collaborator</RolePill>
+          </div>
+        </div>
+
+        <div className="col">
+          <div className="lbl">Event rows · host welcome-back</div>
+          <EventRow host="Futureland" name="Creative Meetup" live />
+          <EventRow host="Black Tech Week" name="BTW Activation" status="Sat, Jun 14" />
+        </div>
+
+        <div className="col">
+          <div className="lbl">Bottom sheet · add to home</div>
+          <div className="sheetbox">
+            <BottomSheet open title="Keep SODA handy">
+              <p style={{ fontWeight: 300, fontSize: 13, color: 'var(--text-primary)', margin: '0 0 12px' }}>Add it to your home screen.</p>
+              <Button block size="sm">Add to home screen</Button>
+            </BottomSheet>
+          </div>
+        </div>
+
+        <div className="col">
+          <div className="lbl">Carousel · tutorial chrome</div>
+          <div style={{ display: 'flex', flexDirection: 'column', height: 150 }}>
+            <Carousel
+              cards={[<div key="a" style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13 }}>How a moment fires</div>,
+                <div key="b" style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13 }}>What you see live</div>]}
+              renderButton={({ label, next }) => <Button block size="sm" onClick={next}>{label}</Button>} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script>
+</body>
+</html>

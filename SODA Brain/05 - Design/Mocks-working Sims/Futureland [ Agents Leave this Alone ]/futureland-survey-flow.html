@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Futureland — Survey Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --green:      #3BD75C;
+  --dark-green: #203229;
+  --charcoal:   #212121;
+  --light:      #E5E5E5;
+  --mid:        #2a2a2a;
+  --card:       #1a1a1a;
+  --muted:      #666;
+  --red:        #ff4d6d;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%; font-family: 'DM Sans', sans-serif;
+  background: #111; color: var(--light);
+  overflow: hidden;
+}
+
+/* ── OUTER LAYOUT: two panels ── */
+.outer {
+  display: flex; height: 100vh; width: 100vw;
+  align-items: center; justify-content: center;
+  gap: 48px; padding: 24px;
+  overflow: auto;
+}
+
+/* ── QR PANEL (left) ── */
+.qr-panel {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 0;
+  flex-shrink: 0;
+}
+.qr-panel-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 28px;
+}
+.qr-cards { display: flex; flex-direction: column; gap: 16px; }
+
+.qr-card {
+  background: var(--card); border-radius: 20px;
+  border: 1px solid #2a2a2a; padding: 20px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 14px; cursor: pointer; transition: border-color 0.2s, transform 0.2s;
+  min-width: 180px;
+}
+.qr-card:hover { border-color: var(--green); transform: translateY(-2px); }
+.qr-card.active-qr { border-color: var(--green); }
+
+.qr-card-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--green);
+}
+.qr-box {
+  width: 120px; height: 120px; background: white;
+  border-radius: 10px; display: flex;
+  align-items: center; justify-content: center;
+  padding: 6px; overflow: hidden;
+}
+.qr-card-sub {
+  font-size: 11px; color: var(--muted); text-align: center;
+  line-height: 1.5; max-width: 140px;
+}
+.qr-arrow {
+  font-size: 11px; color: var(--green); letter-spacing: 1px;
+  text-transform: uppercase; font-weight: 600;
+  padding: 6px 14px; border: 1px solid rgba(59,215,92,0.3);
+  border-radius: 100px; transition: all 0.2s;
+}
+.qr-card:hover .qr-arrow { background: var(--dark-green); }
+
+.qr-connector {
+  width: 1px; height: 16px; background: #333;
+  margin: 0 auto;
+}
+
+/* ── PHONE ── */
+.phone {
+  width: min(375px, 100vw);
+  height: min(780px, 100vh);
+  background: var(--charcoal);
+  border-radius: min(44px, 0px);
+  overflow: hidden; position: relative;
+  box-shadow: 0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px #333;
+  flex-shrink: 0;
+}
+
+/* noise */
+.phone::before {
+  content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* progress */
+#prog {
+  position:absolute; top:0; left:0; height:3px; z-index:100;
+  background: linear-gradient(90deg, var(--green), #7BF79A);
+  transition: width 0.5s cubic-bezier(.4,0,.2,1); width:0%;
+}
+
+/* ── SCREENS ── */
+.screen {
+  position:absolute; inset:0; z-index:2;
+  display:flex; flex-direction:column;
+  opacity:0; pointer-events:none;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(.4,0,.2,1);
+  transform: translateX(28px);
+  overflow: hidden;
+}
+.screen.active { opacity:1; pointer-events:all; transform:translateX(0); }
+.screen.exit   { opacity:0; transform:translateX(-28px); }
+
+.inner {
+  flex:1; display:flex; flex-direction:column;
+  padding: 44px 26px 24px;
+  overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* typography */
+.logo { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; color:var(--green); margin-bottom:4px; letter-spacing:1px; }
+.step-lbl { font-size:10px; font-weight:600; letter-spacing:3px; text-transform:uppercase; color:var(--green); margin-bottom:10px; }
+.q-title { font-family:'Barlow Condensed',sans-serif; font-size:clamp(30px,8vw,40px); font-weight:800; line-height:1.05; color:var(--light); margin-bottom:6px; text-transform:uppercase; }
+.q-sub { font-size:13px; color:var(--muted); line-height:1.6; font-weight:300; margin-bottom:24px; }
+
+/* inputs */
+.fl-input {
+  width:100%; background:var(--mid); border:1.5px solid #333;
+  border-radius:13px; padding:15px 17px;
+  font-family:'DM Sans',sans-serif; font-size:15px; color:var(--light);
+  outline:none; transition:border-color 0.2s; margin-bottom:10px;
+}
+.fl-input:focus { border-color:var(--green); }
+.fl-input::placeholder { color:#555; }
+
+/* buttons */
+.btn {
+  width:100%; padding:16px;
+  background:var(--dark-green); color:var(--green);
+  border:none; border-radius:13px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:19px; font-weight:700; letter-spacing:1px;
+  text-transform:uppercase; cursor:pointer;
+  transition:all 0.2s; margin-top:6px;
+}
+.btn:hover { background:#162620; transform:translateY(-1px); }
+.btn:disabled { opacity:0.35; cursor:not-allowed; transform:none; }
+.btn-ghost {
+  width:100%; padding:13px; background:transparent;
+  color:var(--muted); border:1.5px solid #333; border-radius:13px;
+  font-family:'DM Sans',sans-serif; font-size:13px;
+  cursor:pointer; transition:all 0.2s; margin-top:8px;
+}
+.btn-ghost:hover { color:var(--light); border-color:#555; }
+
+/* chips */
+.chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+.chip {
+  padding:8px 15px; border-radius:100px;
+  border:1.5px solid #333; background:var(--mid);
+  font-size:12px; font-weight:500; color:var(--muted);
+  cursor:pointer; transition:all 0.18s; user-select:none;
+}
+.chip:hover { border-color:var(--green); color:var(--light); }
+.chip.sel { background:var(--dark-green); color:var(--green); border-color:var(--green); font-weight:600; }
+
+/* stars */
+.stars { display:flex; gap:10px; margin-bottom:8px; }
+.star { font-size:34px; cursor:pointer; filter:grayscale(1) opacity(0.3); transition:all 0.15s; line-height:1; }
+.star.lit { filter:none; transform:scale(1.1); }
+.star:hover { transform:scale(1.2); }
+.star-label { font-size:13px; color:var(--muted); margin-bottom:20px; }
+
+/* slider */
+.slider-wrap { padding:4px 0 8px; margin-bottom:16px; }
+.slider-labels { display:flex; justify-content:space-between; font-size:11px; color:#555; margin-bottom:8px; }
+input[type=range] {
+  -webkit-appearance:none; width:100%; height:4px;
+  background:var(--mid); border-radius:2px; outline:none; cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:22px; height:22px; border-radius:50%;
+  background:var(--dark-green); border:3px solid var(--green); cursor:pointer;
+}
+.slider-val { text-align:center; margin-top:12px; font-family:'Barlow Condensed',sans-serif; font-size:40px; font-weight:800; color:var(--green); }
+
+/* textarea */
+.fl-textarea {
+  width:100%; background:var(--mid); border:1.5px solid #333;
+  border-radius:13px; padding:15px 17px; color:var(--light);
+  font-family:'DM Sans',sans-serif; font-size:14px;
+  resize:none; outline:none; line-height:1.6; margin-bottom:6px;
+  transition:border-color 0.2s;
+}
+.fl-textarea:focus { border-color:var(--green); }
+.fl-textarea::placeholder { color:#555; }
+.char-ct { text-align:right; font-size:11px; color:#444; margin-bottom:14px; }
+
+/* progress dots */
+.dots { display:flex; gap:5px; justify-content:center; margin-top:18px; }
+.dot { width:5px; height:5px; border-radius:50%; background:#333; transition:all 0.3s; }
+.dot.on { width:18px; border-radius:3px; background:var(--green); }
+.dot.done { background:var(--dark-green); }
+
+/* ── SCAN GATE ── */
+.scan-gate {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:40px 28px; text-align:center;
+}
+.gate-icon { font-size:48px; margin-bottom:20px; animation:bob 2s ease infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.gate-title { font-family:'Barlow Condensed',sans-serif; font-size:32px; font-weight:800; color:var(--light); text-transform:uppercase; margin-bottom:8px; }
+.gate-sub { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:28px; max-width:260px; }
+.gate-url {
+  font-size:11px; color:#444; font-family:'DM Sans',sans-serif;
+  padding:10px 18px; border:1px solid #2a2a2a; border-radius:100px;
+  margin-bottom:20px; letter-spacing:0.5px;
+}
+
+/* ── RECOGNIZED USER ── */
+.recog-card {
+  background:linear-gradient(145deg, var(--dark-green), #162620);
+  border-radius:20px; border:1px solid rgba(59,215,92,0.25);
+  padding:20px; display:flex; align-items:center; gap:14px;
+  margin-bottom:24px;
+  animation: slideUp 0.5s cubic-bezier(.4,0,.2,1);
+}
+@keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.recog-av {
+  width:52px; height:52px; border-radius:50%;
+  background:var(--dark-green); border:2px solid var(--green);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; color:var(--green);
+  flex-shrink:0;
+}
+.recog-name { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; color:var(--light); text-transform:uppercase; }
+.recog-role { font-size:11px; color:var(--green); letter-spacing:1px; text-transform:uppercase; margin-top:2px; }
+.recog-check { margin-left:auto; font-size:22px; color:var(--green); }
+
+/* ── OTP boxes ── */
+.otp-wrap { display:flex; gap:8px; justify-content:center; margin:20px 0; }
+.otp-box {
+  width:44px; height:54px; background:var(--mid); border:1.5px solid #333;
+  border-radius:11px; font-size:26px; font-weight:700;
+  color:var(--green); text-align:center;
+  font-family:'Barlow Condensed',sans-serif;
+  outline:none; transition:border-color 0.2s, transform 0.15s;
+  caret-color:var(--green);
+}
+.otp-box:focus { border-color:var(--green); transform:scale(1.05); }
+.otp-box.filled { border-color:var(--green); background:rgba(59,215,92,0.07); }
+
+/* ── THANK YOU ── */
+.ty-wrap { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 28px; text-align:center; }
+.ty-ring {
+  width:90px; height:90px; border-radius:50%;
+  background:var(--dark-green); border:2px solid var(--green);
+  display:flex; align-items:center; justify-content:center;
+  font-size:42px; margin-bottom:24px;
+  animation:popIn 0.6s cubic-bezier(.4,0,.2,1);
+}
+@keyframes popIn { 0%{transform:scale(0);opacity:0} 70%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+.ty-title { font-family:'Barlow Condensed',sans-serif; font-size:36px; font-weight:800; color:var(--light); text-transform:uppercase; margin-bottom:10px; }
+.ty-sub { font-size:13px; color:var(--muted); line-height:1.7; max-width:260px; margin-bottom:24px; }
+.ty-pill {
+  padding:8px 20px; border-radius:100px;
+  background:var(--dark-green); color:var(--green);
+  font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  border:1px solid rgba(59,215,92,0.3);
+}
+.ty-stats { display:flex; gap:20px; margin:24px 0; }
+.ty-stat { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.ty-stat-n { font-family:'Barlow Condensed',sans-serif; font-size:32px; font-weight:800; color:var(--green); }
+.ty-stat-l { font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+
+/* ── MATCH CARDS ── */
+.match-card {
+  background: var(--card); border-radius: 18px;
+  border: 1px solid #2a2a2a; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(.4,0,.2,1);
+}
+.match-card.show { opacity: 1; transform: translateY(0); }
+.match-card:hover { border-color: rgba(59,215,92,0.2); }
+
+.match-top { display: flex; align-items: center; gap: 12px; }
+.match-av {
+  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+  border: 2px solid var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; font-weight: 800; color: var(--green);
+}
+.match-info { flex: 1; min-width: 0; }
+.match-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; font-weight: 800; color: var(--light);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.match-role { font-size: 11px; color: var(--green); letter-spacing: 1px; text-transform: uppercase; }
+.match-score {
+  flex-shrink: 0; display: flex; flex-direction: column;
+  align-items: center; gap: 2px;
+}
+.match-score-n {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 26px; font-weight: 800; color: var(--green);
+  line-height: 1;
+}
+.match-score-l { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+.match-why {
+  background: rgba(59,215,92,0.06); border-radius: 10px;
+  border: 1px solid rgba(59,215,92,0.12);
+  padding: 10px 12px; font-size: 12px; color: #aaa; line-height: 1.6;
+}
+.match-why strong { color: var(--green); font-weight: 600; }
+
+.match-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.match-chip {
+  font-size: 10px; padding: 4px 10px; border-radius: 100px;
+}
+.match-chip.offer { background: rgba(59,215,92,0.1); color: var(--green); border: 1px solid rgba(59,215,92,0.2); }
+.match-chip.need  { background: rgba(255,255,255,0.04); color: #777; border: 1px solid #333; }
+.match-chip.hit   { background: rgba(59,215,92,0.25); color: var(--green); border: 1px solid var(--green); font-weight: 700; }
+
+.match-actions { display: flex; gap: 8px; }
+.match-btn {
+  flex: 1; padding: 10px; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 12px;
+  font-weight: 600; cursor: pointer; transition: all 0.2s;
+  border: 1.5px solid #333; background: transparent; color: var(--muted);
+}
+.match-btn.primary { background: var(--dark-green); color: var(--green); border-color: var(--dark-green); }
+.match-btn:hover { border-color: var(--green); color: var(--light); }
+.match-btn.primary:hover { background: #162620; }
+
+.match-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.match-count-badge {
+  font-size: 10px; color: var(--green); font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 100px;
+  border: 1px solid rgba(59,215,92,0.3);
+  background: rgba(59,215,92,0.08);
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#333; border-radius:2px; }
+
+/* ── MOBILE FLOW SWITCHER ── */
+.flow-tabs {
+  display: none;
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 50;
+  background: #111;
+  border-top: 1px solid #2a2a2a;
+  padding: 10px 16px 16px;
+  gap: 10px;
+}
+.flow-tab {
+  flex: 1; padding: 11px 8px;
+  border-radius: 12px; border: 1.5px solid #333;
+  background: var(--mid); color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.flow-tab.active-tab {
+  background: var(--dark-green); color: var(--green);
+  border-color: var(--green);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 780px) {
+  .outer {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0; padding: 0;
+    height: 100vh; overflow: hidden;
+  }
+  .qr-panel { display: none; }
+  .flow-tabs { display: flex; }
+  .phone {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  /* push inner content up so tab bar doesn't cover buttons */
+  .inner { padding-bottom: 80px; }
+  .scan-gate { padding-bottom: 80px; }
+  .ty-wrap { padding-bottom: 80px; }
+}
+@media (min-width: 781px) {
+  .phone {
+    border-radius: 44px;
+    width: min(375px, 90vw);
+    height: min(780px, 92vh);
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="outer">
+
+  <!-- ── QR PANEL ── -->
+  <div class="qr-panel">
+    <div class="qr-panel-title">Scan to begin</div>
+    <div class="qr-cards">
+
+      <!-- Entry QR -->
+      <div class="qr-card active-qr" onclick="triggerFlow('entry')">
+        <div class="qr-card-label">① Entry</div>
+        <div class="qr-box" id="qr-entry"></div>
+        <div class="qr-card-sub">Scan at the door to join the room</div>
+        <div class="qr-arrow">Demo →</div>
+      </div>
+
+      <div class="qr-connector"></div>
+
+      <!-- Survey QR -->
+      <div class="qr-card" id="survey-qr-card" onclick="triggerFlow('survey')">
+        <div class="qr-card-label">② Survey</div>
+        <div class="qr-box" id="qr-survey"></div>
+        <div class="qr-card-sub">Scan on the way out to share your experience</div>
+        <div class="qr-arrow">Demo →</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── PHONE ── -->
+  <div class="phone">
+    <div id="prog"></div>
+
+    <!-- ════════════════════════════
+         ENTRY FLOW
+    ════════════════════════════ -->
+
+    <!-- E1: Entry gate -->
+    <div class="screen active" id="e-gate">
+      <div class="scan-gate">
+        <div class="gate-icon">📲</div>
+        <div class="gate-title">You scanned<br/>the entry QR.</div>
+        <div class="gate-sub">This is what loads on your phone the moment you point your camera at the door.</div>
+        <div class="gate-url">futureland.app/event/jun2026</div>
+        <button class="btn" style="width:220px" onclick="goTo('e-email')">Experience the flow →</button>
+      </div>
+    </div>
+
+    <!-- E2: Email -->
+    <div class="screen" id="e-email">
+      <div class="inner">
+        <div class="logo">FUTURELAND ✦</div>
+        <div class="step-lbl">Creative Meetups — Entry</div>
+        <div class="q-title">Welcome to<br/>the room.</div>
+        <p class="q-sub">Tell us who you are. We'll get you inside in under two minutes.</p>
+
+        <input class="fl-input" id="e-first" type="text" placeholder="First name"/>
+        <input class="fl-input" id="e-last"  type="text" placeholder="Last name"/>
+        <input class="fl-input" id="e-email-inp" type="text" inputmode="email" placeholder="Email address"/>
+        <div id="e-err" style="display:none;color:var(--red);font-size:12px;margin-bottom:8px">Please fill in all fields with a valid email.</div>
+
+        <button class="btn" id="e-submit">Let's go →</button>
+        <p style="text-align:center;font-size:11px;color:#3a3a3a;margin-top:12px;line-height:1.6">We'll send a 6-digit code and your end-of-night recap here.</p>
+
+        <div class="dots" style="margin-top:18px">
+          <div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E3: OTP -->
+    <div class="screen" id="e-otp">
+      <div class="inner">
+        <div class="logo">FUTURELAND ✦</div>
+        <div class="step-lbl">Step 1 of 3 — Verify</div>
+        <div class="q-title">Check your<br/>email.</div>
+        <p class="q-sub" id="e-otp-sub">We sent a 6-digit code to your inbox. Expires in 10 minutes.</p>
+
+        <div class="otp-wrap">
+          <input class="otp-box" maxlength="1" type="text" inputmode="numeric"/>
+          <input class="otp-box" maxlength="1" type="text" inputmode="numeric"/>
+          <input class="otp-box" maxlength="1" type="text" inputmode="numeric"/>
+          <input class="otp-box" maxlength="1" type="text" inputmode="numeric"/>
+          <input class="otp-box" maxlength="1" type="text" inputmode="numeric"/>
+          <input class="otp-box" maxlength="1" type="text" inputmode="numeric"/>
+        </div>
+
+        <button class="btn" id="e-verify" disabled>Verify →</button>
+        <button class="btn-ghost">Resend code</button>
+
+        <div class="dots" style="margin-top:18px">
+          <div class="dot done"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E4: Role chip -->
+    <div class="screen" id="e-role">
+      <div class="inner">
+        <div class="logo">FUTURELAND ✦</div>
+        <div class="step-lbl">Step 2 of 3 — Your identity</div>
+        <div class="q-title">How do you<br/>show up?</div>
+        <p class="q-sub">Pick one. It appears on your card in the room.</p>
+        <div class="chips" id="role-chips">
+          <div class="chip" data-g="role">Founder</div>
+          <div class="chip" data-g="role">Builder</div>
+          <div class="chip" data-g="role">Creative</div>
+          <div class="chip" data-g="role">Investor</div>
+          <div class="chip" data-g="role">Developer</div>
+          <div class="chip" data-g="role">Designer</div>
+          <div class="chip" data-g="role">Educator</div>
+          <div class="chip" data-g="role">Storyteller</div>
+          <div class="chip" data-g="role">Community Organizer</div>
+          <div class="chip" data-g="role">Nonprofit</div>
+          <div class="chip" data-g="role">Student</div>
+        </div>
+        <button class="btn" id="e-role-next" disabled>Next →</button>
+        <div class="dots" style="margin-top:18px">
+          <div class="dot done"></div><div class="dot done"></div><div class="dot on"></div><div class="dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E5: Offer + Need chips -->
+    <div class="screen" id="e-chips">
+      <div class="inner">
+        <div class="logo">FUTURELAND ✦</div>
+        <div class="step-lbl">Step 3 of 3 — Your exchange</div>
+        <div class="q-title">What you bring.<br/>What you need.</div>
+        <p class="q-sub">Up to 3 each. This is how the room finds you.</p>
+
+        <div style="font-size:11px;color:var(--green);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">
+          ✦ I offer <span id="offer-ct" style="color:#555">— pick up to 3</span>
+        </div>
+        <div class="chips" id="offer-chips">
+          <div class="chip" data-g="offer">Mentorship</div>
+          <div class="chip" data-g="offer">Capital</div>
+          <div class="chip" data-g="offer">Introductions</div>
+          <div class="chip" data-g="offer">Feedback</div>
+          <div class="chip" data-g="offer">Co-founder energy</div>
+          <div class="chip" data-g="offer">Brand strategy</div>
+          <div class="chip" data-g="offer">Technical skills</div>
+          <div class="chip" data-g="offer">Media coverage</div>
+          <div class="chip" data-g="offer">Accountability</div>
+        </div>
+
+        <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;margin-top:4px">
+          ↗ I need <span id="need-ct" style="color:#555">— pick up to 3</span>
+        </div>
+        <div class="chips" id="need-chips">
+          <div class="chip" data-g="need">A co-founder</div>
+          <div class="chip" data-g="need">Funding</div>
+          <div class="chip" data-g="need">Collaborators</div>
+          <div class="chip" data-g="need">Clients</div>
+          <div class="chip" data-g="need">Visibility</div>
+          <div class="chip" data-g="need">Technical help</div>
+          <div class="chip" data-g="need">A mentor</div>
+          <div class="chip" data-g="need">Community</div>
+          <div class="chip" data-g="need">Accountability partner</div>
+        </div>
+
+        <button class="btn" id="e-chips-next" disabled>Enter the room →</button>
+        <div class="dots" style="margin-top:14px">
+          <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot on"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E6: In the room -->
+    <div class="screen" id="e-room">
+      <div class="inner" style="align-items:center;justify-content:center;text-align:center">
+        <div style="font-size:12px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:28px">Your card is live ✦</div>
+        <div id="e-card" style="
+          width:190px;height:250px;background:linear-gradient(145deg,var(--dark-green),#162620);
+          border-radius:22px;border:1px solid rgba(59,215,92,0.3);
+          display:flex;flex-direction:column;align-items:center;justify-content:center;
+          padding:24px;margin:0 auto 28px;
+          box-shadow:0 0 60px rgba(59,215,92,0.12),0 20px 60px rgba(0,0,0,0.5);
+          opacity:0;transform:translateY(30px) scale(0.92);
+          transition:all 0.7s cubic-bezier(.4,0,.2,1);">
+          <div id="e-av" style="width:64px;height:64px;border-radius:50%;background:var(--dark-green);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:var(--green);margin-bottom:12px">AJ</div>
+          <div id="e-cname" style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--light);text-transform:uppercase;margin-bottom:4px">Alysha J.</div>
+          <div id="e-crole" style="font-size:10px;color:var(--green);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px">Founder</div>
+          <div style="width:32px;height:1px;background:#333;margin-bottom:12px"></div>
+          <div id="e-cchips" style="display:flex;flex-direction:column;gap:5px;align-items:center"></div>
+        </div>
+        <div id="e-others" style="display:flex;gap:-8px;justify-content:center;margin-bottom:12px"></div>
+        <p id="e-count" style="font-size:12px;color:var(--muted);margin-bottom:24px;opacity:0;transition:opacity 0.5s ease">24 people are in the room tonight.</p>
+        <button class="btn" style="width:220px;opacity:0;transition:opacity 0.5s ease 0.8s" id="e-room-cta">
+          Continue to survey →
+        </button>
+        <p style="font-size:11px;color:#3a3a3a;margin-top:10px">Or scan the exit QR at the end of the night</p>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════
+         SURVEY FLOW
+    ════════════════════════════ -->
+
+    <!-- S1: Survey gate -->
+    <div class="screen" id="s-gate">
+      <div class="scan-gate">
+        <div class="gate-icon">🔍</div>
+        <div class="gate-title">You scanned<br/>the exit QR.</div>
+        <div class="gate-sub">This loads when you point your camera at the QR near the door on your way out.</div>
+        <div class="gate-url">futureland.app/event/jun2026/survey</div>
+        <button class="btn" style="width:220px" onclick="goTo('s-recog')">Experience the flow →</button>
+      </div>
+    </div>
+
+    <!-- S2: Recognized user fast entry -->
+    <div class="screen" id="s-recog">
+      <div class="inner">
+        <div class="logo">FUTURELAND ✦</div>
+        <div class="step-lbl">Survey — Fast Entry</div>
+        <div class="q-title">Welcome back,<br/><span id="s-recog-name" style="color:var(--green)">Alysha.</span></div>
+        <p class="q-sub">We recognized your email. Tell us how tonight went. Takes about 3 minutes.</p>
+
+        <div class="recog-card">
+          <div class="recog-av" id="s-recog-av">AJ</div>
+          <div>
+            <div class="recog-name" id="s-recog-fullname">Alysha J.</div>
+            <div class="recog-role" id="s-recog-role">Founder</div>
+          </div>
+          <div class="recog-check">✦</div>
+        </div>
+
+        <button class="btn" onclick="goTo('sq1')">Start the survey →</button>
+        <button class="btn-ghost" onclick="goTo('s-email-gate')">Not you? Switch account</button>
+      </div>
+    </div>
+
+    <!-- S2b: Not recognized — email gate -->
+    <div class="screen" id="s-email-gate">
+      <div class="inner">
+        <div class="logo">FUTURELAND ✦</div>
+        <div class="step-lbl">Survey — Quick Entry</div>
+        <div class="q-title">Drop your<br/>email.</div>
+        <p class="q-sub">Just your email. No full profile needed for the survey.</p>
+        <input class="fl-input" type="text" inputmode="email" placeholder="Email address"/>
+        <button class="btn" onclick="goTo('sq1')">Continue →</button>
+      </div>
+    </div>
+
+    <!-- SQ1: Vibe check -->
+    <div class="screen" id="sq1">
+      <div class="inner">
+        <div class="logo">FUTURELAND ✦</div>
+        <div class="step-lbl">Question 1 of 7</div>
+        <div class="q-title">How did<br/>tonight feel?</div>
+        <p class="q-sub">First instinct. No overthinking.</p>
+        <div class="chips" id="sq1-chips">
+          <div class="chip" data-g="sq1">🔥 Energized and inspired</div>
+          <div class="chip" data-g="sq1">🌿 Calm and connected</div>
+          <div class="chip" data-g="sq1">💡 Mind officially blown</div>
+          <div class="chip" data-g="sq1">🤝 All about the people</div>
+          <div class="chip" data-g="sq1">😐 Honestly, just okay</div>
+        </div>
+        <button class="btn sq-next" id="sq1-next" disabled>Next →</button>
+        <div class="dots" style="margin-top:16px">
+          <div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SQ2: Star rating -->
+    <div class="screen" id="sq2">
+      <div class="inner">
+        <div class="logo">FUTURELAND ✦</div>
+        <div class="step-lbl">Question 2 of 7</div>
+        <div class="q-title">Rate your<br/>experience.</div>
+        <p class="q-sub">Overall, how did this meetup land?</p>
+        <div class="stars" id="sq2-stars">
+          <span class="star" data-v="1">⭐</span>
+          <span class="star" data-v="2">⭐</span>
+          <span class="star" data-v="3">⭐</span>
+          <span class="star" data-v="4">⭐</span>
+          <span class="star" data-v="5">⭐</span>
+        </div>
+        <div class="star-label" id="sq2-lbl">Tap a star</div>
+        <button class="btn sq-next" id="sq2-next" disabled>Next →</button>
+        <div class="dots" style="margin-top:16px">
+          <div class="dot done"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SQ3: Standout moment -->
+    <div class="screen" id="sq3">
+      <div class="inner">
+        <div class="logo">FUTURELAND ✦</div>
+        <div class="step-lbl">Question 3 of 7</div>
+        <div class="q-title">What made<br/>tonight worth it?</div>
+        <p class="q-sub">The single moment that stuck. A conversation, a line, a connection.</p>
+        <textarea class="fl-textarea" id="sq3-ta" rows="4" maxlength="300" placeholder="Describe the moment..."></textarea>
+        <div class="char-ct" id="sq3-ct">0 / 300</div>
+        <button class="btn sq-next" id="sq3-next">Next →</button>
+        <button class="btn-ghost sq-skip" onclick="goTo('sq4')">Skip</button>
+        <div class="dots" style="margin-top:12px">
+          <div class="dot done"></div><div class="dot done"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SQ4: NPS slider -->
+    <div class="screen" id="sq4">
+      <div class="inner">
+        <div class="logo">FUTURELAND ✦</div>
+        <div class="step-lbl">Question 4 of 7</div>
+        <div class="q-title">Would you<br/>send a friend?</div>
+        <p class="q-sub">How likely are you to recommend this to someone in your network?</p>
+        <div class="slider-wrap">
+          <div class="slider-labels"><span>0 — No way</span><span>Absolutely — 10</span></div>
+          <input type="range" id="sq4-slider" min="0" max="10" value="8"/>
+          <div class="slider-val" id="sq4-val">8</div>
+        </div>
+        <button class="btn sq-next" id="sq4-next">Next →</button>
+        <div class="dots" style="margin-top:16px">
+          <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SQ5: Next event -->
+    <div class="screen" id="sq5">
+      <div class="inner">
+        <div class="logo">FUTURELAND ✦</div>
+        <div class="step-lbl">Question 5 of 7</div>
+        <div class="q-title">What should<br/>we do more of?</div>
+        <p class="q-sub">Help us shape the next chapter of Futureland Creative Meetups.</p>
+        <div class="chips" id="sq5-chips">
+          <div class="chip" data-g="sq5">🎤 Keynote speakers</div>
+          <div class="chip" data-g="sq5">🛠️ Hands-on workshops</div>
+          <div class="chip" data-g="sq5">🌐 Panel conversations</div>
+          <div class="chip" data-g="sq5">🎉 Pure social energy</div>
+          <div class="chip" data-g="sq5">💼 Pitch / showcase night</div>
+          <div class="chip" data-g="sq5">🧠 Deep-dive sessions</div>
+        </div>
+        <button class="btn sq-next" id="sq5-next" disabled>Next →</button>
+        <div class="dots" style="margin-top:16px">
+          <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SQ6: Community intel -->
+    <div class="screen" id="sq6">
+      <div class="inner">
+        <div class="logo">FUTURELAND ✦</div>
+        <div class="step-lbl">Question 6 of 7</div>
+        <div class="q-title">Would you<br/>want to speak?</div>
+        <p class="q-sub">At a future Futureland event. No pressure, just planting seeds.</p>
+        <div class="chips" id="sq6-chips">
+          <div class="chip" data-g="sq6">Yes, absolutely</div>
+          <div class="chip" data-g="sq6">Maybe, tell me more</div>
+          <div class="chip" data-g="sq6">Not yet, but soon</div>
+          <div class="chip" data-g="sq6">I'd rather facilitate</div>
+          <div class="chip" data-g="sq6">Not my thing</div>
+        </div>
+        <button class="btn sq-next" id="sq6-next" disabled>Next →</button>
+        <div class="dots" style="margin-top:16px">
+          <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot on"></div><div class="dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SQ7: Open mic -->
+    <div class="screen" id="sq7">
+      <div class="inner">
+        <div class="logo">FUTURELAND ✦</div>
+        <div class="step-lbl">Question 7 of 7 — Open Mic</div>
+        <div class="q-title">Anything else<br/>on your mind?</div>
+        <p class="q-sub">Real talk only. We read every single one.</p>
+        <textarea class="fl-textarea" id="sq7-ta" rows="5" maxlength="400" placeholder="Drop your thoughts, feedback, shoutouts, ideas..."></textarea>
+        <div class="char-ct" id="sq7-ct">0 / 400</div>
+        <button class="btn" id="sq7-submit">Submit ✦</button>
+        <button class="btn-ghost" onclick="goTo('s-ty')">Skip and submit</button>
+        <div class="dots" style="margin-top:12px">
+          <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot on"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MATCHES SCREEN -->
+    <div class="screen" id="s-matches">
+      <div class="inner" style="padding-bottom:32px">
+        <div class="logo">FUTURELAND ✦</div>
+        <div class="step-lbl">Your matches tonight</div>
+        <div class="q-title" style="margin-bottom:4px">The room<br/>found you.</div>
+        <p class="q-sub" style="margin-bottom:20px">Based on what you offer and what you need, these people were in the room tonight.</p>
+
+        <div id="match-list" style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px"></div>
+
+        <button class="btn" onclick="goTo('s-ty')">See your recap →</button>
+      </div>
+    </div>
+
+    <!-- THANK YOU -->
+    <div class="screen" id="s-ty">
+      <div class="ty-wrap">
+        <div class="ty-ring">🌟</div>
+        <div class="ty-title">You shaped<br/>the future.</div>
+        <p class="ty-sub">Every response goes directly into how we build the next Futureland experience. Real talk, real impact.</p>
+        <div class="ty-stats">
+          <div class="ty-stat"><div class="ty-stat-n">24</div><div class="ty-stat-l">In room</div></div>
+          <div class="ty-stat"><div class="ty-stat-n">7</div><div class="ty-stat-l">Answered</div></div>
+          <div class="ty-stat"><div class="ty-stat-n" id="ty-match-ct">3</div><div class="ty-stat-l">Matches</div></div>
+        </div>
+        <div class="ty-pill">Futureland Creative Meetups ✦</div>
+        <p style="font-size:11px;color:#3a3a3a;margin-top:20px">@wearefutureland</p>
+      </div>
+    </div>
+
+  <!-- ── MOBILE FLOW TABS ── -->
+  <div class="flow-tabs" id="flow-tabs">
+    <div class="flow-tab active-tab" id="tab-entry" onclick="switchTab('entry')">① Entry QR</div>
+    <div class="flow-tab" id="tab-survey" onclick="switchTab('survey')">② Survey QR</div>
+  </div>
+
+</div><!-- .phone -->
+</div><!-- .outer -->
+
+<script>
+// ── QR CODES ──────────────────────────────────────────────
+const BASE = 'https://futureland.app/event/jun2026';
+new QRCode(document.getElementById('qr-entry'),   { text: BASE,           width:108, height:108, colorDark:'#203229', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.M });
+new QRCode(document.getElementById('qr-survey'),  { text: BASE+'/survey', width:108, height:108, colorDark:'#203229', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.M });
+
+// ── STATE ──────────────────────────────────────────────────
+const state = { first:'Alysha', last:'J', role:'Founder', offers:[], needs:[] };
+
+// ── NAVIGATION ─────────────────────────────────────────────
+function goTo(id) {
+  const cur  = document.querySelector('.screen.active');
+  const next = document.getElementById(id);
+  if (!next || cur === next) return;
+  cur.classList.add('exit');
+  cur.classList.remove('active');
+  setTimeout(() => { cur.classList.remove('exit'); next.classList.add('active'); }, 300);
+  updateProg(id);
+
+  // highlight correct QR card + sync mobile tabs
+  const isSurvey = id.startsWith('s-') || id.startsWith('sq');
+  document.querySelectorAll('.qr-card').forEach((c,i) => {
+    c.classList.toggle('active-qr', isSurvey ? i===1 : i===0);
+  });
+  const tabEntry  = document.getElementById('tab-entry');
+  const tabSurvey = document.getElementById('tab-survey');
+  if (tabEntry && tabSurvey) {
+    tabEntry.classList.toggle('active-tab', !isSurvey);
+    tabSurvey.classList.toggle('active-tab', isSurvey);
+  }
+}
+
+function triggerFlow(which) {
+  goTo(which === 'entry' ? 'e-gate' : 's-gate');
+}
+
+function switchTab(which) {
+  document.getElementById('tab-entry').classList.toggle('active-tab', which === 'entry');
+  document.getElementById('tab-survey').classList.toggle('active-tab', which === 'survey');
+  triggerFlow(which);
+}
+
+const PROG_MAP = {
+  'e-gate':0,'e-email':5,'e-otp':15,'e-role':28,'e-chips':42,'e-room':55,
+  's-gate':55,'s-recog':60,'s-email-gate':60,
+  'sq1':62,'sq2':69,'sq3':76,'sq4':83,'sq5':86,'sq6':90,'sq7':95,
+  's-matches':97,'s-ty':100
+};
+function updateProg(id) {
+  document.getElementById('prog').style.width = (PROG_MAP[id] ?? 0) + '%';
+}
+
+// ── ENTRY: EMAIL ───────────────────────────────────────────
+document.getElementById('e-submit').onclick = () => {
+  const f = document.getElementById('e-first').value.trim();
+  const l = document.getElementById('e-last').value.trim();
+  const e = document.getElementById('e-email-inp').value.trim();
+  const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  const err = document.getElementById('e-err');
+  ['e-first','e-last','e-email-inp'].forEach(id => document.getElementById(id).style.borderColor='');
+  if (!f||!l||!e||!ok) {
+    if(!f) document.getElementById('e-first').style.borderColor='var(--red)';
+    if(!l) document.getElementById('e-last').style.borderColor='var(--red)';
+    if(!e||!ok) document.getElementById('e-email-inp').style.borderColor='var(--red)';
+    err.style.display='block';
+    return;
+  }
+  err.style.display='none';
+  state.first=f; state.last=l[0].toUpperCase();
+  document.getElementById('e-otp-sub').textContent=`We sent a 6-digit code to ${e}. Expires in 10 minutes.`;
+  goTo('e-otp');
+};
+['e-first','e-last','e-email-inp'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',e=>{
+    e.target.style.borderColor='';
+    document.getElementById('e-err').style.display='none';
+  });
+});
+
+// ── ENTRY: OTP ─────────────────────────────────────────────
+const eBoxes = document.querySelectorAll('.otp-box');
+eBoxes.forEach((b,i)=>{
+  b.addEventListener('input',e=>{
+    const v=e.target.value.replace(/\D/,''); e.target.value=v;
+    v ? b.classList.add('filled') : b.classList.remove('filled');
+    if(v && i<5) eBoxes[i+1].focus();
+    document.getElementById('e-verify').disabled=[...eBoxes].some(x=>!x.value);
+  });
+  b.addEventListener('keydown',e=>{ if(e.key==='Backspace'&&!b.value&&i>0) eBoxes[i-1].focus(); });
+});
+document.getElementById('e-verify').onclick = () => goTo('e-role');
+
+// auto-fill OTP for demo
+const otpObs = new MutationObserver(()=>{
+  if(document.getElementById('e-otp').classList.contains('active')){
+    const digits=['3','8','2','7','4','1'];
+    eBoxes.forEach((b,i)=>setTimeout(()=>{ b.value=digits[i]; b.classList.add('filled'); if(i===5) document.getElementById('e-verify').disabled=false; }, i*110+200));
+    otpObs.disconnect();
+  }
+});
+otpObs.observe(document.getElementById('e-otp'),{attributes:true,attributeFilter:['class']});
+
+// ── ENTRY: ROLE SINGLE CHIP ────────────────────────────────
+document.querySelectorAll('#role-chips .chip').forEach(c=>{
+  c.onclick=()=>{
+    document.querySelectorAll('#role-chips .chip').forEach(x=>x.classList.remove('sel'));
+    c.classList.add('sel');
+    state.role=c.textContent.trim();
+    document.getElementById('e-role-next').disabled=false;
+  };
+});
+document.getElementById('e-role-next').onclick=()=>goTo('e-chips');
+
+// ── ENTRY: OFFER + NEED MULTI CHIP ────────────────────────
+function setupMulti(containerId, profileKey, badgeId, max=3) {
+  document.querySelectorAll(`#${containerId} .chip`).forEach(c=>{
+    c.onclick=()=>{
+      const label=c.textContent.trim();
+      const arr=state[profileKey];
+      const idx=arr.indexOf(label);
+      if(idx>-1){ arr.splice(idx,1); c.classList.remove('sel'); }
+      else if(arr.length<max){ arr.push(label); c.classList.add('sel'); }
+      const badge=document.getElementById(badgeId);
+      if(badge) badge.textContent = arr.length ? `${arr.length} selected` : '— pick up to 3';
+      document.getElementById('e-chips-next').disabled = state.offers.length===0 && state.needs.length===0;
+    };
+  });
+}
+setupMulti('offer-chips','offers','offer-ct');
+setupMulti('need-chips','needs','need-ct');
+document.getElementById('e-chips-next').onclick=()=>{ populateRoomCard(); goTo('e-room'); runRoomEntry(); };
+
+// ── ENTRY: ROOM CARD ───────────────────────────────────────
+function populateRoomCard() {
+  const init=(state.first[0]+(state.last||'')).toUpperCase();
+  document.getElementById('e-av').textContent=init;
+  document.getElementById('e-cname').textContent=state.first+' '+state.last+'.';
+  document.getElementById('e-crole').textContent=state.role||'Founder';
+  const chips=document.getElementById('e-cchips');
+  chips.innerHTML='';
+  (state.offers.length?state.offers:['Mentorship']).forEach(o=>{
+    const d=document.createElement('div');
+    d.style.cssText='font-size:10px;padding:4px 10px;border-radius:100px;background:rgba(59,215,92,0.12);color:var(--green);border:1px solid rgba(59,215,92,0.2)';
+    d.textContent='✦ '+o; chips.appendChild(d);
+  });
+  (state.needs.length?state.needs:['A co-founder']).slice(0,2).forEach(n=>{
+    const d=document.createElement('div');
+    d.style.cssText='font-size:10px;padding:4px 10px;border-radius:100px;background:rgba(255,255,255,0.04);color:#888;border:1px solid #333';
+    d.textContent='↗ '+n; chips.appendChild(d);
+  });
+  // update survey recognized card too
+  document.getElementById('s-recog-name').textContent=state.first+'.';
+  document.getElementById('s-recog-fullname').textContent=state.first+' '+state.last+'.';
+  document.getElementById('s-recog-role').textContent=state.role||'Founder';
+  document.getElementById('s-recog-av').textContent=init;
+}
+
+function runRoomEntry() {
+  const card=document.getElementById('e-card');
+  const count=document.getElementById('e-count');
+  const cta=document.getElementById('e-room-cta');
+  const othersEl=document.getElementById('e-others');
+
+  // others mini avatars
+  const people=[{i:'MJ',bg:'#1a3a2a'},{i:'TK',bg:'#2a1a3a'},{i:'SR',bg:'#1a2a3a'},{i:'NF',bg:'#3a2a1a'},{i:'DL',bg:'#2a3a1a'}];
+  othersEl.innerHTML='';
+  people.forEach(p=>{
+    const a=document.createElement('div');
+    a.style.cssText=`width:32px;height:32px;border-radius:50%;background:${p.bg};border:2px solid var(--charcoal);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;color:var(--green);margin-left:-8px;opacity:0;transform:scale(0.5);transition:all 0.4s cubic-bezier(.4,0,.2,1)`;
+    a.textContent=p.i; othersEl.appendChild(a);
+  });
+
+  setTimeout(()=>{ card.style.opacity='1'; card.style.transform='translateY(0) scale(1)'; }, 200);
+  othersEl.querySelectorAll('div').forEach((a,i)=>setTimeout(()=>{ a.style.opacity='1'; a.style.transform='scale(1)'; }, 900+i*130));
+  setTimeout(()=>{ count.style.opacity='1'; }, 1600);
+  setTimeout(()=>{ cta.style.opacity='1'; }, 1400);
+}
+
+document.getElementById('e-room-cta').onclick=()=>goTo('s-recog');
+
+// ── SURVEY: SINGLE CHIPS ───────────────────────────────────
+['sq1','sq5','sq6'].forEach(id=>{
+  document.querySelectorAll(`#${id}-chips .chip`).forEach(c=>{
+    c.onclick=()=>{
+      document.querySelectorAll(`#${id}-chips .chip`).forEach(x=>x.classList.remove('sel'));
+      c.classList.add('sel');
+      document.getElementById(`${id}-next`).disabled=false;
+    };
+  });
+  const btn=document.getElementById(`${id}-next`);
+  if(btn) {
+    const nextMap={sq1:'sq2',sq5:'sq6',sq6:'sq7'};
+    btn.onclick=()=>goTo(nextMap[id]);
+  }
+});
+
+// ── SURVEY: STARS ──────────────────────────────────────────
+let starVal=0;
+const starLabels=['','That was rough.','Could be stronger.','Good to know.','Solid night!','Legendary! 🙌'];
+document.querySelectorAll('#sq2-stars .star').forEach(s=>{
+  s.onclick=()=>{
+    starVal=parseInt(s.dataset.v);
+    document.querySelectorAll('#sq2-stars .star').forEach(x=>x.classList.toggle('lit',parseInt(x.dataset.v)<=starVal));
+    document.getElementById('sq2-lbl').textContent=starLabels[starVal];
+    document.getElementById('sq2-next').disabled=false;
+    // update ty ring emoji
+    document.querySelector('.ty-ring').textContent=starVal>=5?'🌟':starVal>=4?'✨':'💚';
+  };
+});
+document.getElementById('sq2-next').onclick=()=>goTo('sq3');
+
+// ── SURVEY: TEXTAREA Q3 ────────────────────────────────────
+document.getElementById('sq3-ta').addEventListener('input',e=>{
+  document.getElementById('sq3-ct').textContent=e.target.value.length+' / 300';
+});
+document.getElementById('sq3-next').onclick=()=>goTo('sq4');
+
+// ── SURVEY: SLIDER ─────────────────────────────────────────
+const sl=document.getElementById('sq4-slider');
+sl.addEventListener('input',()=>{
+  document.getElementById('sq4-val').textContent=sl.value;
+  const pct=((sl.value-0)/10)*100;
+  sl.style.background=`linear-gradient(90deg,var(--green) ${pct}%,var(--mid) ${pct}%)`;
+});
+sl.dispatchEvent(new Event('input'));
+document.getElementById('sq4-next').onclick=()=>goTo('sq5');
+
+document.getElementById('sq7-ta').addEventListener('input',e=>{
+  document.getElementById('sq7-ct').textContent=e.target.value.length+' / 400';
+});
+document.getElementById('sq7-submit').onclick=()=>{ buildMatches(); goTo('s-matches'); };
+
+// ── MATCHING ENGINE ────────────────────────────────────────
+const ROOM_PEOPLE = [
+  { init:'MJ', name:'Marcus J.',   role:'Developer',            bg:'#1a3a2a', offers:['Technical skills','Feedback'],           needs:['Clients','Visibility','Funding']          },
+  { init:'TK', name:'Tanya K.',    role:'Designer',             bg:'#2a1a3a', offers:['Brand strategy','Feedback'],             needs:['Funding','Co-founder energy']             },
+  { init:'SR', name:'Sam R.',      role:'Investor',             bg:'#1a2a3a', offers:['Capital','Introductions'],               needs:['Deal flow','Mentorship']                  },
+  { init:'NF', name:'Nia F.',      role:'Creative',             bg:'#3a2a1a', offers:['Media coverage','Introductions'],        needs:['Collaborators','Brand strategy']          },
+  { init:'DL', name:'Devon L.',    role:'Builder',              bg:'#2a3a1a', offers:['Co-founder energy','Technical skills'],  needs:['Funding','Mentorship','Visibility']       },
+  { init:'PR', name:'Priya R.',    role:'Educator',             bg:'#3a1a2a', offers:['Feedback','Accountability'],             needs:['Visibility','Clients']                    },
+  { init:'CB', name:'Chris B.',    role:'Storyteller',          bg:'#1a3a3a', offers:['Media coverage','Introductions'],        needs:['A mentor','Community','Accountability partner'] },
+  { init:'ZW', name:'Zoe W.',      role:'Community Organizer',  bg:'#2a2a3a', offers:['Accountability','Introductions'],        needs:['Technical help','Funding']                },
+  { init:'EL', name:'Eli L.',      role:'Nonprofit',            bg:'#3a3a1a', offers:['Legal advice','Feedback'],               needs:['Funding','Collaborators','Visibility']    },
+  { init:'KM', name:'Kira M.',     role:'Founder',              bg:'#1a2a2a', offers:['Brand strategy','Capital'],              needs:['Clients','Technical skills']              },
+  { init:'JT', name:'Jordan T.',   role:'Student',              bg:'#2a1a2a', offers:['Research','Feedback'],                   needs:['Mentorship','A co-founder','Technical help'] },
+];
+
+function scoreMatch(person) {
+  const myOffers = state.offers.length ? state.offers : ['Mentorship'];
+  const myNeeds  = state.needs.length  ? state.needs  : ['A co-founder'];
+
+  // hits: my offers match their needs, and their offers match my needs
+  const iGiveThem = myOffers.filter(o => person.needs.includes(o));
+  const theyGiveMe = person.offers.filter(o => myNeeds.includes(o));
+
+  const score = (iGiveThem.length * 2) + (theyGiveMe.length * 2)
+              + (iGiveThem.length > 0 && theyGiveMe.length > 0 ? 3 : 0); // bonus for mutual
+
+  return { person, iGiveThem, theyGiveMe, score };
+}
+
+function buildMatchReason(match) {
+  const { iGiveThem, theyGiveMe } = match;
+  if (iGiveThem.length > 0 && theyGiveMe.length > 0) {
+    return `You offer <strong>${iGiveThem[0]}</strong> which they need, and they offer <strong>${theyGiveMe[0]}</strong> which you're looking for. That's a two-way match.`;
+  } else if (iGiveThem.length > 0) {
+    return `They need <strong>${iGiveThem[0]}</strong> and you bring exactly that. Reach out and see where it goes.`;
+  } else if (theyGiveMe.length > 0) {
+    return `They offer <strong>${theyGiveMe[0]}</strong> which is exactly what you said you need tonight.`;
+  }
+  return 'You both showed up with similar energy tonight. Worth a conversation.';
+}
+
+function buildMatches() {
+  const myOffers = state.offers.length ? state.offers : ['Mentorship'];
+  const myNeeds  = state.needs.length  ? state.needs  : ['A co-founder'];
+
+  const scored = ROOM_PEOPLE
+    .map(p => scoreMatch(p))
+    .filter(m => m.score > 0)
+    .sort((a,b) => b.score - a.score)
+    .slice(0, 3);
+
+  // fallback: if not enough real matches, add top scorers anyway
+  if (scored.length < 3) {
+    ROOM_PEOPLE.forEach(p => {
+      if (!scored.find(m => m.person.init === p.init)) {
+        scored.push({ person:p, iGiveThem:[], theyGiveMe:[], score:1 });
+      }
+      if (scored.length >= 3) return;
+    });
+  }
+
+  const list = document.getElementById('match-list');
+  list.innerHTML = '';
+
+  // header
+  const header = document.createElement('div');
+  header.className = 'match-header';
+  header.innerHTML = `
+    <span style="font-size:12px;color:var(--muted)">${scored.length} people aligned with you tonight</span>
+    <span class="match-count-badge">${scored.length} matches</span>
+  `;
+  list.appendChild(header);
+
+  document.getElementById('ty-match-ct').textContent = scored.length;
+
+  scored.forEach((match, idx) => {
+    const p = match.person;
+    const isMutual = match.iGiveThem.length > 0 && match.theyGiveMe.length > 0;
+    const card = document.createElement('div');
+    card.className = 'match-card';
+
+    // build chip HTML
+    const offerChips = p.offers.map(o => {
+      const isHit = myNeeds.includes(o);
+      return `<span class="match-chip offer${isHit?' hit':''}">${isHit?'★ ':''}${o}</span>`;
+    }).join('');
+    const needChips = p.needs.map(n => {
+      const isHit = myOffers.includes(n);
+      return `<span class="match-chip need${isHit?' hit':''}">${isHit?'★ ':''}${n}</span>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="match-top">
+        <div class="match-av" style="background:${p.bg}">${p.init}</div>
+        <div class="match-info">
+          <div class="match-name">${p.name}</div>
+          <div class="match-role">${p.role}${isMutual ? ' · <span style="color:var(--green)">Mutual ✦</span>' : ''}</div>
+        </div>
+        <div class="match-score">
+          <div class="match-score-n">${Math.min(99, match.score * 14 + 40)}%</div>
+          <div class="match-score-l">Match</div>
+        </div>
+      </div>
+      <div class="match-chips">${offerChips}${needChips}</div>
+      <div class="match-why">${buildMatchReason(match)}</div>
+      <div class="match-actions">
+        <button class="match-btn" onclick="this.textContent='Noted ✦';this.style.color='var(--green)'">Save for later</button>
+        <button class="match-btn primary" onclick="this.textContent='Request sent ✦';this.disabled=true">Connect →</button>
+      </div>
+    `;
+    list.appendChild(card);
+
+    // stagger animate in
+    setTimeout(() => card.classList.add('show'), idx * 180 + 200);
+  });
+}
+</script>
+</body>
+</html>

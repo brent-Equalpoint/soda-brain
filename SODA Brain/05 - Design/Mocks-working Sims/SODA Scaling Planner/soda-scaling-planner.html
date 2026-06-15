@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Soda — Scaling Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --g:#3BD75C;--g-br:#5FF088;--dg:#203229;--ch:#0c0d0c;--c1:#161816;--c2:#1d1f1d;
+  --bd:#262826;--bd2:#363936;--pu:#A47BFF;--ye:#FFD23F;--rd:#FF5470;
+  --t0:#fff;--t1:#c8ccc8;--t2:#74786f;--t3:#3e423e;
+  --ease:cubic-bezier(.4,0,.2,1);--bounce:cubic-bezier(.34,1.56,.64,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--ch);color:var(--t1);line-height:1.5;-webkit-font-smoothing:antialiased;padding:32px 18px 80px}
+.display{font-family:'Archivo Black',sans-serif;text-transform:uppercase;letter-spacing:-.02em;line-height:.9}
+.mono{font-family:'DM Mono',monospace}
+.wrap{max-width:1000px;margin:0 auto}
+::selection{background:var(--g);color:var(--ch)}
+
+.head{text-align:center;margin-bottom:30px}
+.brand{font-family:'DM Mono';font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--g);margin-bottom:14px}
+.head h1{font-size:clamp(26px,5vw,42px);color:var(--t0);font-weight:700;letter-spacing:-.02em;margin-bottom:12px}
+.head h1 .g{color:var(--g)}
+.head p{font-size:15px;color:var(--t2);max-width:560px;margin:0 auto;font-weight:300}
+
+/* list banner */
+.listbanner{background:linear-gradient(135deg,var(--dg),#162019);border:1px solid var(--bd2);border-radius:18px;padding:24px 28px;margin:26px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.listbanner .l{font-size:13px;color:#9bb3a4;font-family:'DM Mono';letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.listbanner .big{font-family:'Archivo Black';font-size:clamp(36px,7vw,56px);color:var(--g);line-height:1}
+.listbanner .sub{font-size:13px;color:var(--t2);margin-top:4px}
+
+/* slider */
+.sliderbox{background:var(--c1);border:1px solid var(--bd);border-radius:18px;padding:26px 28px;margin-bottom:24px}
+.slider-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;flex-wrap:wrap;gap:8px}
+.slider-top .lbl{font-size:14px;color:var(--t1);font-weight:600}
+.slider-out{text-align:right}
+.slider-out .pct{font-family:'Archivo Black';font-size:30px;color:var(--g);line-height:1}
+.slider-out .ppl{font-size:13px;color:var(--t2);font-family:'DM Mono';margin-top:2px}
+input[type=range]{-webkit-appearance:none;width:100%;height:8px;border-radius:6px;background:linear-gradient(90deg,var(--g) 0%,var(--g) 5%,#2a2c2a 5%);outline:none;margin-bottom:8px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--g);cursor:pointer;border:3px solid var(--ch);box-shadow:0 2px 10px rgba(59,215,92,.4);transition:transform .15s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.12)}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--g);cursor:pointer;border:3px solid var(--ch)}
+.slider-scale{display:flex;justify-content:space-between;font-family:'DM Mono';font-size:10px;color:var(--t3);letter-spacing:1px}
+.presets{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.preset{font-family:'DM Sans';font-size:12px;font-weight:600;background:transparent;border:1px solid var(--bd2);color:var(--t2);padding:7px 14px;border-radius:100px;cursor:pointer;transition:all .2s}
+.preset:hover,.preset.on{border-color:var(--g);color:var(--g)}
+
+/* scenario controls */
+.scenctrl{display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:26px;font-size:13px;color:var(--t2)}
+.scenctrl .grp{display:flex;align-items:center;gap:8px}
+.scenctrl .opts{display:flex;gap:5px;background:var(--c1);border:1px solid var(--bd);border-radius:100px;padding:4px}
+.scenctrl button{font-family:'DM Sans';font-size:12px;font-weight:600;border:none;background:transparent;color:var(--t2);padding:7px 13px;border-radius:100px;cursor:pointer;transition:all .2s}
+.scenctrl button.on{background:var(--g);color:var(--ch)}
+
+/* plan comparison */
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:700px){.plans{grid-template-columns:1fr}}
+.plan{background:var(--c1);border:1px solid var(--bd);border-radius:20px;padding:26px;position:relative;overflow:hidden;transition:border-color .3s}
+.plan.free.broken{border-color:rgba(255,84,112,.55)}
+.plan.pro{border-color:rgba(59,215,92,.25)}
+.plan-tag{font-family:'DM Mono';font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.plan.free .plan-tag{color:var(--t2)} .plan.pro .plan-tag{color:var(--g)}
+.plan h2{font-size:24px;color:var(--t0);font-weight:700;letter-spacing:-.01em;margin-bottom:2px}
+.plan .price{font-family:'Archivo Black';font-size:30px;color:var(--t0);margin:10px 0 2px}
+.plan.pro .price{color:var(--g)}
+.plan .price small{font-size:13px;color:var(--t2);font-family:'DM Sans';font-weight:400}
+.plan .pricenote{font-size:12px;color:var(--t2);margin-bottom:20px;min-height:30px}
+
+.limit{margin-bottom:14px}
+.limit-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+.limit-name{color:var(--t1);font-weight:500}
+.limit-val{font-family:'DM Mono';color:var(--t2)}
+.limit-bar{height:7px;background:#0a0b0a;border:1px solid var(--bd);border-radius:5px;overflow:hidden}
+.limit-fill{height:100%;width:0%;border-radius:5px;transition:width .4s var(--ease)}
+.limit-fill.ok{background:linear-gradient(90deg,var(--g),var(--g-br))}
+.limit-fill.warn{background:linear-gradient(90deg,var(--ye),#f5a623)}
+.limit-fill.over{background:linear-gradient(90deg,var(--rd),#ff2d55)}
+.limit.broken .limit-name{color:var(--rd)}
+.limit.broken .limit-val{color:var(--rd)}
+
+.verdict{margin-top:20px;padding:14px 16px;border-radius:12px;font-size:13px;font-weight:500;line-height:1.5}
+.plan.free .verdict{background:rgba(255,84,112,.08);color:var(--rd)}
+.plan.free .verdict.fine{background:rgba(59,215,92,.07);color:var(--g)}
+.plan.pro .verdict{background:rgba(59,215,92,.08);color:var(--g)}
+.verdict .lbl{font-family:'DM Mono';font-size:10px;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:5px;opacity:.7}
+
+/* recommendation strip */
+.rec{background:var(--dg);border-radius:18px;padding:24px 28px;margin-top:24px;text-align:center}
+.rec h3{font-family:'DM Mono';font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--g);margin-bottom:12px}
+.rec p{font-size:clamp(16px,2.3vw,21px);color:var(--t0);font-weight:600;max-width:720px;margin:0 auto;line-height:1.4;letter-spacing:-.01em}
+.rec p .g{color:var(--g)} .rec p .r{color:var(--rd)} .rec p .y{color:var(--ye)}
+
+/* milestone ladder */
+.ladder{margin-top:30px}
+.ladder h2{font-size:20px;color:var(--t0);font-weight:700;text-align:center;margin-bottom:6px}
+.ladder .sub{font-size:13px;color:var(--t2);text-align:center;margin-bottom:22px;font-weight:300}
+.rungs{display:flex;flex-direction:column;gap:10px}
+.rung{display:grid;grid-template-columns:120px 1fr auto;gap:18px;align-items:center;background:var(--c1);border:1px solid var(--bd);border-radius:14px;padding:16px 20px;transition:border-color .3s}
+.rung.here{border-color:var(--g);background:rgba(59,215,92,.04)}
+.rung-n{font-family:'Archivo Black';font-size:20px;color:var(--t0)}
+.rung.here .rung-n{color:var(--g)}
+.rung-d{font-size:13px;color:var(--t2);font-weight:300}
+.rung-d strong{color:var(--t1);font-weight:600}
+.rung-plan{font-family:'DM Mono';font-size:11px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;padding:5px 11px;border-radius:100px}
+.rung-plan.free{background:rgba(116,120,111,.15);color:var(--t2)}
+.rung-plan.pro{background:rgba(59,215,92,.12);color:var(--g)}
+.rung-plan.team{background:rgba(164,123,255,.14);color:var(--pu)}
+@media(max-width:600px){.rung{grid-template-columns:70px 1fr;gap:12px}.rung-plan{grid-column:2;justify-self:start;margin-top:4px}}
+
+/* live switchboard */
+.board-sec{margin-top:36px}
+.board-sec h2{font-size:20px;color:var(--t0);font-weight:700;text-align:center;margin-bottom:6px}
+.board-sec .sub{font-size:13px;color:var(--t2);text-align:center;margin-bottom:24px;font-weight:300}
+.sboards{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:700px){.sboards{grid-template-columns:1fr}}
+.sboard{background:var(--c1);border:1px solid var(--bd);border-radius:18px;padding:22px;transition:border-color .3s}
+.sboard.free.over{border-color:rgba(255,84,112,.55)}
+.sboard.pro.over{border-color:rgba(255,84,112,.55)}
+.sboard.pro{border-color:rgba(59,215,92,.22)}
+.sb-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.sb-name{font-size:16px;color:var(--t0);font-weight:700}
+.sb-cap{font-family:'DM Mono';font-size:12px}
+.sboard.free .sb-cap{color:var(--t2)} .sboard.pro .sb-cap{color:var(--g)}
+.sb-sub{font-size:12px;color:var(--t2);font-weight:300;margin-bottom:14px}
+.sb-count{font-family:'Archivo Black';font-size:14px;margin-bottom:10px}
+.sb-jacks{display:grid;grid-template-columns:repeat(25,1fr);gap:2px;margin-bottom:12px;min-height:50px;align-content:start}
+.sjack{aspect-ratio:1;border-radius:1px;background:#141614;border:1px solid #1d1f1d;transition:background .2s var(--ease)}
+.sjack.lit{border-color:transparent}
+.sboard.free .sjack.lit{background:var(--g)}
+.sboard.pro .sjack.lit{background:var(--g)}
+.sjack.over{background:var(--rd)!important}
+.sb-status{font-size:12px;font-weight:500;padding:10px 12px;border-radius:9px;line-height:1.4}
+.sboard.free .sb-status{background:rgba(255,84,112,.07);color:var(--rd)}
+.sboard.free .sb-status.ok{background:rgba(59,215,92,.07);color:var(--g)}
+.sboard.pro .sb-status{background:rgba(59,215,92,.08);color:var(--g)}
+.sboard.pro .sb-status.over{background:rgba(255,84,112,.08);color:var(--rd)}
+
+/* layers explainer */
+.layers{margin-top:36px}
+.layers h2{font-size:20px;color:var(--t0);font-weight:700;text-align:center;margin-bottom:6px}
+.layers .sub{font-size:13px;color:var(--t2);text-align:center;margin-bottom:24px;font-weight:300}
+.layer{display:grid;grid-template-columns:54px 1fr;gap:18px;background:var(--c1);border:1px solid var(--bd);border-radius:14px;padding:18px 20px;margin-bottom:12px;align-items:start}
+.layer-ic{width:54px;height:54px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.layer.l1 .layer-ic{background:rgba(255,84,112,.1)} .layer.l2 .layer-ic{background:rgba(59,215,92,.1)} .layer.l3 .layer-ic{background:rgba(255,210,63,.1)} .layer.l4 .layer-ic{background:rgba(164,123,255,.12)}
+.layer h3{font-size:16px;color:var(--t0);font-weight:700;margin-bottom:3px}
+.layer .what{font-size:13px;color:var(--t1);font-weight:300;margin-bottom:8px}
+.layer .why{font-size:13px;font-weight:300;line-height:1.5}
+.layer.l1 .why{color:#e89aa8} .layer.l2 .why{color:#9bc4a8} .layer.l3 .why{color:#d9c089} .layer.l4 .why{color:#b9a3df}
+.layer .why strong{font-weight:600}
+.layer.l1 .why strong{color:var(--rd)} .layer.l2 .why strong{color:var(--g)} .layer.l3 .why strong{color:var(--ye)} .layer.l4 .why strong{color:var(--pu)}
+.layer .effect{font-family:'DM Mono';font-size:11px;letter-spacing:.5px;margin-top:8px;padding-top:8px;border-top:1px solid var(--bd);color:var(--t2)}
+@media(max-width:600px){.layer{grid-template-columns:1fr}.layer-ic{width:44px;height:44px;font-size:20px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <div class="brand">SODA ✦ SCALING PLANNER</div>
+    <h1>You have a list. <span class="g">Now plan the scale.</span></h1>
+    <p>Drag the conversion slider to see how many of your 8,429 emails show up, then watch where the free plan breaks and what Pro buys you.</p>
+  </div>
+
+  <div class="listbanner">
+    <div>
+      <div class="l">Email list captured</div>
+      <div class="big">8,429</div>
+      <div class="sub">The top of your funnel. Not everyone converts to an event attendee.</div>
+    </div>
+    <div style="text-align:right">
+      <div class="l">Converting at <span id="bannerPct">5%</span></div>
+      <div class="big" id="bannerConv" style="color:var(--ye)">421</div>
+      <div class="sub">people in the room</div>
+    </div>
+  </div>
+
+  <div class="sliderbox">
+    <div class="slider-top">
+      <span class="lbl">Conversion rate · emails → people in the room</span>
+      <div class="slider-out">
+        <div class="pct" id="pctOut">5%</div>
+        <div class="ppl" id="pplOut">421 attendees</div>
+      </div>
+    </div>
+    <input type="range" id="slider" min="0" max="100" value="5" step="1"/>
+    <div class="slider-scale"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+    <div class="presets">
+      <button class="preset" data-p="2">2% cold list</button>
+      <button class="preset on" data-p="5">5% typical</button>
+      <button class="preset" data-p="10">10% warm</button>
+      <button class="preset" data-p="20">20% engaged</button>
+      <button class="preset" data-p="100">100% all of them</button>
+    </div>
+  </div>
+
+  <div class="scenctrl">
+    <div class="grp">
+      <span>Spread across</span>
+      <div class="opts" id="spreadOpts">
+        <button data-s="1" class="on">1 event</button>
+        <button data-s="4">4 events</button>
+        <button data-s="12">12 events/yr</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="plans">
+
+    <div class="plan free" id="planFree">
+      <div class="plan-tag">Current</div>
+      <h2>Free</h2>
+      <div class="price">$0<small> / month</small></div>
+      <div class="pricenote">200 realtime · 500 MB DB · 5 GB egress · 1 GB storage · 50K MAU</div>
+      <div id="freeLimits"></div>
+      <div class="verdict" id="freeVerdict"><span class="lbl">Verdict</span> Drag the slider to test.</div>
+    </div>
+
+    <div class="plan pro" id="planPro">
+      <div class="plan-tag">Upgrade</div>
+      <h2>Pro</h2>
+      <div class="price" id="proPrice">$25<small> / month</small></div>
+      <div class="pricenote">500 realtime · 8 GB DB · 250 GB egress · 100 GB storage · 100K MAU</div>
+      <div id="proLimits"></div>
+      <div class="verdict" id="proVerdict"><span class="lbl">Verdict</span> Drag the slider to test.</div>
+    </div>
+
+  </div>
+
+  <div class="rec">
+    <h3>What to do</h3>
+    <p id="recText">Drag the slider to see the recommendation.</p>
+  </div>
+
+  <div class="ladder">
+    <h2>The scaling ladder</h2>
+    <div class="sub">Where each plan carries you, by the size of a single event</div>
+    <div class="rungs" id="rungs"></div>
+  </div>
+
+  <!-- LIVE SWITCHBOARD -->
+  <div class="board-sec">
+    <h2>The realtime switchboard, live</h2>
+    <div class="sub">Each phone needs one connection during The Drop. Watch your converted crowd plug into the jacks. Red means shut out.</div>
+    <div class="sboards">
+      <div class="sboard free" id="sbFree">
+        <div class="sb-top"><span class="sb-name">Free</span><span class="sb-cap">200 jacks</span></div>
+        <div class="sb-sub">Realtime connection cap on the free plan</div>
+        <div class="sb-count" id="sbFreeCount">0 phones</div>
+        <div class="sb-jacks" id="sbFreeJacks"></div>
+        <div class="sb-status ok" id="sbFreeStatus">Drag the slider to fill the room.</div>
+      </div>
+      <div class="sboard pro" id="sbPro">
+        <div class="sb-top"><span class="sb-name">Pro</span><span class="sb-cap">500 jacks</span></div>
+        <div class="sb-sub">Realtime connection cap on the $25 Pro plan</div>
+        <div class="sb-count" id="sbProCount">0 phones</div>
+        <div class="sb-jacks" id="sbProJacks"></div>
+        <div class="sb-status" id="sbProStatus">Drag the slider to fill the room.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LAYERS EXPLAINER -->
+  <div class="layers">
+    <h2>The four Supabase layers, and why each one reacts</h2>
+    <div class="sub">When your crowd grows, it pushes on four different parts of Supabase. Here is what each one is and why it behaves the way it does.</div>
+
+    <div class="layer l1">
+      <div class="layer-ic">🎚️</div>
+      <div>
+        <h3>Realtime connections</h3>
+        <div class="what">Live phone-to-server links held open during The Drop and the Nudge.</div>
+        <div class="why">Why it breaks first: this is a <strong>hard concurrent cap</strong>, 200 free, 500 Pro. Unlike storage, it is not about total volume over time, it is how many phones are connected at the exact same instant. The moment your event size passes the cap, the next phone literally cannot connect and misses The Drop live in the room.</div>
+        <div class="effect">EFFECT → caps the size of a single event. The binding constraint.</div>
+      </div>
+    </div>
+
+    <div class="layer l2">
+      <div class="layer-ic">💾</div>
+      <div>
+        <h3>Database storage</h3>
+        <div class="what">Where chips, profiles, Drop answers, and survey responses are saved.</div>
+        <div class="why">Why it almost never breaks: text is <strong>tiny</strong>. A person's entire profile and survey history is about 3.6 KB. Even all 8,429 of your emails converting and attending stores around 31 MB against a 500 MB free limit. This is your richest data and your cheapest to keep. It accumulates over time, not per event.</div>
+        <div class="effect">EFFECT → essentially never forces an upgrade. Decades of runway.</div>
+      </div>
+    </div>
+
+    <div class="layer l3">
+      <div class="layer-ic">📡</div>
+      <div>
+        <h3>Egress (bandwidth out)</h3>
+        <div class="what">Data sent from Supabase out to phones: room views and avatar images.</div>
+        <div class="why">Why it sneaks up on you: it is <strong>monthly volume, not concurrent</strong>. Survey and chip text going out is feather-light. Photos are the weight. Many phones loading many avatars repeatedly is what burns the 5 GB free allowance, and a single large event can blow it in one night. Fixable with image compression and caching.</div>
+        <div class="effect">EFFECT → the second wall, driven by photos. Watch as you grow.</div>
+      </div>
+    </div>
+
+    <div class="layer l4">
+      <div class="layer-ic">👤</div>
+      <div>
+        <h3>Monthly active users (MAU)</h3>
+        <div class="what">Unique people who authenticate (scan in and verify) in a calendar month.</div>
+        <div class="why">Why it is a non-issue for you: the free plan includes <strong>50,000 MAU</strong>. Your entire email list is 8,429. Even at 100% conversion every month you use a sixth of the free allowance. Only people who actually log in count, not stored emails, so your list size does not touch this at all.</div>
+        <div class="effect">EFFECT → no pressure until tens of thousands attend monthly.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const LIST=8429;
+let pct=5, spread=1;
+
+// limits
+const FREE={conn:200,dbMB:500,egGB:5,name:'free'};
+const PRO={conn:500,dbMB:8000,egGB:250,name:'pro'};
+const PER_PERSON_BYTES=3660;
+const PHOTO_KB=80;
+
+function attendeesPerEvent(){
+  const totalConv=Math.round(LIST*pct/100);
+  return Math.round(totalConv/spread);
+}
+function egressForEvent(n){
+  const roomView=n*300*20*n;
+  const photo=PHOTO_KB*1000*n*0.3*n;
+  return (roomView+photo)/1_000_000_000; // GB
+}
+function dbForAttendees(total){ return (total*PER_PERSON_BYTES)/1_000_000; } // MB
+
+function limitRow(name,used,limit,unit,fmt){
+  const pctv=Math.min(used/limit*100,100);
+  const over=used>limit;
+  const warn=used>limit*0.8;
+  const cls=over?'over':warn?'warn':'ok';
+  const u=fmt?fmt(used):used;
+  const l=fmt?fmt(limit):limit;
+  return `<div class="limit ${over?'broken':''}">
+    <div class="limit-top"><span class="limit-name">${name}</span><span class="limit-val">${u} / ${l}${unit}</span></div>
+    <div class="limit-bar"><div class="limit-fill ${cls}" style="width:${Math.max(pctv,used>0?1:0)}%"></div></div>
+  </div>`;
+}
+
+function render(){
+  const totalConv=Math.round(LIST*pct/100);
+  const perEvent=attendeesPerEvent();
+  document.getElementById('pctOut').textContent=pct+'%';
+  document.getElementById('pplOut').textContent=totalConv.toLocaleString()+' attendees total';
+  document.getElementById('bannerPct').textContent=pct+'%';
+  document.getElementById('bannerConv').textContent=totalConv.toLocaleString();
+  // slider fill
+  document.getElementById('slider').style.background=
+    `linear-gradient(90deg,var(--g) 0%,var(--g) ${pct}%,#2a2c2a ${pct}%)`;
+
+  const egEvent=egressForEvent(perEvent);
+  const egMonth=spread>=12?egEvent*1:egEvent; // egress is per-month; one event/mo
+  const dbTotal=dbForAttendees(totalConv); // all attendees stored
+
+  // FREE
+  let f='';
+  f+=limitRow('Realtime (per event)',perEvent,FREE.conn,'',v=>v.toLocaleString());
+  f+=limitRow('Egress (per month)',+egMonth.toFixed(2),FREE.egGB,' GB');
+  f+=limitRow('Database (all data)',+dbTotal.toFixed(1),FREE.dbMB,' MB');
+  document.getElementById('freeLimits').innerHTML=f;
+
+  // PRO
+  let p='';
+  p+=limitRow('Realtime (per event)',perEvent,PRO.conn,'',v=>v.toLocaleString());
+  p+=limitRow('Egress (per month)',+egMonth.toFixed(2),PRO.egGB,' GB');
+  p+=limitRow('Database (all data)',+dbTotal.toFixed(1),PRO.dbMB,' MB');
+  document.getElementById('proLimits').innerHTML=p;
+
+  // pro price w/ overage
+  let proCost=25;
+  if(egMonth>PRO.egGB) proCost+=(egMonth-PRO.egGB)*0.09;
+  if(dbTotal>PRO.dbMB) proCost+=((dbTotal-PRO.dbMB)/1000)*0.125;
+  let connOver=0;
+  if(perEvent>PRO.conn) connOver=Math.ceil((perEvent-PRO.conn)/1000)*10;
+  proCost+=connOver;
+  document.getElementById('proPrice').innerHTML=
+    proCost<=25?'$25<small> / month</small>':`$${Math.round(proCost)}<small> / month</small>`;
+
+  // free verdict
+  const freeBroken = perEvent>FREE.conn || egMonth>FREE.egGB || dbTotal>FREE.dbMB;
+  const fp=document.getElementById('planFree');
+  fp.classList.toggle('broken',freeBroken);
+  const fv=document.getElementById('freeVerdict');
+  fv.classList.toggle('fine',!freeBroken);
+  if(perEvent===0){fv.innerHTML='<span class="lbl">Verdict</span> Nobody in the room yet.';}
+  else if(!freeBroken){fv.innerHTML=`<span class="lbl">Verdict · holds</span> ${perEvent} per event fits free. You are fine for now.`;}
+  else{
+    let why=[];
+    if(perEvent>FREE.conn)why.push('realtime maxes at 200 and phones drop mid-Drop');
+    if(egMonth>FREE.egGB)why.push('egress blows past 5 GB from photos');
+    if(dbTotal>FREE.dbMB)why.push('database over 500 MB');
+    fv.innerHTML=`<span class="lbl">Verdict · breaks</span> Free fails: ${why.join('; ')}.`;
+  }
+
+  // pro verdict
+  const proBroken = perEvent>PRO.conn || egMonth>PRO.egGB;
+  const pv=document.getElementById('proVerdict');
+  if(perEvent===0){pv.innerHTML='<span class="lbl">Verdict</span> Nothing to carry yet.';}
+  else if(!proBroken){
+    pv.innerHTML=`<span class="lbl">Verdict · holds</span> Pro carries ${perEvent.toLocaleString()} per event comfortably`+(proCost>25?` at ~$${Math.round(proCost)}/mo with overages.`:` at the flat $25.`);
+  }else{
+    let why=[];
+    if(perEvent>PRO.conn)why.push(`realtime over 500 (needs Team or split events)`);
+    if(egMonth>PRO.egGB)why.push('egress over 250 GB, add caching');
+    pv.innerHTML=`<span class="lbl">Verdict · strained</span> Even Pro strains: ${why.join('; ')}.`;
+  }
+
+  // recommendation
+  const rec=document.getElementById('recText');
+  if(perEvent===0){rec.innerHTML='Drag the slider to see how many show up and which plan you need.';}
+  else if(perEvent<=180){rec.innerHTML=`At ${pct}% that is <span class="g">${perEvent} per event</span>. <span class="g">Stay free.</span> You have headroom. Bank the $25.`;}
+  else if(perEvent<=500){rec.innerHTML=`At ${pct}% that is <span class="y">${perEvent} per event</span>. The free plan breaks here. <span class="g">Move to Pro</span> the week you book it. ~$${Math.round(proCost)}/mo.`;}
+  else{rec.innerHTML=`At ${pct}% that is <span class="r">${perEvent.toLocaleString()} per event</span>, past even Pro's 500 realtime cap. <span class="g">Either split into multiple events</span> or talk to Supabase about Team.`;}
+
+  renderLadder(perEvent);
+  renderSwitchboard(perEvent);
+}
+
+// build jack grids once (200 free, 500 pro shown as 200/500 cells)
+const SB_FREE_MAX=200, SB_PRO_MAX=500;
+const sbFreeJacks=document.getElementById('sbFreeJacks');
+const sbProJacks=document.getElementById('sbProJacks');
+for(let i=0;i<SB_FREE_MAX;i++){const d=document.createElement('div');d.className='sjack';sbFreeJacks.appendChild(d);}
+for(let i=0;i<SB_PRO_MAX;i++){const d=document.createElement('div');d.className='sjack';sbProJacks.appendChild(d);}
+const sbFreeEls=[...sbFreeJacks.children];
+const sbProEls=[...sbProJacks.children];
+
+function renderSwitchboard(perEvent){
+  // FREE: 200 cap
+  const freeFit=Math.min(perEvent,SB_FREE_MAX);
+  const freeShut=Math.max(perEvent-SB_FREE_MAX,0);
+  sbFreeEls.forEach((j,i)=>{ j.className='sjack'+(i<freeFit?' lit':''); });
+  document.getElementById('sbFreeCount').textContent=
+    perEvent.toLocaleString()+' phones · '+freeFit+' connected'+(freeShut>0?' · '+freeShut.toLocaleString()+' shut out':'');
+  document.getElementById('sbFreeCount').style.color=freeShut>0?'var(--rd)':'var(--g)';
+  const sbFree=document.getElementById('sbFree');
+  const sbFreeStatus=document.getElementById('sbFreeStatus');
+  sbFree.classList.toggle('over',freeShut>0);
+  sbFreeStatus.classList.toggle('ok',freeShut===0&&perEvent>0);
+  if(perEvent===0){sbFreeStatus.textContent='Drag the slider to fill the room.';sbFreeStatus.classList.add('ok');}
+  else if(freeShut>0){sbFreeStatus.innerHTML=`Wall hit. <strong>${freeShut.toLocaleString()} phones cannot connect</strong> and miss The Drop entirely.`;}
+  else{sbFreeStatus.textContent=`All ${freeFit} phones connected. ${SB_FREE_MAX-freeFit} jacks to spare.`;}
+
+  // PRO: 500 cap
+  const proFit=Math.min(perEvent,SB_PRO_MAX);
+  const proShut=Math.max(perEvent-SB_PRO_MAX,0);
+  sbProEls.forEach((j,i)=>{ j.className='sjack'+(i<proFit?' lit':''); });
+  document.getElementById('sbProCount').textContent=
+    perEvent.toLocaleString()+' phones · '+proFit+' connected'+(proShut>0?' · '+proShut.toLocaleString()+' shut out':'');
+  document.getElementById('sbProCount').style.color=proShut>0?'var(--rd)':'var(--g)';
+  const sbPro=document.getElementById('sbPro');
+  const sbProStatus=document.getElementById('sbProStatus');
+  sbPro.classList.toggle('over',proShut>0);
+  sbProStatus.classList.toggle('over',proShut>0);
+  if(perEvent===0){sbProStatus.textContent='Drag the slider to fill the room.';}
+  else if(proShut>0){sbProStatus.innerHTML=`Even Pro is full. <strong>${proShut.toLocaleString()} shut out.</strong> Split the crowd into multiple events or look at Team.`;}
+  else{sbProStatus.textContent=`All ${proFit} phones connected. ${SB_PRO_MAX-proFit} jacks to spare.`;}
+}
+
+function renderLadder(perEvent){
+  const rungs=[
+    [150,'Small pilot meetup','free','Free plan, full headroom'],
+    [180,'Free plan ceiling','free','Last safe size on free'],
+    [300,'Mid-size event','pro','Pro, flat $25'],
+    [500,'Pro realtime ceiling','pro','Pro, the realtime wall'],
+    [1000,'Large event','team','Split events or Team plan'],
+  ];
+  let html='';
+  rungs.forEach(([size,name,plan,note],i)=>{
+    const next=rungs[i+1];
+    const here = perEvent>0 && perEvent<=size && (i===0||perEvent>rungs[i-1][0]);
+    html+=`<div class="rung ${here?'here':''}">
+      <div class="rung-n display">${size.toLocaleString()}</div>
+      <div class="rung-d"><strong>${name}</strong><br/>${note}</div>
+      <div class="rung-plan ${plan}">${plan}</div>
+    </div>`;
+  });
+  document.getElementById('rungs').innerHTML=html;
+}
+
+document.getElementById('slider').addEventListener('input',e=>{
+  pct=+e.target.value;
+  document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('on',+b.dataset.p===pct));
+  render();
+});
+document.querySelectorAll('.preset').forEach(b=>{
+  b.onclick=()=>{pct=+b.dataset.p;document.getElementById('slider').value=pct;
+    document.querySelectorAll('.preset').forEach(x=>x.classList.toggle('on',x===b));render();};
+});
+document.querySelectorAll('#spreadOpts button').forEach(b=>{
+  b.onclick=()=>{document.querySelectorAll('#spreadOpts button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');spread=+b.dataset.s;render();};
+});
+render();
+</script>
+</body>
+</html>

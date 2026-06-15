@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Futureland — The Room</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --green:      #3BD75C;
+  --dark-green: #203229;
+  --charcoal:   #212121;
+  --light:      #E5E5E5;
+  --white:      #FDFCFA;
+  --mid:        #2e2e2e;
+  --muted:      #666;
+  --card-bg:    #1a1a1a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--charcoal);
+  color: var(--light);
+  overflow: hidden;
+}
+
+/* ── PHONE SHELL ── */
+.phone-shell {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: #111;
+}
+.phone {
+  width: min(390px, 100vw);
+  height: min(844px, 100vh);
+  background: var(--charcoal);
+  border-radius: min(48px, 6vw);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px #333;
+}
+
+/* ── NOISE ── */
+.phone::before {
+  content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+/* ── PROGRESS BAR ── */
+#progress-bar {
+  position: absolute; top: 0; left: 0; height: 3px; z-index: 100;
+  background: linear-gradient(90deg, var(--green), #7BF79A);
+  transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  width: 0%;
+}
+
+/* ── SCREENS ── */
+.screen {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; flex-direction: column;
+  padding: 0;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(.4,0,.2,1);
+  transform: translateX(30px);
+  overflow: hidden;
+}
+.screen.active {
+  opacity: 1; pointer-events: all; transform: translateX(0);
+}
+.screen.exit {
+  opacity: 0; transform: translateX(-30px);
+}
+
+/* ── SHARED ELEMENTS ── */
+.screen-inner {
+  flex: 1; display: flex; flex-direction: column;
+  padding: 48px 28px 28px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.fl-logo {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px; font-weight: 800; letter-spacing: 1px;
+  color: var(--green); margin-bottom: 6px;
+}
+.screen-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--green); margin-bottom: 12px;
+}
+.screen-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(34px, 9vw, 44px); font-weight: 800;
+  line-height: 1.05; color: var(--light); margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.screen-sub {
+  font-size: 14px; color: var(--muted); line-height: 1.6;
+  font-weight: 300; margin-bottom: 32px;
+}
+
+/* ── INPUTS ── */
+.fl-input {
+  width: 100%; background: var(--mid);
+  border: 1.5px solid #333;
+  border-radius: 14px; padding: 16px 18px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px; color: var(--light);
+  outline: none; transition: border-color 0.2s;
+  margin-bottom: 12px;
+}
+.fl-input:focus { border-color: var(--green); }
+.fl-input::placeholder { color: #555; }
+
+/* ── BUTTON ── */
+.btn-primary {
+  width: 100%; padding: 17px;
+  background: var(--dark-green); color: var(--green);
+  border: none; border-radius: 14px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; cursor: pointer;
+  transition: all 0.2s; margin-top: 8px;
+}
+.btn-primary:hover { background: #162620; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+.btn-ghost {
+  background: transparent; color: var(--muted);
+  border: 1.5px solid #333; border-radius: 14px;
+  padding: 14px; font-family: 'DM Sans', sans-serif;
+  font-size: 14px; cursor: pointer; transition: all 0.2s;
+  margin-top: 10px; width: 100%;
+}
+.btn-ghost:hover { color: var(--light); border-color: #555; }
+
+/* ── OTP ── */
+.otp-wrap { display: flex; gap: 10px; justify-content: center; margin: 28px 0; }
+.otp-box {
+  width: 48px; height: 58px;
+  background: var(--mid); border: 1.5px solid #333;
+  border-radius: 12px; font-size: 28px; font-weight: 700;
+  color: var(--green); text-align: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  outline: none; transition: border-color 0.2s, transform 0.15s;
+  caret-color: var(--green);
+}
+.otp-box:focus { border-color: var(--green); transform: scale(1.05); }
+.otp-box.filled { border-color: var(--green); background: rgba(59,215,92,0.08); }
+
+/* ── CHIPS ── */
+.chips-wrap { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 28px; }
+.chip {
+  padding: 9px 17px; border-radius: 100px;
+  border: 1.5px solid #333; background: var(--mid);
+  font-size: 13px; font-weight: 500; color: var(--muted);
+  cursor: pointer; transition: all 0.18s; user-select: none;
+}
+.chip:hover { border-color: var(--green); color: var(--light); }
+.chip.selected {
+  background: var(--dark-green); color: var(--green);
+  border-color: var(--green); font-weight: 600;
+}
+.chip.write-in {
+  border-style: dashed; color: #555;
+}
+.chip.write-in:hover { color: var(--green); border-color: var(--green); }
+
+/* ── PHOTO UPLOAD SCREEN ── */
+.photo-circle {
+  width: 120px; height: 120px; border-radius: 50%;
+  background: var(--dark-green);
+  border: 2px dashed var(--green);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; margin: 0 auto 24px;
+  transition: all 0.2s; overflow: hidden;
+}
+.photo-circle:hover { transform: scale(1.04); border-style: solid; }
+.photo-circle-icon { font-size: 32px; margin-bottom: 4px; }
+.photo-circle-label { font-size: 11px; color: var(--green); letter-spacing: 1px; text-transform: uppercase; }
+
+/* ── CINEMATIC ROOM ENTRY ── */
+#screen-room-entry {
+  background: var(--charcoal);
+}
+.room-entry-inner {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 28px;
+  text-align: center;
+}
+.entry-card {
+  width: 200px; height: 260px;
+  background: linear-gradient(145deg, var(--dark-green), #162620);
+  border-radius: 24px; border: 1px solid rgba(59,215,92,0.3);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  margin: 0 auto 32px;
+  box-shadow: 0 0 60px rgba(59,215,92,0.15), 0 20px 60px rgba(0,0,0,0.5);
+  opacity: 0;
+  transform: translateY(40px) scale(0.9);
+  transition: all 0.7s cubic-bezier(.4,0,.2,1);
+}
+.entry-card.show {
+  opacity: 1; transform: translateY(0) scale(1);
+}
+.entry-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--dark-green);
+  border: 2px solid var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px; font-weight: 800; color: var(--green);
+  margin-bottom: 14px;
+}
+.entry-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px; font-weight: 800; color: var(--light);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
+}
+.entry-role-chip {
+  padding: 5px 12px; border-radius: 100px;
+  background: rgba(59,215,92,0.15); color: var(--green);
+  font-size: 11px; font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 12px;
+}
+.entry-chips-row { display: flex; flex-direction: column; gap: 5px; align-items: center; }
+.entry-mini-chip {
+  font-size: 11px; color: #aaa; padding: 3px 10px;
+  border: 1px solid #333; border-radius: 100px;
+}
+
+.others-fade {
+  display: flex; gap: -10px; justify-content: center;
+  margin-bottom: 24px;
+}
+.mini-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 2px solid var(--charcoal);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; font-weight: 800;
+  margin-left: -8px; opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.4s cubic-bezier(.4,0,.2,1);
+}
+.mini-avatar.show { opacity: 1; transform: scale(1); }
+.entry-count {
+  font-size: 13px; color: var(--muted); margin-bottom: 24px;
+  opacity: 0; transition: opacity 0.5s ease;
+}
+.entry-count.show { opacity: 1; }
+
+/* ── THE ROOM SCREEN ── */
+#screen-room {
+  display: flex; flex-direction: column;
+}
+.room-header {
+  padding: 48px 24px 16px;
+  background: linear-gradient(180deg, var(--charcoal) 60%, transparent);
+  position: sticky; top: 0; z-index: 10;
+}
+.room-title-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.room-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 32px; font-weight: 800; color: var(--light);
+  text-transform: uppercase;
+}
+.live-badge {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--green); font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green);
+  animation: pulse 1.5s ease infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+.room-sub { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+
+/* ── VIEW TABS ── */
+.view-tabs {
+  display: flex; gap: 4px;
+  background: var(--mid); border-radius: 12px;
+  padding: 4px; margin-bottom: 0;
+}
+.tab {
+  flex: 1; padding: 9px 6px; border-radius: 9px;
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  cursor: pointer; text-align: center; transition: all 0.2s;
+  border: none; background: transparent;
+  font-family: 'DM Sans', sans-serif;
+}
+.tab.active { background: var(--dark-green); color: var(--green); }
+
+/* ── CARD FLIP VIEW ── */
+.flip-view {
+  flex: 1; display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 20px 20px 100px; position: relative;
+}
+.flip-view.visible { display: flex; }
+
+.flip-stack {
+  position: relative; width: 280px; height: 360px;
+  margin: 0 auto 32px;
+}
+.flip-card {
+  position: absolute; inset: 0;
+  background: linear-gradient(145deg, var(--card-bg), #222);
+  border-radius: 24px; border: 1px solid #333;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  cursor: grab; user-select: none;
+  transition: transform 0.5s cubic-bezier(.4,0,.2,1), opacity 0.4s ease, box-shadow 0.2s;
+  will-change: transform;
+}
+.flip-card:active { cursor: grabbing; }
+.flip-card.behind-1 {
+  transform: scale(0.94) translateY(12px);
+  opacity: 0.7; z-index: 1;
+}
+.flip-card.behind-2 {
+  transform: scale(0.88) translateY(24px);
+  opacity: 0.4; z-index: 0;
+}
+.flip-card.top { z-index: 3; }
+.flip-card.swiping-right {
+  transform: translateX(120%) rotate(12deg) !important;
+  opacity: 0; transition: transform 0.35s ease, opacity 0.35s ease;
+}
+.flip-card.swiping-left {
+  transform: translateX(-120%) rotate(-12deg) !important;
+  opacity: 0; transition: transform 0.35s ease, opacity 0.35s ease;
+}
+
+.fc-avatar {
+  width: 88px; height: 88px; border-radius: 50%;
+  border: 2.5px solid var(--green); margin-bottom: 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 34px; font-weight: 800; color: var(--green);
+  flex-shrink: 0;
+}
+.fc-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px; font-weight: 800; color: var(--light);
+  text-transform: uppercase; letter-spacing: 0.5px; text-align: center;
+  margin-bottom: 4px;
+}
+.fc-role {
+  font-size: 12px; color: var(--green); letter-spacing: 2px;
+  text-transform: uppercase; font-weight: 600; margin-bottom: 20px;
+}
+.fc-divider {
+  width: 40px; height: 1px; background: #333; margin-bottom: 16px;
+}
+.fc-row {
+  display: flex; flex-direction: column; gap: 8px;
+  width: 100%; align-items: center;
+}
+.fc-chip {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; padding: 7px 14px;
+  border-radius: 100px; width: fit-content;
+}
+.fc-chip.offer {
+  background: rgba(59,215,92,0.12);
+  color: var(--green); border: 1px solid rgba(59,215,92,0.25);
+}
+.fc-chip.need {
+  background: rgba(255,255,255,0.05);
+  color: #aaa; border: 1px solid #333;
+}
+.fc-chip-icon { font-size: 13px; }
+
+.flip-hint {
+  display: flex; gap: 20px; align-items: center;
+  font-size: 12px; color: #555;
+}
+.flip-hint span { display: flex; align-items: center; gap: 5px; }
+.flip-nav {
+  display: flex; gap: 12px; margin-top: 16px;
+}
+.flip-btn {
+  width: 52px; height: 52px; border-radius: 50%;
+  border: 1.5px solid #333; background: var(--mid);
+  font-size: 20px; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.flip-btn:hover { border-color: var(--green); background: var(--dark-green); }
+.flip-counter {
+  font-size: 12px; color: #555; text-align: center; margin-top: 8px;
+}
+
+/* ── GRID VIEW ── */
+.grid-view {
+  display: none; grid-template-columns: 1fr 1fr;
+  gap: 12px; padding: 16px 16px 100px;
+  overflow-y: auto; flex: 1;
+}
+.grid-view.visible { display: grid; }
+
+.grid-card {
+  background: var(--card-bg); border-radius: 18px;
+  border: 1px solid #2a2a2a; padding: 18px 14px;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; transition: border-color 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+.grid-card:hover { border-color: rgba(59,215,92,0.3); transform: translateY(-2px); }
+.grid-card.is-you { border-color: rgba(59,215,92,0.4); background: rgba(32,50,41,0.5); }
+.gc-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  border: 2px solid var(--green); margin-bottom: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px; font-weight: 800; color: var(--green);
+}
+.gc-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 16px; font-weight: 800; color: var(--light);
+  text-transform: uppercase; margin-bottom: 3px;
+}
+.gc-role { font-size: 10px; color: var(--green); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
+.gc-chips { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+.gc-chip {
+  font-size: 10px; padding: 4px 8px; border-radius: 100px;
+  text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gc-chip.offer { background: rgba(59,215,92,0.1); color: var(--green); }
+.gc-chip.need { background: rgba(255,255,255,0.04); color: #777; border: 1px solid #333; }
+.you-badge {
+  font-size: 9px; color: var(--green); letter-spacing: 1px;
+  text-transform: uppercase; margin-top: 6px; font-weight: 700;
+}
+
+/* ── LIST VIEW ── */
+.list-view {
+  display: none; flex-direction: column;
+  gap: 10px; padding: 16px 16px 100px;
+  overflow-y: auto; flex: 1;
+}
+.list-view.visible { display: flex; }
+
+.list-card {
+  background: var(--card-bg); border-radius: 16px;
+  border: 1px solid #2a2a2a; padding: 16px;
+  display: flex; align-items: center; gap: 14px;
+  transition: border-color 0.2s;
+}
+.list-card:hover { border-color: rgba(59,215,92,0.25); }
+.list-card.is-you { border-color: rgba(59,215,92,0.3); }
+.lc-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  flex-shrink: 0; border: 2px solid var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; font-weight: 800; color: var(--green);
+}
+.lc-body { flex: 1; min-width: 0; }
+.lc-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; font-weight: 800; color: var(--light);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.lc-role { font-size: 11px; color: var(--green); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.lc-chips { display: flex; gap: 5px; flex-wrap: wrap; }
+.lc-chip {
+  font-size: 10px; padding: 3px 9px; border-radius: 100px;
+}
+.lc-chip.offer { background: rgba(59,215,92,0.1); color: var(--green); }
+.lc-chip.need { background: rgba(255,255,255,0.04); color: #666; border: 1px solid #333; }
+
+/* ── COMMENT TAG ── */
+.comment-btn {
+  flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--mid); border: 1.5px solid #333;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; cursor: pointer; transition: all 0.2s;
+}
+.comment-btn:hover { border-color: var(--green); background: var(--dark-green); }
+
+/* ── COMMENT MODAL ── */
+.comment-modal {
+  position: absolute; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.comment-modal.show { opacity: 1; pointer-events: all; }
+.comment-sheet {
+  width: 100%; background: #1a1a1a;
+  border-radius: 24px 24px 0 0;
+  border-top: 1px solid #333;
+  padding: 24px 24px 48px;
+  transform: translateY(20px);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+}
+.comment-modal.show .comment-sheet { transform: translateY(0); }
+.comment-for {
+  font-size: 12px; color: var(--green); letter-spacing: 2px;
+  text-transform: uppercase; font-weight: 600; margin-bottom: 8px;
+}
+.comment-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px; font-weight: 800; color: var(--light);
+  text-transform: uppercase; margin-bottom: 16px;
+}
+.comment-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.comment-chip {
+  padding: 8px 14px; border-radius: 100px;
+  border: 1.5px solid #333; background: var(--mid);
+  font-size: 12px; color: var(--muted); cursor: pointer;
+  transition: all 0.18s;
+}
+.comment-chip:hover, .comment-chip.sel {
+  background: var(--dark-green); color: var(--green);
+  border-color: var(--green);
+}
+.comment-input {
+  width: 100%; background: var(--mid); border: 1.5px solid #333;
+  border-radius: 12px; padding: 14px; color: var(--light);
+  font-family: 'DM Sans', sans-serif; font-size: 14px;
+  outline: none; resize: none; margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+.comment-input:focus { border-color: var(--green); }
+.comment-input::placeholder { color: #555; }
+.comment-send {
+  width: 100%; padding: 14px;
+  background: var(--dark-green); color: var(--green);
+  border: none; border-radius: 12px; cursor: pointer;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; transition: all 0.2s;
+}
+.comment-send:hover { background: #162620; }
+
+/* ── STEP DOTS ── */
+.step-dots {
+  display: flex; gap: 6px; justify-content: center; margin-top: 20px;
+}
+.step-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #333; transition: all 0.3s;
+}
+.step-dot.active { width: 20px; border-radius: 3px; background: var(--green); }
+.step-dot.done { background: var(--dark-green); }
+
+/* ── THANK YOU ── */
+.ty-circle {
+  width: 88px; height: 88px; border-radius: 50%;
+  background: var(--dark-green); border: 2px solid var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px; margin: 0 auto 24px;
+  animation: popIn 0.6s cubic-bezier(.4,0,.2,1);
+}
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 16px 24px 28px;
+  background: linear-gradient(0deg, var(--charcoal) 70%, transparent);
+  z-index: 20;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="phone-shell">
+<div class="phone">
+  <div id="progress-bar"></div>
+
+  <!-- ═══════════════════════════════════════
+       S1: WELCOME / NAME + EMAIL
+  ═══════════════════════════════════════ -->
+  <div class="screen active" id="s-welcome">
+    <div class="screen-inner">
+      <div class="fl-logo">FUTURELAND ✦</div>
+      <div class="screen-label">Creative Meetups</div>
+      <div class="screen-title">Welcome to<br/>the room.</div>
+      <p class="screen-sub">Tell us who you are and we'll get you inside in under two minutes.</p>
+
+      <input class="fl-input" id="inp-first" type="text" placeholder="First name" autocomplete="given-name"/>
+      <input class="fl-input" id="inp-last" type="text" placeholder="Last name" autocomplete="family-name"/>
+      <input class="fl-input" id="inp-email" type="text" inputmode="email" placeholder="Email address" autocomplete="email"/>
+
+      <div id="welcome-error" style="display:none;color:#ff4d6d;font-size:12px;margin-bottom:8px;padding:0 4px;">
+        Please fill in all fields with a valid email.
+      </div>
+
+      <button class="btn-primary" id="btn-to-otp">Let's go →</button>
+
+      <p style="text-align:center;font-size:11px;color:#444;margin-top:14px;line-height:1.6;">
+        We'll send your 6-digit code here and your<br/>end-of-night connections recap.
+      </p>
+
+      <div class="step-dots" style="margin-top:20px;margin-bottom:8px">
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       S2: OTP
+  ═══════════════════════════════════════ -->
+  <div class="screen" id="s-otp">
+    <div class="screen-inner">
+      <div class="fl-logo">FUTURELAND ✦</div>
+      <div class="screen-label">Step 1 of 5 — Verify</div>
+      <div class="screen-title">Check your<br/>email.</div>
+      <p class="screen-sub" id="otp-sub">We sent a 6-digit code to your inbox. It expires in 10 minutes.</p>
+
+      <div class="otp-wrap">
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]"/>
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]"/>
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]"/>
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]"/>
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]"/>
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]"/>
+      </div>
+
+      <button class="btn-primary" id="btn-verify" disabled>Verify Code</button>
+      <button class="btn-ghost">Resend code</button>
+
+      <div class="step-dots" style="margin-top:20px">
+        <div class="step-dot done"></div>
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       S3: PHOTO
+  ═══════════════════════════════════════ -->
+  <div class="screen" id="s-photo">
+    <div class="screen-inner">
+      <div class="fl-logo">FUTURELAND ✦</div>
+      <div class="screen-label">Step 2 of 5 — Your face</div>
+      <div class="screen-title">Put a face<br/>to the name.</div>
+      <p class="screen-sub">Optional, but people connect more when they can picture who they're meeting.</p>
+
+      <div class="photo-circle" id="photo-circle" onclick="fakePhoto()">
+        <div class="photo-circle-icon">📷</div>
+        <div class="photo-circle-label">Add photo</div>
+      </div>
+
+      <button class="btn-primary" id="btn-to-role">Continue →</button>
+      <button class="btn-ghost" onclick="goTo('s-role')">Skip for now</button>
+
+      <div class="step-dots" style="margin-top:20px">
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       S4: ROLE CHIP
+  ═══════════════════════════════════════ -->
+  <div class="screen" id="s-role">
+    <div class="screen-inner">
+      <div class="fl-logo">FUTURELAND ✦</div>
+      <div class="screen-label">Step 3 of 5 — What you do</div>
+      <div class="screen-title">How do you<br/>show up?</div>
+      <p class="screen-sub">Pick one that fits, or write your own. It'll appear on your card in the room.</p>
+
+      <div class="chips-wrap" id="role-chips">
+        <div class="chip" data-group="role">Founder</div>
+        <div class="chip" data-group="role">Builder</div>
+        <div class="chip" data-group="role">Creative</div>
+        <div class="chip" data-group="role">Investor</div>
+        <div class="chip" data-group="role">Educator</div>
+        <div class="chip" data-group="role">Developer</div>
+        <div class="chip" data-group="role">Designer</div>
+        <div class="chip" data-group="role">Storyteller</div>
+        <div class="chip" data-group="role">Community Organizer</div>
+        <div class="chip" data-group="role">Nonprofit</div>
+        <div class="chip" data-group="role">Policy</div>
+        <div class="chip" data-group="role">Student</div>
+        <div class="chip write-in" data-group="role" id="role-writein">+ Write your own</div>
+      </div>
+      <input class="fl-input" id="role-custom" type="text" placeholder="Your role..." style="display:none"/>
+
+      <button class="btn-primary" id="btn-to-offer" disabled>Next →</button>
+
+      <div class="step-dots" style="margin-top:16px">
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       S5: OFFER CHIPS (multi-select, max 3)
+  ═══════════════════════════════════════ -->
+  <div class="screen" id="s-offer">
+    <div class="screen-inner">
+      <div class="fl-logo">FUTURELAND ✦</div>
+      <div class="screen-label">Step 4 of 5 — What you bring</div>
+      <div class="screen-title">What do you<br/>offer?</div>
+      <p class="screen-sub">Pick up to 3. Serial entrepreneurs, we see you.</p>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span style="font-size:11px;color:#555;letter-spacing:1px;text-transform:uppercase">Select up to 3</span>
+        <span id="offer-count-badge" style="font-size:11px;color:var(--green);font-weight:600;letter-spacing:1px">0 / 3</span>
+      </div>
+
+      <div class="chips-wrap" id="offer-chips">
+        <div class="chip" data-group="offer">Mentorship</div>
+        <div class="chip" data-group="offer">Introductions</div>
+        <div class="chip" data-group="offer">Feedback</div>
+        <div class="chip" data-group="offer">Co-founder energy</div>
+        <div class="chip" data-group="offer">Capital</div>
+        <div class="chip" data-group="offer">Studio space</div>
+        <div class="chip" data-group="offer">Legal advice</div>
+        <div class="chip" data-group="offer">Brand strategy</div>
+        <div class="chip" data-group="offer">Technical skills</div>
+        <div class="chip" data-group="offer">Media coverage</div>
+        <div class="chip" data-group="offer">Accountability</div>
+        <div class="chip write-in" data-group="offer">+ Write your own</div>
+      </div>
+      <input class="fl-input" id="offer-custom" type="text" placeholder="What you offer..." style="display:none"/>
+
+      <button class="btn-primary" id="btn-to-need" disabled>Next →</button>
+
+      <div class="step-dots" style="margin-top:16px">
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       S6: NEED CHIPS (multi-select, max 3)
+  ═══════════════════════════════════════ -->
+  <div class="screen" id="s-need">
+    <div class="screen-inner">
+      <div class="fl-logo">FUTURELAND ✦</div>
+      <div class="screen-label">Step 5 of 5 — What you need</div>
+      <div class="screen-title">What are you<br/>looking for?</div>
+      <p class="screen-sub">Be honest. Pick up to 3. This is how the room finds you.</p>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span style="font-size:11px;color:#555;letter-spacing:1px;text-transform:uppercase">Select up to 3</span>
+        <span id="need-count-badge" style="font-size:11px;color:var(--green);font-weight:600;letter-spacing:1px">0 / 3</span>
+      </div>
+
+      <div class="chips-wrap" id="need-chips">
+        <div class="chip" data-group="need">A co-founder</div>
+        <div class="chip" data-group="need">Funding</div>
+        <div class="chip" data-group="need">Community</div>
+        <div class="chip" data-group="need">Accountability partner</div>
+        <div class="chip" data-group="need">Collaborators</div>
+        <div class="chip" data-group="need">Clients</div>
+        <div class="chip" data-group="need">Visibility</div>
+        <div class="chip" data-group="need">Technical help</div>
+        <div class="chip" data-group="need">A mentor</div>
+        <div class="chip" data-group="need">Workspace</div>
+        <div class="chip write-in" data-group="need">+ Write your own</div>
+      </div>
+      <input class="fl-input" id="need-custom" type="text" placeholder="What you need..." style="display:none"/>
+
+      <button class="btn-primary" id="btn-to-entry" disabled>Enter the room →</button>
+
+      <div class="step-dots" style="margin-top:16px">
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot active"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       S7: CINEMATIC ROOM ENTRY
+  ═══════════════════════════════════════ -->
+  <div class="screen" id="screen-room-entry">
+    <div class="room-entry-inner">
+      <p style="font-size:12px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:32px;">
+        Your card is live ✦
+      </p>
+
+      <div class="entry-card" id="entry-card">
+        <div class="entry-avatar" id="entry-avatar">A</div>
+        <div class="entry-name" id="entry-name">Alysha M.</div>
+        <div class="entry-role-chip" id="entry-role">Founder</div>
+        <div class="fc-divider"></div>
+        <div class="entry-chips-row">
+          <div class="entry-mini-chip" id="entry-offer">✦ Mentorship</div>
+          <div class="entry-mini-chip" id="entry-need">↗ A co-founder</div>
+        </div>
+      </div>
+
+      <div class="others-fade" id="others-row">
+        <div class="mini-avatar" style="background:#1a3a2a">MJ</div>
+        <div class="mini-avatar" style="background:#2a1a3a">TK</div>
+        <div class="mini-avatar" style="background:#1a2a3a">SR</div>
+        <div class="mini-avatar" style="background:#3a2a1a">NF</div>
+        <div class="mini-avatar" style="background:#2a3a1a">DL</div>
+      </div>
+
+      <p class="entry-count" id="entry-count">22 people are in the room tonight.</p>
+
+      <button class="btn-primary" id="btn-see-room" style="width:240px;opacity:0;transition:opacity 0.5s ease 1.5s">
+        See the room →
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       S8: THE ROOM
+  ═══════════════════════════════════════ -->
+  <div class="screen" id="screen-room" style="padding:0">
+
+    <div class="room-header">
+      <div class="room-title-row">
+        <div class="room-title">The Room</div>
+        <div class="live-badge"><div class="live-dot"></div>Live · 22</div>
+      </div>
+      <div class="room-sub">Futureland Creative Meetup — June 2026</div>
+      <div class="view-tabs">
+        <button class="tab active" data-view="flip">✦ Flip</button>
+        <button class="tab" data-view="grid">⊞ Grid</button>
+        <button class="tab" data-view="list">≡ List</button>
+      </div>
+    </div>
+
+    <!-- FLIP VIEW -->
+    <div class="flip-view visible" id="view-flip">
+      <div class="flip-stack" id="flip-stack">
+        <!-- rendered by JS -->
+      </div>
+      <div class="flip-counter" id="flip-counter">1 of 22</div>
+      <div class="flip-nav">
+        <button class="flip-btn" id="flip-prev" title="Previous">←</button>
+        <button class="flip-btn" id="flip-skip" title="Next">→</button>
+      </div>
+      <div class="flip-hint">
+        <span>← → to browse</span>
+        <span>· swipe to flip</span>
+      </div>
+    </div>
+
+    <!-- GRID VIEW -->
+    <div class="grid-view" id="view-grid">
+      <!-- rendered by JS -->
+    </div>
+
+    <!-- LIST VIEW -->
+    <div class="list-view" id="view-list">
+      <!-- rendered by JS -->
+    </div>
+
+  </div>
+
+  <!-- COMMENT MODAL -->
+  <div class="comment-modal" id="comment-modal">
+    <div class="comment-sheet">
+      <div class="comment-for">Leave a note for</div>
+      <div class="comment-title" id="comment-target-name">Marcus J.</div>
+      <div class="comment-chips">
+        <div class="comment-chip">Great energy 🔥</div>
+        <div class="comment-chip">Want to connect</div>
+        <div class="comment-chip">Loved your insight</div>
+        <div class="comment-chip">Let's build something</div>
+        <div class="comment-chip">Fellow Cleveland builder</div>
+        <div class="comment-chip">Follow up with me</div>
+      </div>
+      <textarea class="comment-input" rows="3" placeholder="Add a personal note... (optional)"></textarea>
+      <button class="comment-send" onclick="closeComment()">Send Note ✦</button>
+    </div>
+  </div>
+
+</div><!-- .phone -->
+</div><!-- .phone-shell -->
+
+<script>
+// ── DEMO DATA ──────────────────────────────────────────────────
+const AVATARS = ['#1a3a2a','#2a1a3a','#1a2a3a','#3a2a1a','#2a3a1a','#3a1a2a','#1a3a3a','#2a2a3a'];
+const PEOPLE = [
+  { init:'AJ', name:'Alysha J.',   role:'Founder',             offers:['Mentorship','Capital'],             needs:['A co-founder','Collaborators'],     bg:'#203229', you:true },
+  { init:'MJ', name:'Marcus J.',   role:'Developer',           offers:['Technical skills'],                 needs:['Clients','Visibility'],             bg:'#1a3a2a' },
+  { init:'TK', name:'Tanya K.',    role:'Designer',            offers:['Brand strategy','Feedback'],        needs:['Funding'],                          bg:'#2a1a3a' },
+  { init:'SR', name:'Sam R.',      role:'Investor',            offers:['Capital','Introductions'],          needs:['Deal flow','Founders'],             bg:'#1a2a3a' },
+  { init:'NF', name:'Nia F.',      role:'Creative',            offers:['Media coverage','Storytelling'],    needs:['Collaborators','Studio space'],     bg:'#3a2a1a' },
+  { init:'DL', name:'Devon L.',    role:'Builder',             offers:['Co-founder energy'],                needs:['Technical help','Funding'],         bg:'#2a3a1a' },
+  { init:'PR', name:'Priya R.',    role:'Educator',            offers:['Feedback','Mentorship'],            needs:['Visibility'],                       bg:'#3a1a2a' },
+  { init:'CB', name:'Chris B.',    role:'Storyteller',         offers:['Introductions','Media coverage'],   needs:['A mentor','Community'],             bg:'#1a3a3a' },
+  { init:'ZW', name:'Zoe W.',      role:'Community Organizer', offers:['Accountability','Introductions'],   needs:['Community','Workspace'],            bg:'#2a2a3a' },
+  { init:'EL', name:'Eli L.',      role:'Nonprofit',           offers:['Legal advice'],                     needs:['Funding','Collaborators'],          bg:'#3a3a1a' },
+  { init:'KM', name:'Kira M.',     role:'Founder',             offers:['Studio space','Brand strategy'],    needs:['Clients'],                          bg:'#1a2a2a' },
+  { init:'JT', name:'Jordan T.',   role:'Student',             offers:['Fresh perspective','Research'],     needs:['Mentorship','A co-founder'],        bg:'#2a1a2a' },
+];
+
+let profile = { first:'Alysha', last:'M', role:'Founder', offers:[], needs:[], hasPhoto:false };
+let flipIdx = 0;
+let currentView = 'flip';
+
+// ── NAVIGATION ─────────────────────────────────────────────────
+function goTo(id) {
+  const current = document.querySelector('.screen.active');
+  const next = document.getElementById(id);
+  if (!next || current === next) return;
+
+  current.classList.add('exit');
+  current.classList.remove('active');
+
+  setTimeout(() => {
+    current.classList.remove('exit');
+    next.classList.add('active');
+  }, 320);
+
+  updateProgress(id);
+}
+
+function updateProgress(id) {
+  const map = {
+    's-welcome':0,'s-otp':16,'s-photo':33,'s-role':50,
+    's-offer':66,'s-need':83,'screen-room-entry':95,'screen-room':100
+  };
+  const pct = map[id] ?? 0;
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+// ── S1: WELCOME ────────────────────────────────────────────────
+document.getElementById('btn-to-otp').onclick = () => {
+  const f = document.getElementById('inp-first').value.trim();
+  const l = document.getElementById('inp-last').value.trim();
+  const e = document.getElementById('inp-email').value.trim();
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  const err = document.getElementById('welcome-error');
+
+  // reset borders
+  ['inp-first','inp-last','inp-email'].forEach(id => {
+    document.getElementById(id).style.borderColor = '';
+  });
+
+  if (!f || !l || !e || !emailOk) {
+    if (!f) document.getElementById('inp-first').style.borderColor = '#ff4d6d';
+    if (!l) document.getElementById('inp-last').style.borderColor  = '#ff4d6d';
+    if (!e || !emailOk) document.getElementById('inp-email').style.borderColor = '#ff4d6d';
+    err.style.display = 'block';
+    err.textContent = !emailOk && e ? 'Please enter a valid email address.' : 'Please fill in all fields.';
+    return;
+  }
+
+  err.style.display = 'none';
+  profile.first = f;
+  profile.last  = l[0].toUpperCase();
+  document.getElementById('otp-sub').textContent = `We sent a 6-digit code to ${e}. It expires in 10 minutes.`;
+  goTo('s-otp');
+};
+
+// ── S2: OTP ────────────────────────────────────────────────────
+const otpBoxes = document.querySelectorAll('.otp-box');
+otpBoxes.forEach((box, i) => {
+  box.addEventListener('input', e => {
+    const v = e.target.value.replace(/\D/,'');
+    e.target.value = v;
+    if (v) {
+      box.classList.add('filled');
+      if (i < 5) otpBoxes[i+1].focus();
+    } else { box.classList.remove('filled'); }
+    const all = [...otpBoxes].every(b => b.value.length === 1);
+    document.getElementById('btn-verify').disabled = !all;
+  });
+  box.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !box.value && i > 0) otpBoxes[i-1].focus();
+  });
+});
+// Pre-fill OTP for demo feel
+setTimeout(()=>{
+  if (document.getElementById('s-otp').classList.contains('active')) return;
+},'100');
+document.getElementById('btn-verify').onclick = () => goTo('s-photo');
+
+// Simulate OTP autofill for demo
+function demoFillOTP() {
+  const digits = ['4','2','7','1','9','3'];
+  otpBoxes.forEach((b,i) => {
+    setTimeout(()=>{
+      b.value = digits[i]; b.classList.add('filled');
+      if (i===5) document.getElementById('btn-verify').disabled = false;
+    }, i*120+200);
+  });
+}
+
+// ── S3: PHOTO ──────────────────────────────────────────────────
+function fakePhoto() {
+  const c = document.getElementById('photo-circle');
+  c.innerHTML = `<div style="font-size:42px;font-weight:800;font-family:'Barlow Condensed',sans-serif;color:var(--green)">${profile.first[0]}${profile.last[0]}</div>`;
+  c.style.background = 'var(--dark-green)';
+  c.style.borderStyle = 'solid';
+  profile.hasPhoto = true;
+}
+document.getElementById('btn-to-role').onclick = () => goTo('s-role');
+
+// ── ROLE CHIP (single select) ──────────────────────────────────
+function setupSingleChips(groupId, btnId, customId) {
+  const chips = document.querySelectorAll(`#${groupId} .chip[data-group]`);
+  const btn = document.getElementById(btnId);
+  const customInput = document.getElementById(customId);
+
+  chips.forEach(chip => {
+    chip.onclick = () => {
+      if (chip.classList.contains('write-in')) {
+        customInput.style.display = 'block';
+        chips.forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+        customInput.focus();
+        btn.disabled = false;
+        return;
+      }
+      chips.forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      customInput.style.display = 'none';
+      profile.role = chip.textContent.trim();
+      btn.disabled = false;
+    };
+  });
+  if (customInput) {
+    customInput.addEventListener('input', () => { profile.role = customInput.value; });
+  }
+}
+
+// ── MULTI-SELECT CHIPS (offer + need, max 3) ───────────────────
+function setupMultiChips(groupId, btnId, customId, profileKey, badgeId) {
+  const chips = document.querySelectorAll(`#${groupId} .chip[data-group]`);
+  const btn   = document.getElementById(btnId);
+  const customInput = document.getElementById(customId);
+  const badge = document.getElementById(badgeId);
+  const MAX   = 3;
+  profile[profileKey] = [];
+
+  function updateBadge() {
+    const n = profile[profileKey].length;
+    badge.textContent = `${n} / ${MAX}`;
+    badge.style.color = n === MAX ? 'var(--green)' : n > 0 ? 'var(--green)' : '#555';
+    btn.disabled = n === 0;
+    // dim unselected chips when at max
+    chips.forEach(c => {
+      if (!c.classList.contains('selected') && !c.classList.contains('write-in')) {
+        c.style.opacity = n === MAX ? '0.35' : '1';
+        c.style.pointerEvents = n === MAX ? 'none' : 'auto';
+      }
+    });
+  }
+
+  chips.forEach(chip => {
+    chip.onclick = () => {
+      if (chip.classList.contains('write-in')) {
+        customInput.style.display = customInput.style.display === 'none' ? 'block' : 'none';
+        if (customInput.style.display === 'block') customInput.focus();
+        return;
+      }
+      const label = chip.textContent.trim();
+      const idx   = profile[profileKey].indexOf(label);
+      if (idx > -1) {
+        // deselect
+        profile[profileKey].splice(idx, 1);
+        chip.classList.remove('selected');
+      } else {
+        if (profile[profileKey].length >= MAX) return;
+        profile[profileKey].push(label);
+        chip.classList.add('selected');
+      }
+      updateBadge();
+    };
+  });
+
+  if (customInput) {
+    customInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && customInput.value.trim()) {
+        const label = customInput.value.trim();
+        if (profile[profileKey].length < MAX && !profile[profileKey].includes(label)) {
+          profile[profileKey].push(label);
+          // show as a selected chip inline
+          const newChip = document.createElement('div');
+          newChip.className = 'chip selected';
+          newChip.dataset.group = profileKey;
+          newChip.textContent = label;
+          newChip.onclick = () => {
+            const i = profile[profileKey].indexOf(label);
+            if (i > -1) profile[profileKey].splice(i, 1);
+            newChip.remove();
+            updateBadge();
+          };
+          document.getElementById(groupId).insertBefore(newChip, customInput.parentElement ? customInput : chips[chips.length-1]);
+          customInput.value = '';
+          customInput.style.display = 'none';
+          updateBadge();
+        }
+      }
+    });
+  }
+
+  updateBadge();
+}
+
+setupSingleChips('role-chips',  'btn-to-offer', 'role-custom');
+setupMultiChips('offer-chips', 'btn-to-need',  'offer-custom', 'offers', 'offer-count-badge');
+setupMultiChips('need-chips',  'btn-to-entry', 'need-custom',  'needs',  'need-count-badge');
+
+document.getElementById('btn-to-offer').onclick = () => goTo('s-offer');
+document.getElementById('btn-to-need').onclick  = () => goTo('s-need');
+document.getElementById('btn-to-entry').onclick = () => {
+  populateEntryCard();
+  goTo('screen-room-entry');
+  runCinematicEntry();
+};
+
+// ── CINEMATIC ENTRY ────────────────────────────────────────────
+function populateEntryCard() {
+  const initials = (profile.first[0] + (profile.last ? profile.last[0] : '')).toUpperCase();
+  document.getElementById('entry-avatar').textContent = initials;
+  document.getElementById('entry-name').textContent   = profile.first + ' ' + (profile.last || '');
+  document.getElementById('entry-role').textContent   = profile.role  || 'Founder';
+
+  const offers = profile.offers.length ? profile.offers : ['Mentorship'];
+  const needs  = profile.needs.length  ? profile.needs  : ['A co-founder'];
+
+  // render multi-chips on entry card
+  const row = document.getElementById('entry-chips-row') || document.querySelector('.entry-chips-row');
+  if (row) {
+    row.innerHTML =
+      offers.map(o => `<div class="entry-mini-chip">✦ ${o}</div>`).join('') +
+      needs.map(n  => `<div class="entry-mini-chip" style="color:#aaa">↗ ${n}</div>`).join('');
+  }
+
+  PEOPLE[0].name   = profile.first + ' ' + (profile.last || '');
+  PEOPLE[0].init   = initials;
+  PEOPLE[0].role   = profile.role   || 'Founder';
+  PEOPLE[0].offers = offers;
+  PEOPLE[0].needs  = needs;
+}
+
+function runCinematicEntry() {
+  const card = document.getElementById('entry-card');
+  const miniAvatars = document.querySelectorAll('.mini-avatar');
+  const count = document.getElementById('entry-count');
+  const btn = document.getElementById('btn-see-room');
+
+  setTimeout(()=> card.classList.add('show'), 300);
+  miniAvatars.forEach((a,i) => setTimeout(()=> a.classList.add('show'), 900 + i*150));
+  setTimeout(()=> count.classList.add('show'), 1800);
+  setTimeout(()=> btn.style.opacity = '1', 1500);
+}
+
+document.getElementById('btn-see-room').onclick = () => {
+  buildRoom();
+  goTo('screen-room');
+};
+
+// ── BUILD ROOM ─────────────────────────────────────────────────
+function buildRoom() {
+  buildFlipView();
+  buildGridView();
+  buildListView();
+}
+
+// ── FLIP VIEW ──────────────────────────────────────────────────
+function buildFlipView() {
+  const stack = document.getElementById('flip-stack');
+  stack.innerHTML = '';
+  renderFlipCards();
+}
+
+function renderFlipCards() {
+  const stack = document.getElementById('flip-stack');
+  stack.innerHTML = '';
+  const show = [flipIdx, flipIdx+1, flipIdx+2].map(i => PEOPLE[i % PEOPLE.length]);
+  show.forEach((p,i) => {
+    const el = document.createElement('div');
+    el.className = 'flip-card ' + (i===0?'top': i===1?'behind-1':'behind-2');
+    el.dataset.idx = i;
+    el.innerHTML = `
+      <div class="fc-avatar" style="background:${p.bg||'#203229'}">${p.init}</div>
+      <div class="fc-name">${p.name}${p.you?' ✦':''}</div>
+      <div class="fc-role">${p.role}</div>
+      <div class="fc-divider"></div>
+      <div class="fc-row">
+        ${(p.offers||[p.offer||'—']).map(o=>`<div class="fc-chip offer"><span class="fc-chip-icon">✦</span>${o}</div>`).join('')}
+        ${(p.needs ||[p.need ||'—']).map(n=>`<div class="fc-chip need"><span class="fc-chip-icon">↗</span>${n}</div>`).join('')}
+      </div>
+    `;
+    if (i===0) {
+      // swipe support
+      let startX=0, dx=0;
+      el.addEventListener('touchstart', e => startX = e.touches[0].clientX, {passive:true});
+      el.addEventListener('touchmove', e => {
+        dx = e.touches[0].clientX - startX;
+        el.style.transform = `translateX(${dx}px) rotate(${dx*0.05}deg)`;
+      }, {passive:true});
+      el.addEventListener('touchend', () => {
+        if (Math.abs(dx) > 70) advanceFlip(dx > 0 ? 'right' : 'left');
+        else { el.style.transform=''; }
+        dx = 0;
+      });
+    }
+    stack.appendChild(el);
+  });
+  updateFlipCounter();
+}
+
+function advanceFlip(dir) {
+  const top = document.querySelector('.flip-card.top');
+  if (!top) return;
+  top.classList.add(dir==='right'?'swiping-right':'swiping-left');
+  flipIdx = (dir==='right') ? (flipIdx+1)%PEOPLE.length : (flipIdx-1+PEOPLE.length)%PEOPLE.length;
+  setTimeout(renderFlipCards, 320);
+}
+
+function updateFlipCounter() {
+  document.getElementById('flip-counter').textContent = `${flipIdx+1} of ${PEOPLE.length}`;
+}
+
+document.getElementById('flip-prev').onclick = () => advanceFlip('left');
+document.getElementById('flip-skip').onclick = () => advanceFlip('right');
+
+// Keyboard support
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('screen-room').classList.contains('active')) return;
+  if (e.key==='ArrowRight') advanceFlip('right');
+  if (e.key==='ArrowLeft')  advanceFlip('left');
+});
+
+// ── GRID VIEW ──────────────────────────────────────────────────
+function buildGridView() {
+  const grid = document.getElementById('view-grid');
+  grid.innerHTML = '';
+  PEOPLE.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'grid-card' + (p.you?' is-you':'');
+    el.innerHTML = `
+      <div class="gc-avatar" style="background:${p.bg||'#203229'}">${p.init}</div>
+      <div class="gc-name">${p.name}</div>
+      <div class="gc-role">${p.role}</div>
+      <div class="gc-chips">
+        ${(p.offers||[p.offer||'']).map(o=>`<div class="gc-chip offer">✦ ${o}</div>`).join('')}
+        ${(p.needs ||[p.need ||'']).map(n=>`<div class="gc-chip need">↗ ${n}</div>`).join('')}
+      </div>
+      ${p.you?'<div class="you-badge">You ✦</div>':''}
+    `;
+    grid.appendChild(el);
+  });
+}
+
+// ── LIST VIEW ──────────────────────────────────────────────────
+function buildListView() {
+  const list = document.getElementById('view-list');
+  list.innerHTML = '';
+  PEOPLE.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'list-card' + (p.you?' is-you':'');
+    el.innerHTML = `
+      <div class="lc-avatar" style="background:${p.bg||'#203229'}">${p.init}</div>
+      <div class="lc-body">
+        <div class="lc-name">${p.name}${p.you?' ✦':''}</div>
+        <div class="lc-role">${p.role}</div>
+        <div class="lc-chips">
+          ${(p.offers||[p.offer||'']).map(o=>`<div class="lc-chip offer">✦ ${o}</div>`).join('')}
+          ${(p.needs ||[p.need ||'']).map(n=>`<div class="lc-chip need">↗ ${n}</div>`).join('')}
+        </div>
+      </div>
+      ${!p.you?`<div class="comment-btn" onclick="openComment('${p.name}')">💬</div>`:''}
+    `;
+    list.appendChild(el);
+  });
+}
+
+// ── VIEW TABS ──────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentView = tab.dataset.view;
+    document.getElementById('view-flip').classList.toggle('visible', currentView==='flip');
+    document.getElementById('view-grid').classList.toggle('visible', currentView==='grid');
+    document.getElementById('view-list').classList.toggle('visible', currentView==='list');
+  };
+});
+
+// ── COMMENT MODAL ──────────────────────────────────────────────
+function openComment(name) {
+  document.getElementById('comment-target-name').textContent = name;
+  document.getElementById('comment-modal').classList.add('show');
+  document.querySelectorAll('.comment-chip').forEach(c => c.classList.remove('sel'));
+}
+function closeComment() {
+  document.getElementById('comment-modal').classList.remove('show');
+}
+document.getElementById('comment-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('comment-modal')) closeComment();
+});
+document.querySelectorAll('.comment-chip').forEach(c => {
+  c.onclick = () => c.classList.toggle('sel');
+});
+
+// ── INPUT VALIDATION RESET ─────────────────────────────────────
+['inp-first','inp-last','inp-email'].forEach(id => {
+  document.getElementById(id).addEventListener('input', e => {
+    e.target.style.borderColor = '';
+    document.getElementById('welcome-error').style.display = 'none';
+  });
+});
+
+// ── OTP DEMO: auto-fill when screen becomes active ────────────
+const otpObserver = new MutationObserver(() => {
+  if (document.getElementById('s-otp').classList.contains('active')) {
+    demoFillOTP();
+    otpObserver.disconnect();
+  }
+});
+otpObserver.observe(document.getElementById('s-otp'), { attributes: true, attributeFilter: ['class'] });
+</script>
+<!-- ═══════════════════════════════════════════════════════
+     FUNCTIONAL PRODUCT TASK LIST
+     Appended as reference. Full list below.
+
+     ── PHASE 0: FOUNDATION (Before first event) ──────────
+     [ ] Supabase project created, RLS enabled on all tables
+     [ ] 6 tables created: attendees, events, event_attendees,
+         chips, survey_responses, connections
+     [ ] Resend (or Postmark) account connected for OTP email
+     [ ] OTP flow: generate, hash, store, verify, expire 10min
+     [ ] QR code generator: unique URL per event (/event/[id])
+     [ ] Vercel deployment pipeline wired to GitHub
+     [ ] Doppler connected for secrets management
+     [ ] Supabase Storage bucket for photo uploads
+     [ ] Cloudinary fallback configured (optional)
+     [ ] Seed chip pool with default role/offer/need labels
+     [ ] Privacy disclosure copy drafted (one sentence + link)
+     [ ] Admin route protected: /admin/[event-id]
+
+     ── PHASE 1: PILOT BUILD ──────────────────────────────
+     [ ] Screen 1: Name + email input, validation, submit
+     [ ] Screen 2: OTP 6-box input, auto-advance, verify
+     [ ] Screen 3: Photo upload (circular crop, skip allowed)
+     [ ] Screen 4: Role chip (single select + write-in)
+     [ ] Screen 5: Offer chips (multi-select max 3 + write-in)
+     [ ] Screen 6: Need chips (multi-select max 3 + write-in)
+     [ ] Write-in chips enter moderation queue (approved:false)
+     [ ] Returning attendee: pre-populated profile on re-scan
+     [ ] Cinematic entry screen: card drops in, others fade in
+     [ ] Room view: Supabase Realtime subscription for live updates
+     [ ] Flip view: swipe + button nav, counter, keyboard support
+     [ ] Grid view: 2-col card layout, you-card highlighted
+     [ ] List view: row cards, comment button per person
+     [ ] Comment sheet: preset tags + free text, send action
+     [ ] Post-event survey: 7 questions, one per screen
+     [ ] Survey responses write on advance (not final submit)
+     [ ] Admin view: live scan count, attendee table, responses
+     [ ] Admin CSV export: attendees + survey responses
+     [ ] Admin chip queue: approve/reject write-ins
+     [ ] End-of-night manual recap email template (Resend)
+
+     ── PHASE 2: ACTIVATION ───────────────────────────────
+     [ ] Connection request: tap to connect on any card
+     [ ] Mutual interest gate: full profile only on match
+     [ ] Passive match scoring: offer/need chip overlap algorithm
+     [ ] Match suggestion surface: "You might want to meet..."
+     [ ] In-event email nudge when someone requests connection
+     [ ] Automated end-of-night recap email (Supabase Edge Function)
+     [ ] Returning attendee streak display ("Your 3rd event")
+     [ ] Previous connections surfaced on re-scan
+     [ ] Multi-QR support: entry, exit, table, speaker QR params
+     [ ] Analytics dashboard: attendance trends, chip frequency maps
+     [ ] Connection graph visualization
+     [ ] Survey sentiment scoring over time
+     [ ] Membership conversion funnel tracking
+     [ ] One-click grant-ready impact export
+
+     ── PHASE 3: EQUAL POINT BRIDGE ───────────────────────
+     [ ] Equal Point schema finalized and C-Corp filed
+     [ ] Futureland <> Equal Point API spec written
+     [ ] Soft invite trigger: after N events attended
+     [ ] Profile handoff: chips, history, connections pre-populate EP
+     [ ] Decision: Futureland DB syncs to EP, or EP becomes the DB
+     [ ] Data ownership agreement between FL Inc. and EP C-Corp
+     [ ] Equal Point onboarding flow accepts Futureland identity
+
+     ── ONGOING ───────────────────────────────────────────
+     [ ] Chip pool review between every event
+     [ ] Survey question rotation configured per event in admin
+     [ ] Attendee data export for grant reporting (quarterly)
+     [ ] Privacy policy kept current as features activate
+     [ ] Nicole trained on admin view before each event
+     [ ] Brent monitors Supabase Realtime stability day-of
+
+═══════════════════════════════════════════════════════ -->
+
+</body>
+</html>

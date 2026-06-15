@@ -1,0 +1,39 @@
+/* ============================================================
+   SODA — Effects: radii, borders, shadows, motion
+   Cards are flat: a 1px hairline border on a raised surface, no
+   drop shadow. The only real shadow in the system is the device
+   itself. Corners are generous; pills are fully round. Motion is
+   quick and calm (.15s ease) — no bounce, no theater.
+   ============================================================ */
+:root {
+  /* ---- Radii ---- */
+  --r-xs:    8px;    /* small chips on logos, tiny tags          */
+  --r-sm:    10px;   /* inputs, buttons (small)                  */
+  --r-md:    11px;   /* buttons, search field                   */
+  --r-lg:    13px;   /* standard card                           */
+  --r-xl:    15px;   /* roomy panel / overview wrap              */
+  --r-2xl:   16px;   /* large container                         */
+  --r-pill:  100px;  /* chips, signal badges, toasts            */
+  --r-full:  50%;    /* avatars, dots                           */
+  --r-device:42px;   /* phone bezel                             */
+
+  /* ---- Border widths ---- */
+  --bw-hair:   1px;  /* default hairline                        */
+  --bw-accent: 2px;  /* section underline (green)               */
+  --bw-bar:    3px;  /* left/edge accent bar on prompts         */
+
+  /* ---- Shadows ---- */
+  --shadow-none:   none;
+  --shadow-device: 0 30px 80px rgba(0, 0, 0, 0.6);  /* the phone */
+  --shadow-pop:    0 12px 40px rgba(0, 0, 0, 0.45);  /* modals    */
+  --shadow-toast:  0 8px 24px rgba(0, 0, 0, 0.4);
+
+  /* ---- Focus ring ---- */
+  --focus-ring:    var(--accent);   /* inputs focus to green border */
+
+  /* ---- Motion ---- */
+  --ease:         cubic-bezier(0.4, 0, 0.2, 1);  /* @kind other */
+  --dur-fast:     0.15s;   /* @kind other */
+  --dur-base:     0.3s;    /* @kind other */
+  --dur-slow:     0.5s;    /* @kind other */
+}

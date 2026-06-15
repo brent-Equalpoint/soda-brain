@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0"/>
+<title>SODA &#183; Profile Flow Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--g:#3BD75C;--dg:#203229;--ch:#0c0d0c;--c1:#161816;--c2:#1d1f1d;--bd:#262826;--bd2:#363936;--pu:#A47BFF;--am:#F59E0B;--ye:#FFD23F;--t0:#fff;--t1:#c8ccc8;--t2:#74786f;--t3:#3e423e}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--ch);color:var(--t1);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:var(--g);color:var(--ch)}
+.wrap{max-width:760px;margin:0 auto;padding:30px 18px 80px}
+.head{margin-bottom:24px}
+.brand{font-family:'DM Mono';font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--g);margin-bottom:12px}
+.head h1{font-family:'Archivo Black';font-size:clamp(26px,6vw,40px);color:var(--t0);text-transform:uppercase;letter-spacing:-.02em;line-height:.95;margin-bottom:14px}
+.head p{font-size:15px;color:var(--t1);font-weight:300;max-width:580px}
+.head .own{font-family:'DM Mono';font-size:11px;color:var(--t3);margin-top:12px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:26px 0;font-family:'DM Mono';font-size:11px;color:var(--t2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.lg{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+.phase-label{font-family:'DM Mono';font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--g);margin:24px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+.node{display:flex;gap:14px;align-items:flex-start;background:var(--c1);border:1px solid var(--bd);border-radius:14px;padding:15px 16px;margin-bottom:8px;position:relative}
+.node.hub{border-color:rgba(59,215,92,.4);background:rgba(59,215,92,.04)}
+.node.tab{border-color:rgba(59,215,92,.22)}
+.node.detail{border-color:var(--bd2)}
+.node.loop{border-color:rgba(164,123,255,.4);background:rgba(164,123,255,.05)}
+.node.future{border-style:dashed;border-color:var(--bd2);background:transparent;opacity:.92}
+.node-n{font-family:'Archivo Black';font-size:13px;color:var(--ch);background:var(--g);border-radius:7px;padding:5px 8px;line-height:1;flex:0 0 auto;min-width:30px;text-align:center}
+.node.loop .node-n{background:var(--pu);color:#fff}
+.node.future .node-n{background:var(--c2);color:var(--t2)}
+.node-body{flex:1;min-width:0}
+.node-body h3{font-size:16px;color:var(--t0);font-weight:700;line-height:1.2}
+.node-body h3 .tag{font-family:'DM Mono';font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:100px;margin-left:8px;vertical-align:middle}
+.tag.spec{color:var(--ye);background:rgba(255,210,63,.13)}
+.tag.soon{color:var(--t2);background:var(--c2)}
+.node-body .trig{font-family:'DM Mono';font-size:11px;color:var(--t2);margin-top:4px;line-height:1.45}
+.node-body .trig b{color:var(--g);font-weight:500}
+.node-body .trig .p{color:var(--pu);font-weight:500}
+.arrow{text-align:center;color:var(--t3);font-size:15px;margin:1px 0 1px 14px;line-height:1}
+.branchwrap{margin:8px 0 8px 28px;padding-left:16px;border-left:2px dashed var(--bd2)}
+.branchwrap .blabel{font-family:'DM Mono';font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--t2);margin-bottom:8px}
+.tabrow{display:flex;gap:8px;margin:6px 0 8px}
+.tabchip{flex:1;text-align:center;font-family:'DM Mono';font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:9px 6px;border-radius:10px;border:1px solid var(--bd2);color:var(--t2)}
+.tabchip.on{border-color:var(--g);color:var(--g);background:rgba(59,215,92,.05)}
+.loopbox{border:1px solid rgba(164,123,255,.3);border-radius:14px;padding:14px 14px 6px;margin:10px 0;background:rgba(164,123,255,.03)}
+.loopbox .lh{font-family:'DM Mono';font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--pu);margin-bottom:12px}
+.foot{margin-top:40px;padding-top:24px;border-top:1px solid var(--bd);text-align:center}
+.foot p{font-size:13px;color:var(--t2);font-style:italic}
+@media(max-width:520px){.tabrow{flex-direction:column}}
+</style></head>
+<body><div class="wrap">
+<div class="head">
+  <div class="brand">SODA &#10038; PROFILE FLOW MAP</div>
+  <h1>The Home Area,<br>Where the Room Stays With You</h1>
+  <p>How a guest moves through their profile between events: the home shell, the three tabs, the detail screens they open, and the follow-up loop that warmth decay drives. The companion to the event-night flow.</p>
+  <div class="own">A product of Equalpoint, Inc. &#183; Companion to the simulation</div>
+</div>
+
+<div class="legend">
+  <span><span class="lg" style="background:var(--g)"></span> Hub and tabs</span>
+  <span><span class="lg" style="background:var(--bd2)"></span> Detail screen</span>
+  <span><span class="lg" style="background:var(--pu)"></span> Follow-up loop</span>
+  <span><span class="lg" style="background:transparent;border:1px dashed var(--bd2)"></span> Reserved, soon</span>
+</div>
+
+<div class="phase-label">How a guest enters the home</div>
+<div class="node"><div class="node-n">In</div><div class="node-body"><h3>Entry to the home</h3><div class="trig">trigger: <b>the event ends</b> and the guest opens the recap, or they <b>reopen the app</b> any day after. Either way they land on the home, on the Overview tab.</div></div></div>
+<div class="arrow">&#8595;</div>
+
+<div class="phase-label">The hub</div>
+<div class="node hub"><div class="node-n">17</div><div class="node-body"><h3>The Home Shell <span class="tag spec">Spec done</span></h3><div class="trig">The frame for everything: a compact profile header on top, tappable to the full profile, and the three tabs at the bottom. A <span class="p">purple dot</span> on Contacts when follow-ups wait.</div>
+<div class="tabrow"><div class="tabchip on">Overview</div><div class="tabchip on">Events</div><div class="tabchip on">Contacts</div></div></div></div>
+
+<div class="branchwrap">
+  <div class="blabel">Tap the profile header</div>
+  <div class="node detail"><div class="node-n">P</div><div class="node-body"><h3>Profile Detail and Edit <span class="tag soon">Next</span></h3><div class="trig">trigger: <b>tap the header</b>. View and edit the micro-profile, name, role, and the offer and need chips. Returns to the tab you were on. Specified next.</div></div></div>
+</div>
+
+<div class="phase-label">Tab one: Overview, the landing</div>
+<div class="node tab"><div class="node-n">18</div><div class="node-body"><h3>The Overview Tab <span class="tag spec">Spec done</span></h3><div class="trig">A greeting, a recent-events strip, the people-you-synced-with block, and an experience card drawn from the survey. The dashboard that routes to the other two tabs.</div></div></div>
+<div class="branchwrap">
+  <div class="blabel">Routes out of Overview</div>
+  <div class="node tab"><div class="node-n">&#8594;</div><div class="node-body"><h3>Recent events &#8594; Events tab</h3><div class="trig">trigger: <b>tap a recent event or See all</b>. Opens the Events tab.</div></div></div>
+  <div class="node tab"><div class="node-n">&#8594;</div><div class="node-body"><h3>Synced people &#8594; Contacts</h3><div class="trig">trigger: <b>tap a person or See all</b>. Opens a contact, or the Contacts tab.</div></div></div>
+</div>
+
+<div class="phase-label">Tab two: Events, the history</div>
+<div class="node tab"><div class="node-n">19</div><div class="node-body"><h3>The Events Tab <span class="tag spec">Spec done</span></h3><div class="trig">The full history, newest first. Each row carries the host identity, date, the <b>where-you-met location</b>, and a count of people met.</div></div></div>
+<div class="arrow">&#8595;</div>
+<div class="node detail"><div class="node-n">Ed</div><div class="node-body"><h3>Event Detail <span class="tag soon">Next</span></h3><div class="trig">trigger: <b>tap an event row</b>. The people you met there and the recap. Each person opens their contact.</div></div></div>
+
+<div class="phase-label">Tab three: Contacts, the rolodex</div>
+<div class="node tab"><div class="node-n">20</div><div class="node-body"><h3>The Contacts Tab <span class="tag spec">Spec done</span></h3><div class="trig">A dismissible overview of recent people with three signals, <b>saved</b>, <b>reached out</b>, and a <span class="p">follow-up nudge</span>, sitting on the full searchable rolodex.</div></div></div>
+<div class="branchwrap">
+  <div class="blabel">Two layers, one tab</div>
+  <div class="node tab"><div class="node-n">a</div><div class="node-body"><h3>The overview, dismissible</h3><div class="trig">Leads with <span class="p">People to reach out to</span>. A close control collapses it to reveal the whole list.</div></div></div>
+  <div class="node tab"><div class="node-n">b</div><div class="node-body"><h3>The rolodex</h3><div class="trig">Search, then every contact. Each row: avatar, name, role, the met-at line, and a reserved action.</div></div></div>
+</div>
+<div class="arrow">&#8595;</div>
+<div class="node detail"><div class="node-n">Cd</div><div class="node-body"><h3>Contact Detail</h3><div class="trig">trigger: <b>tap a contact</b>. Their met-at line, their warmth, their signal, and the actions: <b>reach out</b>, <b>save</b>, and the reserved share.</div></div></div>
+
+<div class="phase-label">The follow-up loop</div>
+<div class="loopbox"><div class="lh">&#9679; What warmth decay drives, over time</div>
+  <div class="node loop"><div class="node-n">78</div><div class="node-body"><h3>Warmth decays</h3><div class="trig">Every contact cools on the platform curve as days pass without contact. Saved and matched people carry intent, casual ones cool quietly.</div></div></div>
+  <div class="arrow">&#8595;</div>
+  <div class="node loop"><div class="node-n">&#9679;</div><div class="node-body"><h3>A follow-up nudge surfaces</h3><div class="trig">trigger: <b>time passes</b> and an intent contact cools past the threshold. A <span class="p">purple nudge</span> appears in the Contacts overview and on the tab.</div></div></div>
+  <div class="arrow">&#8595;</div>
+  <div class="node loop"><div class="node-n">&#8635;</div><div class="node-body"><h3>Reach out, or dismiss</h3><div class="trig">Reaching out <b>refreshes warmth to full</b> and clears the nudge. Dismissing is <span class="p">logged as a signal</span>, so the system learns who not to nudge. SODA never messages on the guest’s behalf.</div></div></div>
+</div>
+
+<div class="phase-label">Reserved, building soon</div>
+<div class="node future"><div class="node-n">S1</div><div class="node-body"><h3>Scan to add a contact <span class="tag soon">Soon</span></h3><div class="trig">Opens from the add or scan affordance in the Contacts header.</div></div></div>
+<div class="node future"><div class="node-n">S2</div><div class="node-body"><h3>Share slide-up <span class="tag soon">Soon</span></h3><div class="trig">Rises from a contact’s action to text, email, or share that contact.</div></div></div>
+<div class="node future"><div class="node-n">S3</div><div class="node-body"><h3>Location history <span class="tag soon">Soon</span></h3><div class="trig">Builds on the met-at line, auto-filled from the event, editable by hand.</div></div></div>
+
+<div class="foot"><p>A name tag knows you showed up. SODA knows who you became to the room, and the home is where the room stays with you.</p></div>
+</div></body></html>

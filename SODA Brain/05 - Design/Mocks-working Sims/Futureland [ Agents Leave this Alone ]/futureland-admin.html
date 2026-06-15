@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Futureland Admin — Room Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --green:       #3BD75C;
+  --dark-green:  #203229;
+  --charcoal:    #212121;
+  --light:       #E5E5E5;
+  --mid:         #2a2a2a;
+  --card:        #1c1c1c;
+  --border:      #2e2e2e;
+  --muted:       #555;
+  --text:        #ccc;
+  --red:         #ff4d6d;
+  --amber:       #f59e0b;
+  --blue:        #3b82f6;
+  --sidebar-w:   220px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%; font-family: 'DM Sans', sans-serif;
+  background: var(--charcoal); color: var(--text);
+  overflow: hidden;
+}
+
+/* ── LAYOUT ── */
+.layout {
+  display: flex; height: 100vh; width: 100vw;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w); background: #161616;
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  flex-shrink: 0; z-index: 10;
+}
+.sidebar-brand {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.brand-logo {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px; font-weight: 800; color: var(--green);
+  letter-spacing: 1px;
+}
+.brand-sub {
+  font-size: 10px; color: var(--muted); letter-spacing: 2px;
+  text-transform: uppercase; margin-top: 2px;
+}
+
+.event-pill {
+  margin: 14px 14px 0;
+  background: var(--dark-green); border-radius: 10px;
+  border: 1px solid rgba(59,215,92,0.2);
+  padding: 10px 12px;
+}
+.event-pill-label { font-size: 9px; color: var(--green); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 3px; font-weight: 600; }
+.event-pill-name { font-size: 13px; color: var(--light); font-weight: 600; }
+.event-pill-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.sidebar-nav { flex: 1; padding: 16px 10px; display: flex; flex-direction: column; gap: 2px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 10px;
+  font-size: 13px; font-weight: 500; color: var(--muted);
+  cursor: pointer; transition: all 0.15s;
+  border: none; background: transparent; text-align: left; width: 100%;
+}
+.nav-item:hover { background: var(--mid); color: var(--light); }
+.nav-item.active { background: var(--dark-green); color: var(--green); }
+.nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto; background: var(--green); color: var(--charcoal);
+  font-size: 10px; font-weight: 700; border-radius: 100px;
+  padding: 1px 7px; min-width: 20px; text-align: center;
+}
+.nav-badge.red { background: var(--red); color: white; }
+.nav-badge.amber { background: var(--amber); color: var(--charcoal); }
+
+.sidebar-footer {
+  padding: 14px; border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--muted);
+}
+.admin-who { display: flex; align-items: center; gap: 8px; }
+.admin-av {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--dark-green); border: 1.5px solid var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 11px;
+  font-weight: 800; color: var(--green); flex-shrink: 0;
+}
+.admin-name { font-size: 12px; color: var(--light); font-weight: 500; }
+.admin-role { font-size: 10px; color: var(--muted); }
+
+/* ── MAIN CONTENT ── */
+.main {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden; min-width: 0;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 56px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  background: #161616;
+}
+.topbar-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px; font-weight: 800; color: var(--light);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.live-pill {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--green); font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 5px 12px; border-radius: 100px;
+  border: 1px solid rgba(59,215,92,0.3);
+  background: rgba(59,215,92,0.08);
+}
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); animation: pulse 1.4s ease infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+
+.topbar-btn {
+  padding: 7px 16px; border-radius: 8px; font-size: 12px;
+  font-weight: 600; cursor: pointer; transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif; border: 1.5px solid var(--border);
+  background: transparent; color: var(--muted);
+}
+.topbar-btn:hover { border-color: var(--green); color: var(--green); }
+.topbar-btn.primary {
+  background: var(--dark-green); color: var(--green);
+  border-color: var(--dark-green);
+}
+.topbar-btn.primary:hover { background: #162620; }
+
+/* ── PANELS (views) ── */
+.panel { display: none; flex: 1; overflow-y: auto; padding: 20px 24px 40px; }
+.panel.active { display: block; }
+
+/* ── STAT CARDS ROW ── */
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px 18px;
+}
+.stat-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+.stat-value {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 36px; font-weight: 800; color: var(--light); line-height: 1;
+}
+.stat-value.green { color: var(--green); }
+.stat-value.amber { color: var(--amber); }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+.stat-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+.stat-bar-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 1s ease; }
+
+/* ── SECTION HEADER ── */
+.section-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; margin-top: 4px;
+}
+.section-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px; font-weight: 700; color: var(--light);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.section-action {
+  font-size: 11px; color: var(--green); cursor: pointer;
+  font-weight: 600; letter-spacing: 0.5px;
+}
+.section-action:hover { text-decoration: underline; }
+
+/* ── TWO COLUMN ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+/* ── ROOM GRID ── */
+.room-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px; margin-bottom: 20px;
+}
+.room-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px;
+  transition: border-color 0.2s, transform 0.2s;
+  cursor: pointer; position: relative;
+}
+.room-card:hover { border-color: rgba(59,215,92,0.3); transform: translateY(-1px); }
+.room-card.new-scan { border-color: var(--green); animation: newScan 2s ease forwards; }
+@keyframes newScan {
+  0%   { box-shadow: 0 0 0 0 rgba(59,215,92,0.4); }
+  50%  { box-shadow: 0 0 0 8px rgba(59,215,92,0); }
+  100% { box-shadow: none; border-color: var(--border); }
+}
+.rc-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.rc-av {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  border: 1.5px solid var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px; font-weight: 800; color: var(--green);
+}
+.rc-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px; font-weight: 800; color: var(--light);
+  text-transform: uppercase; line-height: 1.1;
+}
+.rc-role { font-size: 10px; color: var(--green); letter-spacing: 1px; text-transform: uppercase; }
+.rc-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.rc-chip {
+  font-size: 10px; padding: 3px 8px; border-radius: 100px;
+}
+.rc-chip.offer { background: rgba(59,215,92,0.1); color: var(--green); }
+.rc-chip.need  { background: rgba(255,255,255,0.04); color: #666; border: 1px solid #333; }
+.rc-time { position: absolute; top: 10px; right: 10px; font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+.rc-survey { position: absolute; bottom: 10px; right: 10px; font-size: 10px; }
+.rc-survey.done { color: var(--green); }
+.rc-survey.pending { color: var(--muted); }
+
+/* ── CHIP BARS ── */
+.chip-bars { display: flex; flex-direction: column; gap: 8px; }
+.chip-bar { display: flex; align-items: center; gap: 10px; }
+.chip-bar-label { font-size: 12px; color: var(--text); min-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chip-bar-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.chip-bar-fill { height: 100%; border-radius: 3px; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
+.chip-bar-fill.offer { background: var(--green); }
+.chip-bar-fill.need  { background: var(--amber); }
+.chip-bar-ct { font-size: 11px; color: var(--muted); min-width: 20px; text-align: right; font-family: 'JetBrains Mono', monospace; }
+
+/* ── FEED ITEMS ── */
+.feed { display: flex; flex-direction: column; gap: 8px; }
+.feed-item {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.feed-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.feed-body { flex: 1; min-width: 0; }
+.feed-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+.feed-text strong { color: var(--light); font-weight: 600; }
+.feed-text .hl { color: var(--green); font-weight: 600; }
+.feed-time { font-size: 10px; color: var(--muted); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+.feed-item.match-item { border-color: rgba(59,215,92,0.15); }
+.feed-item.survey-item { border-color: rgba(59,130,246,0.15); }
+.feed-item.flag-item { border-color: rgba(245,158,11,0.2); }
+
+/* ── SURVEY TABLE ── */
+.s-table { width: 100%; border-collapse: collapse; }
+.s-table th {
+  text-align: left; font-size: 10px; color: var(--muted);
+  letter-spacing: 2px; text-transform: uppercase; font-weight: 600;
+  padding: 8px 12px; border-bottom: 1px solid var(--border);
+}
+.s-table td {
+  padding: 11px 12px; font-size: 13px; color: var(--text);
+  border-bottom: 1px solid var(--border); vertical-align: top;
+}
+.s-table tr:hover td { background: rgba(255,255,255,0.02); }
+.s-table td:first-child { color: var(--light); font-weight: 500; }
+.s-rating { color: var(--green); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.s-open { font-size: 12px; color: var(--muted); font-style: italic; line-height: 1.5; }
+
+/* ── CHIP QUEUE ── */
+.chip-q-item {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+}
+.chip-q-tag {
+  padding: 5px 12px; border-radius: 100px;
+  font-size: 12px; font-weight: 600;
+  border: 1.5px solid var(--amber); color: var(--amber);
+  background: rgba(245,158,11,0.08);
+}
+.chip-q-meta { flex: 1; font-size: 12px; color: var(--muted); }
+.chip-q-meta strong { color: var(--text); }
+.chip-q-actions { display: flex; gap: 6px; }
+.chip-q-btn {
+  padding: 5px 12px; border-radius: 8px; font-size: 11px;
+  font-weight: 600; cursor: pointer; border: 1.5px solid;
+  transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+}
+.chip-q-btn.approve {
+  border-color: var(--green); color: var(--green); background: transparent;
+}
+.chip-q-btn.approve:hover { background: var(--dark-green); }
+.chip-q-btn.reject {
+  border-color: #444; color: var(--muted); background: transparent;
+}
+.chip-q-btn.reject:hover { border-color: var(--red); color: var(--red); }
+
+/* ── MANUAL CHECK-IN ── */
+.checkin-form { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+.checkin-row { display: flex; gap: 10px; margin-bottom: 12px; }
+.ci-input {
+  flex: 1; background: var(--mid); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 11px 14px; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; color: var(--light); outline: none; transition: border-color 0.2s;
+}
+.ci-input:focus { border-color: var(--green); }
+.ci-input::placeholder { color: #444; }
+.ci-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.ci-chip {
+  padding: 6px 12px; border-radius: 100px;
+  border: 1.5px solid var(--border); background: var(--mid);
+  font-size: 12px; color: var(--muted); cursor: pointer; transition: all 0.15s;
+}
+.ci-chip:hover { border-color: var(--green); color: var(--light); }
+.ci-chip.sel { background: var(--dark-green); color: var(--green); border-color: var(--green); }
+.ci-btn {
+  padding: 11px 24px; background: var(--dark-green); color: var(--green);
+  border: none; border-radius: 10px; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 16px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  cursor: pointer; transition: all 0.2s;
+}
+.ci-btn:hover { background: #162620; }
+
+/* ── ANNOUNCE MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+  z-index: 100; align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: #1a1a1a; border: 1px solid var(--border);
+  border-radius: 18px; padding: 28px; width: 480px; max-width: 95vw;
+}
+.modal-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px; font-weight: 800; color: var(--light);
+  text-transform: uppercase; margin-bottom: 16px;
+}
+.modal-textarea {
+  width: 100%; background: var(--mid); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 14px; color: var(--light);
+  font-family: 'DM Sans', sans-serif; font-size: 14px;
+  resize: none; outline: none; line-height: 1.6; margin-bottom: 14px;
+  transition: border-color 0.2s;
+}
+.modal-textarea:focus { border-color: var(--green); }
+.modal-textarea::placeholder { color: #444; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.modal-btn {
+  padding: 10px 22px; border-radius: 10px; font-size: 13px;
+  font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  border: 1.5px solid var(--border); background: transparent; color: var(--muted);
+  transition: all 0.2s;
+}
+.modal-btn:hover { color: var(--light); border-color: #555; }
+.modal-btn.primary {
+  background: var(--dark-green); color: var(--green);
+  border-color: var(--dark-green);
+}
+.modal-btn.primary:hover { background: #162620; }
+
+/* ── EXPORT PANEL ── */
+.export-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 16px;
+}
+.export-icon { font-size: 28px; flex-shrink: 0; }
+.export-body { flex: 1; }
+.export-title { font-size: 14px; color: var(--light); font-weight: 600; margin-bottom: 3px; }
+.export-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.export-btn {
+  padding: 9px 18px; background: var(--dark-green); color: var(--green);
+  border: none; border-radius: 10px; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+}
+.export-btn:hover { background: #162620; }
+.export-btn.done { background: var(--border); color: var(--green); }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 28px; right: 28px; z-index: 200;
+  background: var(--dark-green); color: var(--green);
+  border: 1px solid rgba(59,215,92,0.3); border-radius: 12px;
+  padding: 12px 20px; font-size: 13px; font-weight: 600;
+  transform: translateY(20px); opacity: 0;
+  transition: all 0.3s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ── SURVEY CREATOR ── */
+.sq-bank {
+  display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;
+}
+.sq-bank-item {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: border-color 0.15s;
+}
+.sq-bank-item:hover { border-color: rgba(59,215,92,0.3); }
+.sq-bank-item.anchor { border-color: rgba(59,215,92,0.2); background: rgba(32,50,41,0.3); }
+.sq-bank-item.in-set { border-color: var(--green); background: rgba(32,50,41,0.4); }
+.sq-tag {
+  font-size: 10px; padding: 3px 9px; border-radius: 100px;
+  font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  flex-shrink: 0;
+}
+.sq-tag.anchor { background: rgba(59,215,92,0.15); color: var(--green); border: 1px solid rgba(59,215,92,0.3); }
+.sq-tag.rotate { background: rgba(59,130,246,0.12); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+.sq-tag.open   { background: rgba(245,158,11,0.1);  color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+.sq-body { flex: 1; min-width: 0; }
+.sq-q { font-size: 13px; color: var(--light); font-weight: 500; line-height: 1.4; }
+.sq-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.sq-type-badge {
+  font-size: 10px; color: var(--muted); padding: 3px 8px;
+  border: 1px solid var(--border); border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace; flex-shrink: 0;
+}
+.sq-action {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px;
+  border: 1.5px solid var(--border); background: transparent;
+  color: var(--muted); font-size: 14px; cursor: pointer;
+  transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+}
+.sq-action:hover { border-color: var(--green); color: var(--green); }
+.sq-action.remove { border-color: transparent; }
+.sq-action.remove:hover { border-color: var(--red); color: var(--red); }
+
+.active-set {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px; margin-bottom: 20px;
+}
+.active-set-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.active-set-item:last-child { border-bottom: none; padding-bottom: 0; }
+.set-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--dark-green); color: var(--green);
+  font-size: 11px; font-weight: 800; display: flex;
+  align-items: center; justify-content: center;
+  flex-shrink: 0; font-family: 'Barlow Condensed', sans-serif;
+}
+.set-drag { color: #444; cursor: grab; font-size: 14px; flex-shrink: 0; }
+.set-q { flex: 1; font-size: 13px; color: var(--light); line-height: 1.4; }
+.set-type { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
+
+.creator-add-form {
+  background: var(--card); border: 1px dashed var(--border);
+  border-radius: 14px; padding: 18px; margin-bottom: 20px;
+}
+.creator-row { display: flex; gap: 10px; margin-bottom: 10px; }
+.creator-select {
+  background: var(--mid); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 10px 14px; color: var(--light);
+  font-family: 'DM Sans', sans-serif; font-size: 13px;
+  outline: none; cursor: pointer; transition: border-color 0.2s;
+  flex-shrink: 0;
+}
+.creator-select:focus { border-color: var(--green); }
+.set-summary {
+  display: flex; gap: 12px; padding: 14px;
+  background: rgba(32,50,41,0.4); border: 1px solid rgba(59,215,92,0.2);
+  border-radius: 12px; margin-bottom: 16px; align-items: center;
+}
+.set-summary-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.set-summary-n { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 800; color: var(--green); }
+.set-summary-l { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+.set-summary-divider { width: 1px; background: var(--border); align-self: stretch; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .two-col, .three-col { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .room-grid { grid-template-columns: 1fr 1fr; }
+  .panel { padding: 14px 14px 32px; }
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">FUTURELAND ✦</div>
+      <div class="brand-sub">Admin · Room Intelligence</div>
+    </div>
+
+    <div class="event-pill">
+      <div class="event-pill-label">Active Event</div>
+      <div class="event-pill-name">Creative Meetup</div>
+      <div class="event-pill-date">June 2026 · Cleveland</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-panel="room" onclick="showPanel('room')">
+        <span class="nav-icon">⊞</span> The Room
+        <span class="nav-badge" id="nav-room-ct">24</span>
+      </button>
+      <button class="nav-item" data-panel="chips" onclick="showPanel('chips')">
+        <span class="nav-icon">◈</span> Chip Intel
+      </button>
+      <button class="nav-item" data-panel="matches" onclick="showPanel('matches')">
+        <span class="nav-icon">✦</span> Matches
+        <span class="nav-badge" id="nav-match-ct">12</span>
+      </button>
+      <button class="nav-item" data-panel="survey" onclick="showPanel('survey')">
+        <span class="nav-icon">◎</span> Survey Feed
+        <span class="nav-badge" id="nav-survey-ct">18</span>
+      </button>
+      <button class="nav-item" data-panel="queue" onclick="showPanel('queue')">
+        <span class="nav-icon">⚑</span> Chip Queue
+        <span class="nav-badge amber" id="nav-queue-ct">4</span>
+      </button>
+      <button class="nav-item" data-panel="checkin" onclick="showPanel('checkin')">
+        <span class="nav-icon">＋</span> Check-in
+      </button>
+      <button class="nav-item" data-panel="export" onclick="showPanel('export')">
+        <span class="nav-icon">↓</span> Export
+      </button>
+      <button class="nav-item" data-panel="creator" onclick="showPanel('creator')">
+        <span class="nav-icon">✎</span> Survey Creator
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-who">
+        <div class="admin-av">AM</div>
+        <div>
+          <div class="admin-name">Alysha M.</div>
+          <div class="admin-role">President · Futureland</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">The Room</div>
+      <div class="topbar-right">
+        <div class="live-pill"><div class="live-dot"></div>Live · Updating</div>
+        <button class="topbar-btn" onclick="showPanel('creator')">✎ Survey</button>
+        <button class="topbar-btn" onclick="openAnnounce()">📣 Announce</button>
+        <button class="topbar-btn primary" onclick="showPanel('export')">↓ Export</button>
+      </div>
+    </div>
+
+    <!-- ════════════════ ROOM PANEL ════════════════ -->
+    <div class="panel active" id="panel-room">
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Scanned In</div>
+          <div class="stat-value green" id="s-scanned">24</div>
+          <div class="stat-sub">of 38 expected</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:63%"></div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Connections Made</div>
+          <div class="stat-value" id="s-connections">12</div>
+          <div class="stat-sub">tonight so far</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:40%;background:var(--blue)"></div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Survey Complete</div>
+          <div class="stat-value amber" id="s-surveys">18</div>
+          <div class="stat-sub">of 24 scanned</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:75%;background:var(--amber)"></div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg NPS Score</div>
+          <div class="stat-value green">8.4</div>
+          <div class="stat-sub">out of 10</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:84%"></div></div>
+        </div>
+      </div>
+
+      <div class="section-hd">
+        <div class="section-title">In The Room Tonight</div>
+        <div class="section-action" onclick="simulateScan()">+ Simulate scan</div>
+      </div>
+
+      <div class="room-grid" id="room-grid">
+        <!-- populated by JS -->
+      </div>
+
+    </div>
+
+    <!-- ════════════════ CHIP INTEL PANEL ════════════════ -->
+    <div class="panel" id="panel-chips">
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Unique Offer Types</div>
+          <div class="stat-value green">11</div>
+          <div class="stat-sub">across 24 attendees</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Unique Need Types</div>
+          <div class="stat-value amber">9</div>
+          <div class="stat-sub">most common: Funding</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Top Match Signal</div>
+          <div class="stat-value" style="font-size:22px;color:var(--light)">Mentorship</div>
+          <div class="stat-sub">7 need · 6 offer</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Write-in Chips</div>
+          <div class="stat-value amber">4</div>
+          <div class="stat-sub">pending approval</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <div class="section-hd">
+            <div class="section-title">What This Room Offers</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px">
+            <div class="chip-bars" id="offer-bars"></div>
+          </div>
+        </div>
+        <div>
+          <div class="section-hd">
+            <div class="section-title">What This Room Needs</div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px">
+            <div class="chip-bars" id="need-bars"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-hd" style="margin-top:8px">
+        <div class="section-title">Supply vs Demand Gaps</div>
+        <div class="section-action">View all →</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px">
+        <div class="feed" id="gap-feed"></div>
+      </div>
+
+    </div>
+
+    <!-- ════════════════ MATCHES PANEL ════════════════ -->
+    <div class="panel" id="panel-matches">
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Total Matches</div>
+          <div class="stat-value green">12</div>
+          <div class="stat-sub">tonight so far</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Mutual Matches</div>
+          <div class="stat-value">7</div>
+          <div class="stat-sub">both sides overlapped</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Top Connector</div>
+          <div class="stat-value" style="font-size:22px;color:var(--light)">Marcus J.</div>
+          <div class="stat-sub">4 connections tonight</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Match Score</div>
+          <div class="stat-value green">74%</div>
+          <div class="stat-sub">chip overlap strength</div>
+        </div>
+      </div>
+
+      <div class="section-hd">
+        <div class="section-title">Live Match Feed</div>
+        <div class="section-action" onclick="addMatch()">+ Simulate match</div>
+      </div>
+      <div class="feed" id="match-feed"></div>
+
+    </div>
+
+    <!-- ════════════════ SURVEY PANEL ════════════════ -->
+    <div class="panel" id="panel-survey">
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Responses In</div>
+          <div class="stat-value green">18</div>
+          <div class="stat-sub">of 24 scanned</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Star Rating</div>
+          <div class="stat-value green">4.6</div>
+          <div class="stat-sub">out of 5 ⭐</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Top Vibe</div>
+          <div class="stat-value" style="font-size:20px;color:var(--light)">🔥 Energized</div>
+          <div class="stat-sub">9 of 18 responses</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Want to Speak</div>
+          <div class="stat-value amber">6</div>
+          <div class="stat-sub">said yes or maybe</div>
+        </div>
+      </div>
+
+      <div class="section-hd">
+        <div class="section-title">Open Mic Responses</div>
+        <div class="section-action">All responses →</div>
+      </div>
+      <div class="feed" id="open-mic-feed" style="margin-bottom:20px"></div>
+
+      <div class="section-hd">
+        <div class="section-title">Full Response Table</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+        <table class="s-table">
+          <thead>
+            <tr>
+              <th>Attendee</th>
+              <th>Vibe</th>
+              <th>Rating</th>
+              <th>NPS</th>
+              <th>Open Mic</th>
+            </tr>
+          </thead>
+          <tbody id="survey-table"></tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- ════════════════ CHIP QUEUE PANEL ════════════════ -->
+    <div class="panel" id="panel-queue">
+
+      <div class="section-hd">
+        <div class="section-title">Write-in Chips Pending Approval</div>
+        <div class="section-action">Approve all →</div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">
+        These chips were written in by attendees. Approve to add them to the shared pool for future events. Reject to discard.
+      </p>
+      <div id="chip-queue"></div>
+
+    </div>
+
+    <!-- ════════════════ CHECK-IN PANEL ════════════════ -->
+    <div class="panel" id="panel-checkin">
+
+      <div class="section-hd">
+        <div class="section-title">Manual Check-in</div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">
+        For attendees whose phone isn't cooperating. Enter their info and they'll appear in the room immediately.
+      </p>
+
+      <div class="checkin-form">
+        <div class="checkin-row">
+          <input class="ci-input" id="ci-first" type="text" placeholder="First name"/>
+          <input class="ci-input" id="ci-last"  type="text" placeholder="Last name"/>
+          <input class="ci-input" id="ci-email" type="text" placeholder="Email (optional)"/>
+        </div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-weight:600">Role</div>
+        <div class="ci-chip-row" id="ci-role-chips">
+          <div class="ci-chip" data-ci="role">Founder</div>
+          <div class="ci-chip" data-ci="role">Builder</div>
+          <div class="ci-chip" data-ci="role">Creative</div>
+          <div class="ci-chip" data-ci="role">Investor</div>
+          <div class="ci-chip" data-ci="role">Developer</div>
+          <div class="ci-chip" data-ci="role">Designer</div>
+          <div class="ci-chip" data-ci="role">Educator</div>
+          <div class="ci-chip" data-ci="role">Community Organizer</div>
+          <div class="ci-chip" data-ci="role">Nonprofit</div>
+          <div class="ci-chip" data-ci="role">Student</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-weight:600">Offer</div>
+        <div class="ci-chip-row" id="ci-offer-chips">
+          <div class="ci-chip" data-ci="offer">Mentorship</div>
+          <div class="ci-chip" data-ci="offer">Capital</div>
+          <div class="ci-chip" data-ci="offer">Introductions</div>
+          <div class="ci-chip" data-ci="offer">Technical skills</div>
+          <div class="ci-chip" data-ci="offer">Brand strategy</div>
+          <div class="ci-chip" data-ci="offer">Media coverage</div>
+          <div class="ci-chip" data-ci="offer">Feedback</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-weight:600">Need</div>
+        <div class="ci-chip-row" id="ci-need-chips">
+          <div class="ci-chip" data-ci="need">Funding</div>
+          <div class="ci-chip" data-ci="need">A co-founder</div>
+          <div class="ci-chip" data-ci="need">Collaborators</div>
+          <div class="ci-chip" data-ci="need">Clients</div>
+          <div class="ci-chip" data-ci="need">Visibility</div>
+          <div class="ci-chip" data-ci="need">A mentor</div>
+          <div class="ci-chip" data-ci="need">Technical help</div>
+        </div>
+        <button class="ci-btn" onclick="manualCheckin()">Add to Room ✦</button>
+      </div>
+
+    </div>
+
+    <!-- ════════════════ EXPORT PANEL ════════════════ -->
+    <div class="panel" id="panel-export">
+
+      <div class="section-hd">
+        <div class="section-title">Export & Reports</div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
+        All exports are formatted for grant reporting, CRM import, and internal records.
+      </p>
+
+      <div class="export-card">
+        <div class="export-icon">👥</div>
+        <div class="export-body">
+          <div class="export-title">Attendee List</div>
+          <div class="export-desc">Name, email, role, offer chips, need chips, scan time. 24 records tonight.</div>
+        </div>
+        <button class="export-btn" onclick="fakeExport(this,'Attendees exported')">Download CSV</button>
+      </div>
+
+      <div class="export-card">
+        <div class="export-icon">◎</div>
+        <div class="export-body">
+          <div class="export-title">Survey Responses</div>
+          <div class="export-desc">All 7 questions, all responses, attendee name and timestamp. 18 complete responses.</div>
+        </div>
+        <button class="export-btn" onclick="fakeExport(this,'Survey data exported')">Download CSV</button>
+      </div>
+
+      <div class="export-card">
+        <div class="export-icon">✦</div>
+        <div class="export-body">
+          <div class="export-title">Connection Report</div>
+          <div class="export-desc">Every match made tonight, chip overlap reason, and connection status. 12 connections.</div>
+        </div>
+        <button class="export-btn" onclick="fakeExport(this,'Connections exported')">Download CSV</button>
+      </div>
+
+      <div class="export-card">
+        <div class="export-icon">📊</div>
+        <div class="export-body">
+          <div class="export-title">Grant Impact Summary</div>
+          <div class="export-desc">Pre-formatted impact report. Attendance, connections, NPS, demographics, and key themes. Ready to paste into a funder narrative.</div>
+        </div>
+        <button class="export-btn" onclick="fakeExport(this,'Impact report exported')">Download PDF</button>
+      </div>
+
+      <div class="export-card">
+        <div class="export-icon">◈</div>
+        <div class="export-body">
+          <div class="export-title">Chip Frequency Map</div>
+          <div class="export-desc">Full ranked list of every offer and need chip from tonight. Community intelligence snapshot.</div>
+        </div>
+        <button class="export-btn" onclick="fakeExport(this,'Chip map exported')">Download CSV</button>
+      </div>
+
+    </div>
+
+    <!-- ════════════════ SURVEY CREATOR PANEL ════════════════ -->
+    <div class="panel" id="panel-creator">
+
+      <div class="section-hd">
+        <div class="section-title">Survey Creator</div>
+        <div class="section-action" id="set-save-btn" onclick="saveSet()">Save set →</div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6">
+        Build the 7-question set for tonight's event. Anchor questions always appear. Add rotating questions from the bank below, or write your own.
+      </p>
+
+      <!-- Summary bar -->
+      <div class="set-summary" style="margin-bottom:18px">
+        <div class="set-summary-stat">
+          <div class="set-summary-n" id="set-total">7</div>
+          <div class="set-summary-l">Total</div>
+        </div>
+        <div class="set-summary-divider"></div>
+        <div class="set-summary-stat">
+          <div class="set-summary-n" style="color:var(--light)" id="set-anchor-ct">3</div>
+          <div class="set-summary-l">Anchors</div>
+        </div>
+        <div class="set-summary-divider"></div>
+        <div class="set-summary-stat">
+          <div class="set-summary-n" style="color:var(--blue)" id="set-rotate-ct">4</div>
+          <div class="set-summary-l">Rotating</div>
+        </div>
+        <div class="set-summary-divider"></div>
+        <div class="set-summary-stat">
+          <div class="set-summary-n" style="color:var(--amber)" id="set-slots">0</div>
+          <div class="set-summary-l">Slots left</div>
+        </div>
+      </div>
+
+      <!-- Active set -->
+      <div class="section-hd" style="margin-top:0">
+        <div class="section-title">This Event's Set</div>
+      </div>
+      <div class="active-set" id="active-set-list" style="margin-bottom:20px">
+        <!-- populated by JS -->
+      </div>
+
+      <!-- Add custom question -->
+      <div class="section-hd">
+        <div class="section-title">Add a Custom Question</div>
+      </div>
+      <div class="creator-add-form" style="margin-bottom:24px">
+        <div class="creator-row">
+          <input class="ci-input" id="custom-q-text" type="text" placeholder="Type your question here..." style="flex:1"/>
+        </div>
+        <div class="creator-row" style="flex-wrap:wrap">
+          <select class="creator-select" id="custom-q-type">
+            <option value="chips">Chip select</option>
+            <option value="stars">Star rating</option>
+            <option value="slider">Slider 0–10</option>
+            <option value="text">Open text</option>
+            <option value="yesno">Yes / No</option>
+          </select>
+          <select class="creator-select" id="custom-q-block">
+            <option value="rotate">Rotating</option>
+            <option value="anchor">Anchor</option>
+            <option value="open">Open mic</option>
+          </select>
+          <button class="ci-btn" style="padding:10px 20px;font-size:14px" onclick="addCustomQ()">Add to Set</button>
+        </div>
+      </div>
+
+      <!-- Question bank -->
+      <div class="section-hd">
+        <div class="section-title">Question Bank</div>
+        <div style="display:flex;gap:6px">
+          <button class="topbar-btn" id="bf-all"    style="font-size:11px;padding:4px 10px;border-color:var(--green);color:var(--green)" onclick="filterBank('all')">All</button>
+          <button class="topbar-btn" id="bf-anchor" style="font-size:11px;padding:4px 10px" onclick="filterBank('anchor')">Anchors</button>
+          <button class="topbar-btn" id="bf-rotate" style="font-size:11px;padding:4px 10px" onclick="filterBank('rotate')">Rotating</button>
+          <button class="topbar-btn" id="bf-open"   style="font-size:11px;padding:4px 10px" onclick="filterBank('open')">Open mic</button>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Click ＋ to add a question to this event's set. Green = already included.</p>
+      <div class="sq-bank" id="sq-bank">
+        <!-- populated by JS -->
+      </div>
+
+    </div>
+
+  </div><!-- .main -->
+</div><!-- .layout -->
+
+<!-- ANNOUNCE MODAL -->
+<div class="modal-overlay" id="announce-modal">
+  <div class="modal">
+    <div class="modal-title">📣 Room Announcement</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">This message will push to everyone currently in the room.</p>
+    <textarea class="modal-textarea" id="announce-text" rows="3" placeholder="e.g. Panel starts in 5 minutes. Head to the main stage."></textarea>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeAnnounce()">Cancel</button>
+      <button class="modal-btn primary" onclick="sendAnnounce()">Send to Room ✦</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DEMO DATA ──────────────────────────────────────────────
+const ATTENDEES = [
+  { init:'AJ', name:'Alysha J.',   role:'Founder',             bg:'#203229', offers:['Mentorship','Capital'],           needs:['A co-founder','Collaborators'],  time:'6:02 PM', survey:true  },
+  { init:'MJ', name:'Marcus J.',   role:'Developer',           bg:'#1a3a2a', offers:['Technical skills'],               needs:['Clients','Visibility'],          time:'6:05 PM', survey:true  },
+  { init:'TK', name:'Tanya K.',    role:'Designer',            bg:'#2a1a3a', offers:['Brand strategy','Feedback'],      needs:['Funding'],                        time:'6:07 PM', survey:true  },
+  { init:'SR', name:'Sam R.',      role:'Investor',            bg:'#1a2a3a', offers:['Capital','Introductions'],        needs:['Deal flow'],                      time:'6:09 PM', survey:false },
+  { init:'NF', name:'Nia F.',      role:'Creative',            bg:'#3a2a1a', offers:['Media coverage'],                 needs:['Collaborators','Brand strategy'], time:'6:11 PM', survey:true  },
+  { init:'DL', name:'Devon L.',    role:'Builder',             bg:'#2a3a1a', offers:['Co-founder energy'],              needs:['Funding','Mentorship'],           time:'6:14 PM', survey:true  },
+  { init:'PR', name:'Priya R.',    role:'Educator',            bg:'#3a1a2a', offers:['Feedback','Accountability'],      needs:['Visibility'],                     time:'6:16 PM', survey:false },
+  { init:'CB', name:'Chris B.',    role:'Storyteller',         bg:'#1a3a3a', offers:['Media coverage','Introductions'], needs:['A mentor','Community'],           time:'6:19 PM', survey:true  },
+  { init:'ZW', name:'Zoe W.',      role:'Community Organizer', bg:'#2a2a3a', offers:['Accountability'],                 needs:['Technical help','Funding'],       time:'6:21 PM', survey:true  },
+  { init:'EL', name:'Eli L.',      role:'Nonprofit',           bg:'#3a3a1a', offers:['Legal advice'],                   needs:['Funding','Collaborators'],        time:'6:24 PM', survey:true  },
+  { init:'KM', name:'Kira M.',     role:'Founder',             bg:'#1a2a2a', offers:['Brand strategy','Capital'],       needs:['Clients'],                        time:'6:26 PM', survey:false },
+  { init:'JT', name:'Jordan T.',   role:'Student',             bg:'#2a1a2a', offers:['Research','Feedback'],            needs:['Mentorship','A co-founder'],      time:'6:29 PM', survey:true  },
+  { init:'BW', name:'Blake W.',    role:'Builder',             bg:'#1a2a3a', offers:['Co-founder energy'],              needs:['Technical help'],                 time:'6:31 PM', survey:true  },
+  { init:'LM', name:'Laila M.',    role:'Creative',            bg:'#3a1a3a', offers:['Introductions'],                  needs:['Visibility','Community'],         time:'6:33 PM', survey:true  },
+  { init:'RD', name:'Ray D.',      role:'Developer',           bg:'#2a3a2a', offers:['Technical skills','Feedback'],    needs:['Clients','Funding'],              time:'6:35 PM', survey:false },
+  { init:'VK', name:'Vera K.',     role:'Investor',            bg:'#3a2a2a', offers:['Capital'],                        needs:['Introductions','Deal flow'],      time:'6:37 PM', survey:true  },
+  { init:'OS', name:'Omar S.',     role:'Nonprofit',           bg:'#1a3a2a', offers:['Community','Accountability'],     needs:['Funding','Visibility'],           time:'6:40 PM', survey:true  },
+  { init:'HL', name:'Hana L.',     role:'Designer',            bg:'#2a1a3a', offers:['Brand strategy'],                 needs:['Clients','A co-founder'],        time:'6:42 PM', survey:true  },
+  { init:'TN', name:'Theo N.',     role:'Founder',             bg:'#1a2a3a', offers:['Mentorship','Introductions'],     needs:['Capital','Technical skills'],     time:'6:44 PM', survey:false },
+  { init:'SC', name:'Sofia C.',    role:'Educator',            bg:'#3a3a2a', offers:['Feedback'],                       needs:['Community','Visibility'],         time:'6:46 PM', survey:true  },
+  { init:'JK', name:'James K.',    role:'Builder',             bg:'#2a2a3a', offers:['Technical skills'],               needs:['Co-founder energy','Funding'],    time:'6:48 PM', survey:true  },
+  { init:'AM', name:'Amara M.',    role:'Storyteller',         bg:'#3a1a2a', offers:['Media coverage'],                 needs:['Brand strategy','Clients'],      time:'6:51 PM', survey:false },
+  { init:'PL', name:'Pryor L.',    role:'Community Organizer', bg:'#1a3a3a', offers:['Introductions','Accountability'], needs:['Technical help'],                 time:'6:53 PM', survey:true  },
+  { init:'CW', name:'Cass W.',     role:'Creative',            bg:'#2a3a3a', offers:['Feedback','Media coverage'],      needs:['A mentor','Funding'],             time:'6:55 PM', survey:true  },
+];
+
+const MATCH_FEED_DATA = [
+  { a:'Marcus J.', b:'Kira M.',   why:'Marcus offers Technical skills · Kira needs Technical skills',   time:'7:14 PM', mutual:true  },
+  { a:'Sam R.',    b:'Devon L.',  why:'Sam offers Capital · Devon needs Funding',                        time:'7:09 PM', mutual:true  },
+  { a:'Tanya K.',  b:'Theo N.',   why:'Theo needs Brand strategy · Tanya offers Brand strategy',        time:'7:06 PM', mutual:false },
+  { a:'Alysha J.', b:'Jordan T.', why:'Alysha offers Mentorship · Jordan needs Mentorship',             time:'6:58 PM', mutual:true  },
+  { a:'Nia F.',    b:'Laila M.',  why:'Both need Visibility · Nia offers Media coverage',               time:'6:54 PM', mutual:false },
+  { a:'Zoe W.',    b:'Omar S.',   why:'Both offer Accountability · shared community focus',             time:'6:49 PM', mutual:true  },
+  { a:'Chris B.',  b:'Amara M.',  why:'Both offer Media coverage · Chris needs Community',              time:'6:45 PM', mutual:false },
+  { a:'Vera K.',   b:'James K.',  why:'Vera offers Capital · James needs Funding',                      time:'6:41 PM', mutual:true  },
+  { a:'Blake W.',  b:'Ray D.',    why:'Both need Technical help · complementary builder profiles',      time:'6:38 PM', mutual:false },
+  { a:'Eli L.',    b:'Sofia C.',  why:'Sofia offers Feedback · Eli needs Collaborators',                time:'6:35 PM', mutual:true  },
+  { a:'Hana L.',   b:'Cass W.',   why:'Hana offers Brand strategy · Cass needs Brand strategy',        time:'6:32 PM', mutual:false },
+  { a:'Priya R.',  b:'Pryor L.',  why:'Priya offers Accountability · Pryor offers Introductions',      time:'6:29 PM', mutual:true  },
+];
+
+const OPEN_MIC_DATA = [
+  { name:'Marcus J.',  text:'The energy was different tonight. People were actually listening, not just waiting to talk. That is rare.',              time:'7:18 PM' },
+  { name:'Devon L.',   text:'We need a follow-up session specifically for builders looking for technical co-founders. That gap is real in Cleveland.', time:'7:12 PM' },
+  { name:'Tanya K.',   text:'Whoever put together the programming this month deserves a shoutout. Best lineup yet.',                                   time:'7:08 PM' },
+  { name:'Zoe W.',     text:'I came looking for accountability and left with three. That does not happen at other events in this city.',               time:'7:03 PM' },
+  { name:'Jordan T.',  text:'As a student I sometimes feel out of place at these things. Tonight felt different. More inclusive.',                     time:'6:59 PM' },
+  { name:'Chris B.',   text:'The room app is genius. I connected with two people I would never have approached in person.',                            time:'6:55 PM' },
+];
+
+const SURVEY_TABLE_DATA = [
+  { name:'Alysha J.',  vibe:'🔥 Energized', rating:'★★★★★', nps:'10', open:'The connections were everything.' },
+  { name:'Marcus J.',  vibe:'🔥 Energized', rating:'★★★★★', nps:'9',  open:'See open mic.' },
+  { name:'Tanya K.',   vibe:'💡 Inspired',  rating:'★★★★☆', nps:'8',  open:'See open mic.' },
+  { name:'Nia F.',     vibe:'🤝 Connected', rating:'★★★★★', nps:'10', open:'Keep this exact format.' },
+  { name:'Devon L.',   vibe:'🔥 Energized', rating:'★★★★☆', nps:'9',  open:'See open mic.' },
+  { name:'Chris B.',   vibe:'💡 Inspired',  rating:'★★★★★', nps:'10', open:'See open mic.' },
+  { name:'Zoe W.',     vibe:'🤝 Connected', rating:'★★★★★', nps:'10', open:'See open mic.' },
+  { name:'Eli L.',     vibe:'🌿 Calm',      rating:'★★★★☆', nps:'7',  open:'More nonprofit-specific programming.' },
+  { name:'Blake W.',   vibe:'🔥 Energized', rating:'★★★★☆', nps:'8',  open:'Great crowd tonight.' },
+  { name:'Laila M.',   vibe:'🤝 Connected', rating:'★★★★★', nps:'9',  open:'I found my people.' },
+  { name:'Vera K.',    vibe:'💡 Inspired',  rating:'★★★★☆', nps:'8',  open:'Strong programming, solid room.' },
+  { name:'Omar S.',    vibe:'🌿 Calm',      rating:'★★★★☆', nps:'7',  open:'More nonprofit representation please.' },
+  { name:'Hana L.',    vibe:'🔥 Energized', rating:'★★★★★', nps:'10', open:'Best Futureland event so far.' },
+  { name:'James K.',   vibe:'💡 Inspired',  rating:'★★★★☆', nps:'9',  open:'Need more builders in the room.' },
+  { name:'Sofia C.',   vibe:'🤝 Connected', rating:'★★★★☆', nps:'8',  open:'Loved the chip matching concept.' },
+  { name:'Pryor L.',   vibe:'🔥 Energized', rating:'★★★★★', nps:'10', open:'The room app changed how I network.' },
+  { name:'Cass W.',    vibe:'🌿 Calm',      rating:'★★★★☆', nps:'8',  open:'Good vibe. Would come back.' },
+  { name:'Jordan T.',  vibe:'🤝 Connected', rating:'★★★★★', nps:'9',  open:'See open mic.' },
+];
+
+const CHIP_QUEUE_DATA = [
+  { chip:'Impact investor',      by:'Vera K.',  category:'role'  },
+  { chip:'Podcast production',   by:'Amara M.', category:'offer' },
+  { chip:'Grant writing support',by:'Eli L.',   category:'need'  },
+  { chip:'Civic tech',           by:'Pryor L.', category:'role'  },
+];
+
+const OFFER_FREQ = [
+  { label:'Mentorship',        ct:6 },
+  { label:'Capital',           ct:4 },
+  { label:'Technical skills',  ct:4 },
+  { label:'Brand strategy',    ct:4 },
+  { label:'Media coverage',    ct:4 },
+  { label:'Feedback',          ct:5 },
+  { label:'Introductions',     ct:5 },
+  { label:'Accountability',    ct:3 },
+  { label:'Co-founder energy', ct:2 },
+  { label:'Legal advice',      ct:1 },
+];
+
+const NEED_FREQ = [
+  { label:'Funding',        ct:8 },
+  { label:'Mentorship',     ct:7 },
+  { label:'Visibility',     ct:5 },
+  { label:'Clients',        ct:4 },
+  { label:'Collaborators',  ct:4 },
+  { label:'A co-founder',   ct:4 },
+  { label:'Technical help', ct:3 },
+  { label:'Community',      ct:3 },
+  { label:'A mentor',       ct:2 },
+];
+
+// ── NAVIGATION ─────────────────────────────────────────────
+const PANEL_TITLES = {
+  room:'The Room', chips:'Chip Intelligence', matches:'Live Matches',
+  survey:'Survey Feed', queue:'Chip Queue', checkin:'Manual Check-in',
+  export:'Export & Reports', creator:'Survey Creator'
+};
+
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.dataset.panel === id) n.classList.add('active');
+  });
+  document.getElementById('topbar-title').textContent = PANEL_TITLES[id] || id;
+}
+
+// ── BUILD ROOM GRID ────────────────────────────────────────
+function buildRoomGrid() {
+  const grid = document.getElementById('room-grid');
+  grid.innerHTML = '';
+  ATTENDEES.forEach((a, i) => {
+    const card = document.createElement('div');
+    card.className = 'room-card';
+    card.style.animationDelay = (i * 0.03) + 's';
+    card.innerHTML = `
+      <div class="rc-time">${a.time}</div>
+      <div class="rc-top">
+        <div class="rc-av" style="background:${a.bg}">${a.init}</div>
+        <div>
+          <div class="rc-name">${a.name}</div>
+          <div class="rc-role">${a.role}</div>
+        </div>
+      </div>
+      <div class="rc-chips">
+        ${a.offers.map(o=>`<span class="rc-chip offer">✦ ${o}</span>`).join('')}
+        ${a.needs.map(n=>`<span class="rc-chip need">↗ ${n}</span>`).join('')}
+      </div>
+      <div class="rc-survey ${a.survey?'done':'pending'}">${a.survey?'✦ Survey done':'⏳ Pending'}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ── BUILD CHIP BARS ────────────────────────────────────────
+function buildChipBars() {
+  const maxO = Math.max(...OFFER_FREQ.map(x=>x.ct));
+  const maxN = Math.max(...NEED_FREQ.map(x=>x.ct));
+  const offerEl = document.getElementById('offer-bars');
+  const needEl  = document.getElementById('need-bars');
+
+  offerEl.innerHTML = OFFER_FREQ.map(o=>`
+    <div class="chip-bar">
+      <div class="chip-bar-label">${o.label}</div>
+      <div class="chip-bar-track"><div class="chip-bar-fill offer" style="width:${(o.ct/maxO*100).toFixed(0)}%"></div></div>
+      <div class="chip-bar-ct">${o.ct}</div>
+    </div>
+  `).join('');
+
+  needEl.innerHTML = NEED_FREQ.map(n=>`
+    <div class="chip-bar">
+      <div class="chip-bar-label">${n.label}</div>
+      <div class="chip-bar-track"><div class="chip-bar-fill need" style="width:${(n.ct/maxN*100).toFixed(0)}%"></div></div>
+      <div class="chip-bar-ct">${n.ct}</div>
+    </div>
+  `).join('');
+
+  // gap feed
+  const gaps = [
+    { icon:'🔴', text:'<strong>Funding gap:</strong> <span class="hl">8 people need it</span>, only 4 offer Capital tonight.' },
+    { icon:'🟡', text:'<strong>Mentorship gap:</strong> <span class="hl">7 need it</span>, 6 offer it. Tight but workable.' },
+    { icon:'🟢', text:'<strong>Introductions surplus:</strong> 5 offer Introductions, only 2 need it. Active connectors in the room.' },
+    { icon:'🔴', text:'<strong>Technical skills gap:</strong> <span class="hl">3 need help</span>, 4 offer it. Good balance but flag for next event.' },
+  ];
+  document.getElementById('gap-feed').innerHTML = gaps.map(g=>`
+    <div class="feed-item">
+      <div class="feed-icon">${g.icon}</div>
+      <div class="feed-body"><div class="feed-text">${g.text}</div></div>
+    </div>
+  `).join('');
+}
+
+// ── BUILD MATCH FEED ───────────────────────────────────────
+function buildMatchFeed() {
+  const feed = document.getElementById('match-feed');
+  feed.innerHTML = MATCH_FEED_DATA.map(m=>`
+    <div class="feed-item match-item">
+      <div class="feed-icon">${m.mutual?'✦':'→'}</div>
+      <div class="feed-body">
+        <div class="feed-text">
+          <strong>${m.a}</strong> ${m.mutual?'↔':'→'} <strong>${m.b}</strong>
+          ${m.mutual?'<span style="color:var(--green);font-size:10px;font-weight:700;margin-left:6px;letter-spacing:1px">MUTUAL</span>':''}
+          <br/><span style="font-size:12px;color:var(--muted)">${m.why}</span>
+        </div>
+        <div class="feed-time">${m.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── BUILD SURVEY PANEL ─────────────────────────────────────
+function buildSurveyPanel() {
+  document.getElementById('open-mic-feed').innerHTML = OPEN_MIC_DATA.map(o=>`
+    <div class="feed-item survey-item">
+      <div class="feed-icon">💬</div>
+      <div class="feed-body">
+        <div class="feed-text"><strong>${o.name}:</strong> "${o.text}"</div>
+        <div class="feed-time">${o.time}</div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('survey-table').innerHTML = SURVEY_TABLE_DATA.map(r=>`
+    <tr>
+      <td>${r.name}</td>
+      <td>${r.vibe}</td>
+      <td class="s-rating">${r.rating}</td>
+      <td class="s-rating">${r.nps}/10</td>
+      <td class="s-open">${r.open}</td>
+    </tr>
+  `).join('');
+}
+
+// ── BUILD CHIP QUEUE ───────────────────────────────────────
+function buildChipQueue() {
+  const el = document.getElementById('chip-queue');
+  el.innerHTML = '';
+  CHIP_QUEUE_DATA.forEach((c, i) => {
+    const item = document.createElement('div');
+    item.className = 'chip-q-item';
+    item.id = 'cq-' + i;
+    item.innerHTML = `
+      <div class="chip-q-tag">${c.chip}</div>
+      <div class="chip-q-meta">Written in by <strong>${c.by}</strong> · ${c.category} chip</div>
+      <div class="chip-q-actions">
+        <button class="chip-q-btn approve" onclick="approveChip(${i},'${c.chip}')">Approve</button>
+        <button class="chip-q-btn reject"  onclick="rejectChip(${i})">Reject</button>
+      </div>
+    `;
+    el.appendChild(item);
+  });
+}
+
+function approveChip(i, label) {
+  const el = document.getElementById('cq-'+i);
+  if (!el) return;
+  el.style.opacity = '0.5';
+  el.style.pointerEvents = 'none';
+  el.querySelector('.chip-q-actions').innerHTML = `<span style="font-size:11px;color:var(--green);font-weight:600">✦ Approved</span>`;
+  showToast(`"${label}" added to chip pool`);
+  updateBadge('nav-queue-ct', -1);
+}
+
+function rejectChip(i) {
+  const el = document.getElementById('cq-'+i);
+  if (!el) return;
+  el.style.opacity = '0.3';
+  el.style.pointerEvents = 'none';
+  el.querySelector('.chip-q-actions').innerHTML = `<span style="font-size:11px;color:var(--muted)">Rejected</span>`;
+  updateBadge('nav-queue-ct', -1);
+}
+
+// ── CI CHIP LOGIC ──────────────────────────────────────────
+let ciSelected = { role:null, offer:[], need:[] };
+document.querySelectorAll('.ci-chip').forEach(c => {
+  c.onclick = () => {
+    const type = c.dataset.ci;
+    if (type === 'role') {
+      document.querySelectorAll('[data-ci=role]').forEach(x => x.classList.remove('sel'));
+      c.classList.add('sel');
+      ciSelected.role = c.textContent.trim();
+    } else {
+      const label = c.textContent.trim();
+      const arr = ciSelected[type];
+      const idx = arr.indexOf(label);
+      if (idx > -1) { arr.splice(idx,1); c.classList.remove('sel'); }
+      else if (arr.length < 3) { arr.push(label); c.classList.add('sel'); }
+    }
+  };
+});
+
+function manualCheckin() {
+  const f = document.getElementById('ci-first').value.trim();
+  const l = document.getElementById('ci-last').value.trim();
+  if (!f) { document.getElementById('ci-first').style.borderColor='var(--red)'; return; }
+  const name = f + (l ? ' '+l[0]+'.' : '');
+  const init = f[0].toUpperCase() + (l ? l[0].toUpperCase() : '');
+  const role = ciSelected.role || 'Guest';
+  const colors = ['#1a3a2a','#2a1a3a','#1a2a3a','#3a2a1a','#2a3a1a'];
+  const bg = colors[Math.floor(Math.random()*colors.length)];
+
+  ATTENDEES.push({
+    init, name, role, bg,
+    offers: ciSelected.offer,
+    needs:  ciSelected.need,
+    time: new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),
+    survey: false
+  });
+
+  buildRoomGrid();
+  updateBadge('nav-room-ct', 1);
+  document.getElementById('s-scanned').textContent = ATTENDEES.length;
+
+  // reset form
+  document.getElementById('ci-first').value = '';
+  document.getElementById('ci-last').value  = '';
+  document.getElementById('ci-email').value = '';
+  document.querySelectorAll('.ci-chip').forEach(c => c.classList.remove('sel'));
+  ciSelected = { role:null, offer:[], need:[] };
+
+  showToast(`${name} added to the room`);
+  showPanel('room');
+
+  // flash the new card
+  setTimeout(() => {
+    const last = document.querySelectorAll('.room-card');
+    if (last.length) last[last.length-1].classList.add('new-scan');
+  }, 300);
+}
+
+// ── SIMULATE SCAN ──────────────────────────────────────────
+const SIM_PEOPLE = [
+  { init:'BK', name:'Brett K.',  role:'Founder',   bg:'#1a2a3a', offers:['Capital'],         needs:['Technical skills'] },
+  { init:'YR', name:'Yara R.',   role:'Designer',  bg:'#3a1a2a', offers:['Brand strategy'],   needs:['Clients'] },
+  { init:'FC', name:'Felix C.',  role:'Developer', bg:'#2a3a1a', offers:['Technical skills'], needs:['A co-founder'] },
+];
+let simIdx = 0;
+function simulateScan() {
+  if (simIdx >= SIM_PEOPLE.length) { showToast('No more demo scans'); return; }
+  const p = SIM_PEOPLE[simIdx++];
+  p.time = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  p.survey = false;
+  ATTENDEES.unshift(p);
+  buildRoomGrid();
+  updateBadge('nav-room-ct', 1);
+  document.getElementById('s-scanned').textContent = ATTENDEES.length;
+  setTimeout(() => {
+    const cards = document.querySelectorAll('.room-card');
+    if (cards.length) cards[0].classList.add('new-scan');
+  }, 100);
+  showToast(`${p.name} just scanned in`);
+}
+
+// ── SIMULATE MATCH ─────────────────────────────────────────
+function addMatch() {
+  const newMatch = {
+    a:'Brett K.', b:'Felix C.',
+    why:'Brett offers Capital · Felix needs A co-founder',
+    time: new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),
+    mutual: true
+  };
+  MATCH_FEED_DATA.unshift(newMatch);
+  buildMatchFeed();
+  updateBadge('nav-match-ct', 1);
+  document.getElementById('s-connections').textContent = parseInt(document.getElementById('s-connections').textContent) + 1;
+  showToast('New match: Brett K. ↔ Felix C.');
+}
+
+// ── BADGE COUNTER ──────────────────────────────────────────
+function updateBadge(id, delta) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = Math.max(0, parseInt(el.textContent) + delta);
+}
+
+// ── ANNOUNCE ───────────────────────────────────────────────
+function openAnnounce()  { document.getElementById('announce-modal').classList.add('show'); }
+function closeAnnounce() { document.getElementById('announce-modal').classList.remove('show'); }
+function sendAnnounce() {
+  const msg = document.getElementById('announce-text').value.trim();
+  if (!msg) return;
+  closeAnnounce();
+  document.getElementById('announce-text').value = '';
+  showToast('Announcement sent to 24 people');
+}
+
+// ── EXPORT ─────────────────────────────────────────────────
+function fakeExport(btn, msg) {
+  btn.textContent = '↓ Preparing...';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.textContent = '✦ Downloaded';
+    btn.classList.add('done');
+    showToast(msg);
+  }, 900);
+}
+
+// ── SURVEY CREATOR ─────────────────────────────────────────
+const QUESTION_BANK = [
+  // ANCHORS — always in every survey
+  { id:'a1', q:'What is your name?',                                                      type:'text',   block:'anchor', always:true  },
+  { id:'a2', q:'What do you do?',                                                          type:'chips',  block:'anchor', always:true  },
+  { id:'a3', q:'How should we represent you at our next event?',                           type:'text',   block:'anchor', always:true  },
+  // ROTATING — pick from these
+  { id:'r1', q:'On a scale of 1–10, how energized do you feel leaving tonight?',           type:'slider', block:'rotate', always:false },
+  { id:'r2', q:'What was the single moment that made tonight worth showing up for?',       type:'text',   block:'rotate', always:false },
+  { id:'r3', q:'Did you make a connection tonight you want to keep?',                      type:'yesno',  block:'rotate', always:false },
+  { id:'r4', q:'What topic do you wish went deeper?',                                      type:'text',   block:'rotate', always:false },
+  { id:'r5', q:'What was missing that would have made tonight a 10?',                      type:'text',   block:'rotate', always:false },
+  { id:'r6', q:'How would you describe tonight to someone who wasn\'t here?',              type:'text',   block:'rotate', always:false },
+  { id:'r7', q:'What kind of attendee are you?',                                           type:'chips',  block:'rotate', always:false },
+  { id:'r8', q:'Did you feel represented in tonight\'s programming?',                      type:'chips',  block:'rotate', always:false },
+  { id:'r9', q:'Which voice or moment stood out most, and why?',                           type:'text',   block:'rotate', always:false },
+  { id:'r10',q:'Did tonight shift how you think about something?',                         type:'yesno',  block:'rotate', always:false },
+  { id:'r11',q:'What type of event would bring you back next time?',                       type:'chips',  block:'rotate', always:false },
+  { id:'r12',q:'Would you want to speak or facilitate at a future event?',                 type:'chips',  block:'rotate', always:false },
+  { id:'r13',q:'Is there someone in your network Futureland should know about?',           type:'text',   block:'rotate', always:false },
+  { id:'r14',q:'What does Cleveland\'s creative community need more of right now?',        type:'text',   block:'rotate', always:false },
+  { id:'r15',q:'What would make you become a Futureland member?',                          type:'text',   block:'rotate', always:false },
+  { id:'r16',q:'Would you bring someone to the next event?',                               type:'yesno',  block:'rotate', always:false },
+  { id:'r17',q:'Rate your experience overall.',                                             type:'stars',  block:'rotate', always:false },
+  { id:'r18',q:'How likely are you to recommend this to someone in your network? (0–10)',  type:'slider', block:'rotate', always:false },
+  // OPEN MIC — optional tail
+  { id:'o1', q:'Drop a resource, book, or idea you think this room needs.',                type:'text',   block:'open',   always:false },
+  { id:'o2', q:'What\'s the conversation nobody in Cleveland is having yet?',              type:'text',   block:'open',   always:false },
+  { id:'o3', q:'If you could redesign tonight, what would you change?',                    type:'text',   block:'open',   always:false },
+  { id:'o4', q:'Anything else on your mind? No filter.',                                   type:'text',   block:'open',   always:false },
+];
+
+const TYPE_LABELS = { chips:'Chip select', stars:'Star rating', slider:'Slider', text:'Open text', yesno:'Yes / No' };
+const BLOCK_COLORS = { anchor:'anchor', rotate:'rotate', open:'open' };
+
+// Active set starts with anchors + 4 default rotating
+let activeSet = [
+  ...QUESTION_BANK.filter(q => q.always),
+  QUESTION_BANK.find(q=>q.id==='r17'),
+  QUESTION_BANK.find(q=>q.id==='r18'),
+  QUESTION_BANK.find(q=>q.id==='r2'),
+  QUESTION_BANK.find(q=>q.id==='r12'),
+];
+
+let bankFilter = 'all';
+let nextCustomId = 100;
+
+function buildCreator() {
+  renderActiveSet();
+  renderBank();
+}
+
+function renderActiveSet() {
+  const el = document.getElementById('active-set-list');
+  el.innerHTML = '';
+  activeSet.forEach((q, i) => {
+    const row = document.createElement('div');
+    row.className = 'active-set-item';
+    row.innerHTML = `
+      <div class="set-num">${i+1}</div>
+      <div class="set-drag" title="Drag to reorder">⠿</div>
+      <div class="set-q">${q.q}</div>
+      <div class="set-type">${TYPE_LABELS[q.type]||q.type}</div>
+      ${q.always
+        ? `<div style="font-size:10px;color:var(--green);padding:3px 8px;border:1px solid rgba(59,215,92,0.3);border-radius:6px;flex-shrink:0">Always</div>`
+        : `<button class="sq-action remove" title="Remove" onclick="removeFromSet('${q.id}')">✕</button>`
+      }
+    `;
+    el.appendChild(row);
+  });
+  updateSetSummary();
+}
+
+function updateSetSummary() {
+  const anchors = activeSet.filter(q=>q.block==='anchor').length;
+  const rotating = activeSet.filter(q=>q.block!=='anchor').length;
+  const slots = Math.max(0, 7 - activeSet.length);
+  document.getElementById('set-total').textContent   = activeSet.length;
+  document.getElementById('set-anchor-ct').textContent = anchors;
+  document.getElementById('set-rotate-ct').textContent = rotating;
+  document.getElementById('set-slots').textContent   = slots;
+}
+
+function renderBank(filter) {
+  if (filter) bankFilter = filter;
+  const el = document.getElementById('sq-bank');
+  const inSet = new Set(activeSet.map(q=>q.id));
+  const visible = QUESTION_BANK.filter(q => {
+    if (bankFilter !== 'all' && q.block !== bankFilter) return false;
+    return true;
+  });
+  el.innerHTML = visible.map(q => {
+    const isIn = inSet.has(q.id);
+    return `
+      <div class="sq-bank-item ${q.always?'anchor':''} ${isIn&&!q.always?'in-set':''}" id="bq-${q.id}">
+        <div class="sq-tag ${BLOCK_COLORS[q.block]}">${q.block}</div>
+        <div class="sq-body">
+          <div class="sq-q">${q.q}</div>
+          <div class="sq-meta">${TYPE_LABELS[q.type]||q.type}${q.always?' · Always included':''}</div>
+        </div>
+        <div class="sq-type-badge">${q.type}</div>
+        ${q.always
+          ? `<div style="font-size:11px;color:var(--green);flex-shrink:0">✦ Fixed</div>`
+          : isIn
+            ? `<button class="sq-action remove" title="Remove" onclick="removeFromSet('${q.id}')">✕</button>`
+            : `<button class="sq-action" title="Add to set" onclick="addToSet('${q.id}')">＋</button>`
+        }
+      </div>
+    `;
+  }).join('');
+}
+
+function filterBank(f) {
+  bankFilter = f;
+  ['all','anchor','rotate','open'].forEach(k => {
+    const btn = document.getElementById('bf-'+k);
+    if (btn) {
+      btn.style.borderColor = k === f ? 'var(--green)' : '';
+      btn.style.color       = k === f ? 'var(--green)' : '';
+    }
+  });
+  renderBank();
+}
+
+function addToSet(id) {
+  if (activeSet.length >= 10) { showToast('Maximum 10 questions per survey'); return; }
+  if (activeSet.find(q=>q.id===id)) { showToast('Already in this set'); return; }
+  const q = QUESTION_BANK.find(q=>q.id===id);
+  if (!q) return;
+  activeSet.push(q);
+  renderActiveSet();
+  renderBank();
+  showToast(`Question added to set`);
+}
+
+function removeFromSet(id) {
+  const q = QUESTION_BANK.find(q=>q.id===id) || activeSet.find(q=>q.id===id);
+  if (q && q.always) { showToast('Anchor questions cannot be removed'); return; }
+  activeSet = activeSet.filter(q=>q.id!==id);
+  renderActiveSet();
+  renderBank();
+}
+
+function addCustomQ() {
+  const text = document.getElementById('custom-q-text').value.trim();
+  if (!text) { document.getElementById('custom-q-text').style.borderColor='var(--red)'; return; }
+  if (activeSet.length >= 10) { showToast('Maximum 10 questions per survey'); return; }
+  document.getElementById('custom-q-text').style.borderColor='';
+  const type  = document.getElementById('custom-q-type').value;
+  const block = document.getElementById('custom-q-block').value;
+  const newQ = { id:'custom-'+(nextCustomId++), q:text, type, block, always:false };
+  QUESTION_BANK.push(newQ);
+  activeSet.push(newQ);
+  document.getElementById('custom-q-text').value = '';
+  renderActiveSet();
+  renderBank();
+  showToast('Custom question added');
+}
+
+function saveSet() {
+  showToast(`Survey set saved — ${activeSet.length} questions for this event`);
+  document.getElementById('set-save-btn').textContent = '✦ Saved';
+  setTimeout(()=>{ document.getElementById('set-save-btn').textContent = 'Save set →'; }, 2000);
+}
+
+// ── TOAST ──────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = '✦ ' + msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── INIT ───────────────────────────────────────────────────
+buildRoomGrid();
+buildChipBars();
+buildMatchFeed();
+buildSurveyPanel();
+buildChipQueue();
+buildCreator();
+
+// simulate live scan every 30s
+setInterval(() => {
+  if (simIdx < SIM_PEOPLE.length && Math.random() > 0.5) simulateScan();
+}, 30000);
+</script>
+</body>
+</html>

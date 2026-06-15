@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Futureland — Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+/* ── TOKENS ─────────────────────────────────────────── */
+:root {
+  --g:   #3BD75C;
+  --dg:  #203229;
+  --ch:  #0d0d0d;
+  --c1:  #161616;
+  --c2:  #1e1e1e;
+  --c3:  #242424;
+  --bd:  #2a2a2a;
+  --bd2: #333;
+  --t0:  #ffffff;
+  --t1:  #cccccc;
+  --t2:  #777;
+  --t3:  #3a3a3a;
+  --am:  #F59E0B;
+  --bl:  #3B82F6;
+  --rd:  #EF4444;
+  --pu:  #8B5CF6;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--ch);color:var(--t1);overflow:hidden}
+
+/* ── TOPBAR ─────────────────────────────────────────── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:52px;
+  background:var(--c1);border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;z-index:100;gap:16px;
+}
+.tb-brand{
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.tb-logo{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;font-weight:900;color:var(--g);letter-spacing:1px;
+}
+.tb-event{
+  font-size:11px;color:var(--t2);padding-left:10px;
+  border-left:1px solid var(--bd);letter-spacing:0.5px;
+}
+.tb-center{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;}
+.tb-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+
+/* act tabs */
+.act-tab{
+  padding:6px 14px;border-radius:8px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;cursor:pointer;
+  border:1px solid var(--bd);background:transparent;
+  color:var(--t2);transition:all .18s;
+}
+.act-tab:hover{color:var(--t1);border-color:var(--bd2);}
+.act-tab.active{background:var(--dg);color:var(--g);border-color:var(--g);}
+.act-tab.amber{color:var(--am);}
+.act-tab.amber.active{background:rgba(245,158,11,.12);border-color:var(--am);color:var(--am);}
+.act-tab.blue{color:var(--bl);}
+.act-tab.blue.active{background:rgba(59,130,246,.1);border-color:var(--bl);color:var(--bl);}
+
+.live-badge{
+  display:flex;align-items:center;gap:5px;
+  font-size:10px;color:var(--g);font-weight:600;
+  letter-spacing:1px;text-transform:uppercase;
+  padding:5px 10px;border-radius:100px;
+  border:1px solid rgba(59,215,92,.25);
+  background:rgba(59,215,92,.06);
+}
+.ldot{width:5px;height:5px;border-radius:50%;background:var(--g);animation:pu 1.4s ease infinite;}
+@keyframes pu{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.6)}}
+
+/* ── MAIN GRID ───────────────────────────────────────── */
+.main{
+  margin-top:52px;
+  height:calc(100vh - 52px);
+  display:grid;
+  grid-template-columns:260px 1fr 280px;
+  grid-template-rows:1fr;
+  overflow:hidden;
+}
+
+/* ── PANELS ─────────────────────────────────────────── */
+.panel-left{
+  border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;
+  overflow:hidden;background:var(--c1);
+}
+.panel-center{
+  display:flex;flex-direction:column;
+  overflow:hidden;background:var(--ch);
+}
+.panel-right{
+  border-left:1px solid var(--bd);
+  display:flex;flex-direction:column;
+  overflow:hidden;background:var(--c1);
+}
+
+.p-head{
+  padding:16px 16px 12px;
+  border-bottom:1px solid var(--bd);flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.p-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:800;color:var(--t0);
+  text-transform:uppercase;letter-spacing:1px;
+}
+.p-sub{font-size:10px;color:var(--t2);margin-top:2px;}
+.p-body{flex:1;overflow-y:auto;padding:12px;}
+
+/* ── STATS ROW ───────────────────────────────────────── */
+.stats-strip{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:var(--bd);
+  border-bottom:1px solid var(--bd);flex-shrink:0;
+}
+.stat-cell{
+  background:var(--c1);padding:12px 16px;
+}
+.stat-n{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:28px;font-weight:900;color:var(--g);line-height:1;
+}
+.stat-l{font-size:9px;color:var(--t2);letter-spacing:1.5px;text-transform:uppercase;margin-top:3px;}
+.stat-d{font-size:10px;color:var(--t3);margin-top:2px;font-family:'JetBrains Mono',monospace;}
+
+/* ── CENTER VIEW SWITCHER ────────────────────────────── */
+.view-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.view{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.view.active{display:flex;}
+
+/* ── ROOM GRID VIEW ─────────────────────────────────── */
+.room-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:8px;padding:14px;
+  overflow-y:auto;flex:1;
+}
+.rc{
+  background:var(--c2);border:1px solid var(--bd);
+  border-radius:12px;padding:12px;
+  transition:border-color .2s,transform .2s;cursor:pointer;
+  position:relative;
+}
+.rc:hover{border-color:rgba(59,215,92,.3);transform:translateY(-1px);}
+.rc.new-scan{border-color:var(--g);animation:ns 2.5s ease forwards;}
+@keyframes ns{0%{box-shadow:0 0 0 0 rgba(59,215,92,.4)}50%{box-shadow:0 0 0 8px rgba(59,215,92,0)}100%{box-shadow:none;border-color:var(--bd)}}
+.rc-av{
+  width:36px;height:36px;border-radius:50%;
+  border:1.5px solid var(--g);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:800;color:var(--g);
+  margin-bottom:8px;
+}
+.rc-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:14px;font-weight:800;color:var(--t0);
+  text-transform:uppercase;margin-bottom:2px;line-height:1;
+}
+.rc-role{font-size:9px;color:var(--g);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;}
+.rc-chips{display:flex;flex-wrap:wrap;gap:3px;}
+.rc-chip{font-size:9px;padding:2px 7px;border-radius:100px;}
+.rc-chip.o{background:rgba(59,215,92,.1);color:var(--g);}
+.rc-chip.n{background:rgba(255,255,255,.04);color:#555;border:1px solid var(--bd);}
+.rc-time{position:absolute;top:8px;right:8px;font-size:9px;color:var(--t3);font-family:'JetBrains Mono',monospace;}
+.rc-s{position:absolute;bottom:8px;right:8px;font-size:9px;}
+.rc-s.done{color:var(--g);}
+.rc-s.pend{color:var(--t3);}
+
+/* ── SYNC VIEW ───────────────────────────────────────── */
+.sync-view-inner{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.sync-top-bar{
+  padding:16px 20px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:16px;flex-shrink:0;
+  background:var(--c1);
+}
+.sync-status-badge{
+  font-size:10px;padding:4px 12px;border-radius:100px;
+  font-weight:600;letter-spacing:1px;text-transform:uppercase;
+}
+.sync-status-badge.idle{border:1px solid var(--bd);color:var(--t2);}
+.sync-status-badge.live{border:1px solid rgba(59,215,92,.3);color:var(--g);background:rgba(59,215,92,.08);}
+.sync-timer-big{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:28px;font-weight:900;color:var(--am);letter-spacing:1px;
+}
+.sync-prompt-card{
+  margin:16px;padding:16px 18px;
+  background:var(--c1);border:1px solid var(--bd);border-radius:14px;
+  flex-shrink:0;
+}
+.sync-prompt-ey{font-size:9px;color:var(--g);letter-spacing:2px;text-transform:uppercase;font-weight:600;margin-bottom:8px;}
+.sync-prompt-text{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:22px;font-weight:800;color:var(--t0);
+  text-transform:uppercase;letter-spacing:-0.5px;line-height:1.1;
+}
+.sync-prompt-text.empty{color:var(--t3);font-size:16px;font-weight:400;text-transform:none;font-family:'DM Sans',sans-serif;}
+.response-feed{flex:1;overflow-y:auto;padding:0 14px 14px;display:flex;flex-direction:column;gap:7px;}
+.rf-card{
+  background:var(--c2);border:1px solid var(--bd);
+  border-radius:11px;padding:12px 14px;
+  animation:su .35s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes su{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.rf-text{font-size:13px;color:var(--t0);line-height:1.6;margin-bottom:8px;font-weight:300;}
+.rf-foot{display:flex;align-items:center;justify-content:space-between;}
+.rf-anon{font-size:10px;color:var(--t3);letter-spacing:1px;}
+.rf-name{font-size:10px;color:var(--g);font-weight:500;display:none;}
+.rf-card.named .rf-anon{display:none;}
+.rf-card.named .rf-name{display:block;}
+.rf-reacts{display:flex;gap:4px;}
+.rb{font-size:10px;padding:2px 7px;border-radius:100px;background:var(--c3);border:1px solid var(--bd);cursor:pointer;transition:all .15s;color:var(--t2);}
+.rb:hover,.rb.on{border-color:var(--g);background:rgba(59,215,92,.08);color:var(--g);}
+
+/* ── ROULETTE VIEW ───────────────────────────────────── */
+.rou-view-inner{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 40px;gap:24px;}
+.rou-status{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:11px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--am);
+  padding:6px 16px;border-radius:100px;
+  border:1px solid rgba(245,158,11,.25);
+  background:rgba(245,158,11,.06);
+}
+.rou-h{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:60px;font-weight:900;text-transform:uppercase;
+  color:var(--t0);letter-spacing:-1.5px;line-height:.9;text-align:center;
+}
+.pairs-grid{
+  display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+  width:100%;max-width:600px;overflow-y:auto;max-height:300px;
+}
+.pair-chip{
+  display:flex;align-items:center;gap:8px;
+  background:var(--c2);border:1px solid var(--bd);
+  border-radius:10px;padding:9px 14px;
+  font-size:12px;color:var(--t1);
+  animation:su .3s cubic-bezier(.4,0,.2,1) both;
+}
+.pair-chip.mutual{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05);}
+.pc-avs{display:flex;gap:4px;}
+.pc-av{
+  width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:9px;font-weight:800;color:var(--g);
+  border:1px solid var(--g);
+}
+
+/* ── NUDGE VIEW ──────────────────────────────────────── */
+.nudge-view-inner{flex:1;overflow-y:auto;padding:16px 20px;}
+.nudge-queue{display:flex;flex-direction:column;gap:8px;}
+.nq-item{
+  background:var(--c2);border:1px solid var(--bd);
+  border-radius:12px;padding:14px;
+  display:flex;align-items:center;gap:12px;
+  transition:border-color .2s;
+}
+.nq-item.sent{opacity:.4;}
+.nq-av{
+  width:40px;height:40px;border-radius:50%;flex-shrink:0;
+  border:1.5px solid var(--g);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:14px;font-weight:800;color:var(--g);
+}
+.nq-body{flex:1;min-width:0;}
+.nq-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--t0);text-transform:uppercase;}
+.nq-to{font-size:11px;color:var(--t2);margin-top:1px;}
+.nq-why{font-size:11px;color:var(--g);margin-top:4px;line-height:1.5;}
+.nq-btn{
+  flex-shrink:0;padding:8px 14px;border-radius:8px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;cursor:pointer;
+  border:1px solid rgba(59,215,92,.25);
+  background:rgba(59,215,92,.08);color:var(--g);
+  transition:all .18s;
+}
+.nq-btn:hover{background:var(--dg);}
+.nq-btn:disabled{opacity:.3;cursor:not-allowed;}
+.nq-sent{font-size:10px;color:var(--g);font-weight:600;letter-spacing:1px;flex-shrink:0;}
+
+/* ── SURVEY VIEW ─────────────────────────────────────── */
+.survey-view-inner{flex:1;overflow-y:auto;padding:12px 16px;}
+.sv-table{width:100%;border-collapse:collapse;}
+.sv-table th{font-size:9px;color:var(--t2);letter-spacing:2px;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid var(--bd);text-align:left;font-weight:600;}
+.sv-table td{font-size:12px;color:var(--t1);padding:10px 10px;border-bottom:1px solid var(--bd);vertical-align:top;}
+.sv-table tr:hover td{background:rgba(255,255,255,.015);}
+.sv-rating{color:var(--g);font-family:'JetBrains Mono',monospace;font-size:11px;}
+.sv-open{font-size:11px;color:var(--t2);font-style:italic;line-height:1.5;}
+
+/* ── LEFT PANEL CONTENT ──────────────────────────────── */
+.event-card{
+  background:var(--c2);border:1px solid var(--bd);
+  border-radius:12px;padding:12px;margin-bottom:10px;
+}
+.ev-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--t0);text-transform:uppercase;}
+.ev-meta{font-size:10px;color:var(--t2);margin-top:3px;line-height:1.6;}
+.ev-pill{
+  display:inline-block;font-size:9px;
+  padding:2px 8px;border-radius:100px;margin-top:6px;
+  border:1px solid rgba(59,215,92,.3);color:var(--g);
+  background:rgba(59,215,92,.06);letter-spacing:1px;text-transform:uppercase;
+}
+
+.chip-bars{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.cb-row{display:flex;align-items:center;gap:8px;}
+.cb-label{font-size:10px;color:var(--t1);min-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cb-track{flex:1;height:4px;background:var(--bd);border-radius:2px;overflow:hidden;}
+.cb-fill{height:100%;border-radius:2px;transition:width 1s ease;}
+.cb-fill.g{background:var(--g);}
+.cb-fill.a{background:var(--am);}
+.cb-n{font-size:9px;color:var(--t2);min-width:16px;text-align:right;font-family:'JetBrains Mono',monospace;}
+
+.section-title{
+  font-size:9px;font-weight:600;letter-spacing:2px;
+  text-transform:uppercase;color:var(--t2);
+  margin-bottom:8px;margin-top:14px;
+  padding-bottom:6px;border-bottom:1px solid var(--bd);
+}
+.section-title:first-child{margin-top:0;}
+
+.activity-feed{display:flex;flex-direction:column;gap:6px;}
+.af-item{
+  display:flex;gap:8px;align-items:flex-start;
+  padding:8px;background:var(--c2);border-radius:8px;
+  border:1px solid var(--bd);
+}
+.af-icon{font-size:12px;flex-shrink:0;margin-top:1px;}
+.af-text{font-size:11px;color:var(--t1);line-height:1.5;}
+.af-text strong{color:var(--t0);}
+.af-time{font-size:9px;color:var(--t3);margin-top:3px;font-family:'JetBrains Mono',monospace;}
+
+/* ── RIGHT PANEL CONTENT ─────────────────────────────── */
+.control-section{margin-bottom:14px;}
+.ctrl-label{font-size:9px;color:var(--t2);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;font-weight:600;}
+.ctrl-btn{
+  width:100%;padding:10px 14px;border-radius:9px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:14px;font-weight:800;letter-spacing:1px;
+  text-transform:uppercase;cursor:pointer;transition:all .18s;
+  margin-bottom:5px;
+}
+.ctrl-btn.green{background:var(--dg);color:var(--g);border:none;}
+.ctrl-btn.green:hover{background:#162620;}
+.ctrl-btn.amber{background:rgba(245,158,11,.1);color:var(--am);border:1px solid rgba(245,158,11,.2);}
+.ctrl-btn.amber:hover{background:rgba(245,158,11,.18);}
+.ctrl-btn.ghost{background:transparent;color:var(--t2);border:1px solid var(--bd);}
+.ctrl-btn.ghost:hover{color:var(--t0);border-color:var(--bd2);}
+.ctrl-btn.glow{background:rgba(59,215,92,.08);color:var(--g);border:1px solid rgba(59,215,92,.2);}
+.ctrl-btn.glow:hover{background:var(--dg);}
+.ctrl-btn:disabled{opacity:.2;cursor:not-allowed;transform:none !important;}
+.ctrl-btn:hover:not(:disabled){transform:translateY(-1px);}
+
+.ctrl-textarea{
+  width:100%;background:#0d0d0d;border:1px solid var(--bd);
+  border-radius:9px;padding:10px 12px;color:var(--t1);
+  font-family:'DM Sans',sans-serif;font-size:12px;
+  resize:none;outline:none;line-height:1.55;margin-bottom:6px;
+  transition:border-color .2s;
+}
+.ctrl-textarea:focus{border-color:var(--g);}
+.ctrl-textarea::placeholder{color:var(--t3);}
+
+.ctrl-divider{height:1px;background:var(--bd);margin:14px 0;}
+
+/* phone preview */
+.phone-preview{
+  width:100%;aspect-ratio:9/16;max-height:280px;
+  background:var(--ch);border:1px solid var(--bd);
+  border-radius:14px;overflow:hidden;position:relative;
+  display:flex;flex-direction:column;margin-bottom:10px;
+}
+.pp-notch{height:2px;background:var(--bd);flex-shrink:0;}
+.pp-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;text-align:center;position:relative;}
+.pp-label{font-size:8px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;position:absolute;top:8px;left:10px;}
+.pp-content{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;}
+.pp-h{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--t0);text-transform:uppercase;letter-spacing:-0.5px;line-height:1;}
+.pp-h span{color:var(--g);}
+.pp-sub{font-size:9px;color:var(--t2);line-height:1.5;max-width:140px;}
+.pp-input-sim{width:90%;height:36px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:6px;margin-top:4px;}
+.pp-btn-sim{width:90%;height:28px;background:var(--g);border-radius:6px;margin-top:4px;}
+.pp-cards-sim{display:flex;flex-direction:column;gap:3px;width:90%;}
+.pp-card-sim{height:28px;background:var(--c2);border-radius:6px;border:1px solid var(--bd);}
+.pp-card-sim.you{border-color:rgba(59,215,92,.3);}
+
+/* qr display */
+.qr-display{
+  width:100%;padding:12px;background:#fff;
+  border-radius:10px;display:flex;flex-direction:column;
+  align-items:center;gap:8px;margin-bottom:8px;
+}
+.qr-box{width:80px;height:80px;background:#000;border-radius:4px;display:flex;align-items:center;justify-content:center;}
+.qr-box svg rect{fill:#000;}
+.qr-url{font-size:9px;color:#333;font-family:'JetBrains Mono',monospace;}
+.qr-label{font-size:9px;color:#555;letter-spacing:1px;text-transform:uppercase;font-weight:600;}
+
+/* ── TOAST ───────────────────────────────────────────── */
+#toast{
+  position:fixed;bottom:20px;right:20px;z-index:999;
+  background:var(--dg);color:var(--g);
+  border:1px solid rgba(59,215,92,.25);border-radius:10px;
+  padding:10px 16px;font-size:12px;font-weight:500;
+  opacity:0;transform:translateY(8px);
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;font-family:'DM Sans',sans-serif;
+  max-width:280px;line-height:1.4;
+}
+#toast.show{opacity:1;transform:translateY(0);}
+
+/* ── SCROLLBAR ───────────────────────────────────────── */
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+
+/* ── MOBILE COLLAPSE ─────────────────────────────────── */
+@media(max-width:900px){
+  html,body{overflow:auto;}
+  .main{
+    display:flex;flex-direction:column;
+    height:auto;margin-top:52px;
+    overflow:visible;
+  }
+  .panel-left{border-right:none;border-bottom:1px solid var(--bd);max-height:none;}
+  .panel-center{min-height:60vh;}
+  .panel-right{border-left:none;border-top:1px solid var(--bd);}
+  .stats-strip{grid-template-columns:repeat(2,1fr);}
+  .room-grid{grid-template-columns:repeat(2,1fr);}
+  .topbar .tb-center{display:none;}
+  .act-tabs-mobile{
+    display:flex;gap:0;overflow-x:auto;
+    border-bottom:1px solid var(--bd);
+    padding:0;background:var(--c1);flex-shrink:0;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .act-tabs-mobile::-webkit-scrollbar{display:none;}
+  .act-tab-m{
+    flex:0 0 auto;padding:12px 16px;
+    font-family:'Barlow Condensed',sans-serif;
+    font-size:12px;font-weight:700;letter-spacing:1px;
+    text-transform:uppercase;cursor:pointer;
+    border:none;background:transparent;
+    color:var(--t2);border-bottom:2px solid transparent;
+    transition:all .18s;white-space:nowrap;
+  }
+  .act-tab-m.active{color:var(--g);border-bottom-color:var(--g);}
+}
+@media(min-width:901px){
+  .act-tabs-mobile{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── TOPBAR ──────────────────────────────────────────────── -->
+<div class="topbar">
+  <div class="tb-brand">
+    <div class="tb-logo">FUTURELAND ✦</div>
+    <div class="tb-event">Creative Meetup · June 2026 · Cleveland</div>
+  </div>
+  <div class="tb-center">
+    <button class="act-tab active" data-view="room" onclick="switchView('room')">⊞ Room</button>
+    <button class="act-tab" data-view="sync" onclick="switchView('sync')">✦ Sync</button>
+    <button class="act-tab amber" data-view="roulette" onclick="switchView('roulette')">◉ Roulette</button>
+    <button class="act-tab" data-view="nudge" onclick="switchView('nudge')">◐ Nudge</button>
+    <button class="act-tab blue" data-view="survey" onclick="switchView('survey')">◎ Survey</button>
+  </div>
+  <div class="tb-right">
+    <div class="live-badge"><div class="ldot"></div><span id="tb-ct">24 in room</span></div>
+  </div>
+</div>
+
+<!-- ── MOBILE TABS ─────────────────────────────────────────── -->
+<div class="act-tabs-mobile">
+  <button class="act-tab-m active" data-view="room" onclick="switchView('room')">⊞ Room</button>
+  <button class="act-tab-m" data-view="sync" onclick="switchView('sync')">✦ Sync</button>
+  <button class="act-tab-m" data-view="roulette" onclick="switchView('roulette')">◉ Roulette</button>
+  <button class="act-tab-m" data-view="nudge" onclick="switchView('nudge')">◐ Nudge</button>
+  <button class="act-tab-m" data-view="survey" onclick="switchView('survey')">◎ Survey</button>
+  <button class="act-tab-m" data-view="intel" onclick="switchView('intel')">◈ Intel</button>
+</div>
+
+<!-- ── MAIN GRID ────────────────────────────────────────────── -->
+<div class="main">
+
+  <!-- ════ LEFT PANEL ════ -->
+  <div class="panel-left">
+    <div class="p-head">
+      <div>
+        <div class="p-title">Event Intel</div>
+        <div class="p-sub">Live · Futureland June 2026</div>
+      </div>
+    </div>
+    <div class="p-body">
+
+      <div class="event-card">
+        <div class="ev-name">Creative Meetup</div>
+        <div class="ev-meta">June 2026 · Cleveland, OH<br/>Doors 6:00 PM · Close 9:00 PM</div>
+        <div class="ev-pill">Act 1 Live</div>
+      </div>
+
+      <div class="section-title">Attendance</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <div style="flex:1;background:var(--c2);border:1px solid var(--bd);border-radius:8px;padding:8px;text-align:center">
+          <div class="stat-n" style="font-size:22px" id="lp-scanned">24</div>
+          <div class="stat-l">Scanned</div>
+        </div>
+        <div style="flex:1;background:var(--c2);border:1px solid var(--bd);border-radius:8px;padding:8px;text-align:center">
+          <div class="stat-n" style="font-size:22px;color:var(--am)" id="lp-survey">18</div>
+          <div class="stat-l">Surveyed</div>
+        </div>
+        <div style="flex:1;background:var(--c2);border:1px solid var(--bd);border-radius:8px;padding:8px;text-align:center">
+          <div class="stat-n" style="font-size:22px;color:var(--bl)" id="lp-matches">12</div>
+          <div class="stat-l">Matched</div>
+        </div>
+      </div>
+
+      <div class="section-title">Top Offers Tonight</div>
+      <div class="chip-bars" id="offer-bars"></div>
+
+      <div class="section-title">Top Needs Tonight</div>
+      <div class="chip-bars" id="need-bars"></div>
+
+      <div class="section-title">Activity Feed</div>
+      <div class="activity-feed" id="activity-feed"></div>
+
+    </div>
+  </div>
+
+  <!-- ════ CENTER PANEL ════ -->
+  <div class="panel-center">
+
+    <!-- Stats Strip -->
+    <div class="stats-strip">
+      <div class="stat-cell">
+        <div class="stat-n" id="sc-scanned">24</div>
+        <div class="stat-l">In Room</div>
+        <div class="stat-d">of 38 expected</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-n" id="sc-resp">0</div>
+        <div class="stat-l">Sync Responses</div>
+        <div class="stat-d" id="sc-resp-d">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-n" style="color:var(--am)" id="sc-pairs">0</div>
+        <div class="stat-l">Pairs Made</div>
+        <div class="stat-d">roulette rounds</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-n" style="color:var(--bl)" id="sc-nudges">0</div>
+        <div class="stat-l">Nudges Sent</div>
+        <div class="stat-d">private signals</div>
+      </div>
+    </div>
+
+    <!-- View Area -->
+    <div class="view-area">
+
+      <!-- ROOM VIEW -->
+      <div class="view active" id="view-room">
+        <div style="padding:12px 14px 8px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <div style="font-size:11px;color:var(--t2)">Live room · updates in real time</div>
+          <button class="ctrl-btn green" style="width:auto;padding:6px 14px;font-size:12px;margin:0" onclick="simulateScan()">+ Simulate scan</button>
+        </div>
+        <div class="room-grid" id="room-grid"></div>
+      </div>
+
+      <!-- SYNC VIEW -->
+      <div class="view" id="view-sync">
+        <div class="sync-top-bar">
+          <div class="sync-status-badge idle" id="sync-badge">Idle</div>
+          <div style="flex:1;font-size:12px;color:var(--t2)" id="sync-resp-count">0 responses in</div>
+          <div class="sync-timer-big" id="sync-timer-big" style="display:none">2:00</div>
+        </div>
+        <div class="sync-prompt-card">
+          <div class="sync-prompt-ey">Tonight's prompt</div>
+          <div class="sync-prompt-text empty" id="sync-prompt-display">No prompt fired yet. Set it in the controls panel →</div>
+        </div>
+        <div class="response-feed" id="response-feed">
+          <div style="text-align:center;padding:32px;color:var(--t3);font-size:13px;">Responses will appear here as they come in.</div>
+        </div>
+      </div>
+
+      <!-- ROULETTE VIEW -->
+      <div class="view" id="view-roulette">
+        <div class="rou-view-inner">
+          <div class="rou-status" id="rou-status">Ready to spin</div>
+          <div class="rou-h">Russian<br/><span style="color:var(--am)">Roulette</span></div>
+          <div style="font-size:13px;color:var(--t2);text-align:center;max-width:360px;line-height:1.7">
+            Hit Spin the Room in the controls panel. Every attendee gets a random pairing and a conversation starter drawn from tonight's Creative Sync responses.
+          </div>
+          <div class="pairs-grid" id="pairs-grid">
+            <div style="font-size:11px;color:var(--t3);text-align:center;width:100%">No pairs yet. Fire Act 2 to begin.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NUDGE VIEW -->
+      <div class="view" id="view-nudge">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--bd);flex-shrink:0">
+          <div style="font-size:11px;color:var(--t2);line-height:1.6">Private match signals. Only the recipient sees their nudge. No public reveal.</div>
+        </div>
+        <div class="nudge-view-inner">
+          <div class="nudge-queue" id="nudge-queue"></div>
+        </div>
+      </div>
+
+      <!-- SURVEY VIEW -->
+      <div class="view" id="view-survey">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--bd);flex-shrink:0;display:flex;align-items:center;gap:12px">
+          <div style="font-size:11px;color:var(--t2)">18 of 24 completed · Avg rating 4.6 ⭐ · NPS 8.4</div>
+        </div>
+        <div class="survey-view-inner">
+          <table class="sv-table">
+            <thead><tr><th>Attendee</th><th>Vibe</th><th>Rating</th><th>NPS</th><th>Open mic</th></tr></thead>
+            <tbody id="survey-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════ RIGHT PANEL ════ -->
+  <div class="panel-right">
+    <div class="p-head">
+      <div>
+        <div class="p-title">Controls</div>
+        <div class="p-sub">Broadcast · Fire · Export</div>
+      </div>
+    </div>
+    <div class="p-body">
+
+      <!-- Phone preview -->
+      <div class="ctrl-label">Attendee View Preview</div>
+      <div class="phone-preview">
+        <div class="pp-notch"></div>
+        <div class="pp-screen">
+          <div class="pp-label" id="pp-label">Waiting screen</div>
+          <div class="pp-content" id="pp-content">
+            <div class="pp-h">You're in the <span>room.</span></div>
+            <div class="pp-sub">Tonight has three acts. Stay close to your phone.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QR Codes -->
+      <div class="ctrl-label" style="margin-top:10px">QR Codes</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div style="flex:1;background:var(--c2);border:1px solid var(--bd);border-radius:10px;padding:10px;text-align:center">
+          <div style="width:48px;height:48px;background:white;border-radius:4px;margin:0 auto 6px;display:flex;align-items:center;justify-content:center">
+            <svg width="40" height="40" viewBox="0 0 10 10"><rect x="0" y="0" width="4" height="4" fill="#000"/><rect x="5" y="0" width="4" height="4" fill="#000"/><rect x="0" y="5" width="4" height="4" fill="#000"/><rect x="1" y="1" width="2" height="2" fill="white"/><rect x="6" y="1" width="2" height="2" fill="white"/><rect x="1" y="6" width="2" height="2" fill="white"/><rect x="5" y="5" width="1" height="1" fill="#000"/><rect x="7" y="5" width="1" height="1" fill="#000"/><rect x="5" y="7" width="1" height="1" fill="#000"/><rect x="7" y="7" width="1" height="1" fill="#000"/><rect x="6" y="6" width="1" height="1" fill="#000"/></svg>
+          </div>
+          <div style="font-size:9px;color:var(--t2);letter-spacing:1px;text-transform:uppercase">Entry</div>
+        </div>
+        <div style="flex:1;background:var(--c2);border:1px solid var(--bd);border-radius:10px;padding:10px;text-align:center">
+          <div style="width:48px;height:48px;background:white;border-radius:4px;margin:0 auto 6px;display:flex;align-items:center;justify-content:center">
+            <svg width="40" height="40" viewBox="0 0 10 10"><rect x="0" y="0" width="4" height="4" fill="#000"/><rect x="5" y="0" width="4" height="4" fill="#000"/><rect x="0" y="5" width="4" height="4" fill="#000"/><rect x="1" y="1" width="2" height="2" fill="white"/><rect x="6" y="1" width="2" height="2" fill="white"/><rect x="1" y="6" width="2" height="2" fill="white"/><rect x="5" y="6" width="1" height="1" fill="#000"/><rect x="6" y="5" width="1" height="1" fill="#000"/><rect x="7" y="6" width="1" height="1" fill="#000"/><rect x="5" y="8" width="2" height="1" fill="#000"/><rect x="8" y="5" width="1" height="2" fill="#000"/></svg>
+          </div>
+          <div style="font-size:9px;color:var(--t2);letter-spacing:1px;text-transform:uppercase">Survey</div>
+        </div>
+      </div>
+
+      <div class="ctrl-divider"></div>
+
+      <!-- Act 1 Controls -->
+      <div class="control-section">
+        <div class="ctrl-label">✦ Act 1 — Creative Sync</div>
+        <textarea class="ctrl-textarea" id="ctrl-prompt" rows="3" placeholder="Write your prompt...">In one sentence: what problem are you working on that nobody in Cleveland is talking about yet?</textarea>
+        <button class="ctrl-btn green" id="ctrl-fire" onclick="fireSync()">Fire prompt to all phones →</button>
+        <button class="ctrl-btn ghost" id="ctrl-wall" onclick="openWall()" disabled>Open response wall</button>
+        <button class="ctrl-btn ghost" id="ctrl-reveal" onclick="revealNames()" disabled>Reveal names</button>
+      </div>
+
+      <div class="ctrl-divider"></div>
+
+      <!-- Act 2 Controls -->
+      <div class="control-section">
+        <div class="ctrl-label">◉ Act 2, Random Pairing</div>
+        <button class="ctrl-btn amber" id="ctrl-spin" onclick="spinRoom()">Spin the room →</button>
+        <button class="ctrl-btn ghost" id="ctrl-respin" onclick="spinRoom()" disabled>Spin again</button>
+      </div>
+
+      <div class="ctrl-divider"></div>
+
+      <!-- Act 3 Controls -->
+      <div class="control-section">
+        <div class="ctrl-label">◐ Act 3 — Quiet Nudge</div>
+        <button class="ctrl-btn glow" onclick="sendNudge()">Send next nudge →</button>
+        <button class="ctrl-btn ghost" onclick="sendAllNudges()">Send all nudges</button>
+      </div>
+
+      <div class="ctrl-divider"></div>
+
+      <!-- Export -->
+      <div class="control-section">
+        <div class="ctrl-label">↓ Export</div>
+        <button class="ctrl-btn ghost" onclick="fakeExport(this,'Attendees exported')">Attendee list CSV</button>
+        <button class="ctrl-btn ghost" onclick="fakeExport(this,'Survey data exported')">Survey responses CSV</button>
+        <button class="ctrl-btn ghost" onclick="fakeExport(this,'Impact report exported')">Grant impact PDF</button>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- main -->
+<div id="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────
+const PEOPLE = [
+  {init:'AJ',name:'Alysha J.',   role:'Founder',           bg:'#203229', offers:['Mentorship','Capital'],        needs:['Collaborators','A co-founder'],   time:'6:02', survey:true,  you:true},
+  {init:'MJ',name:'Marcus J.',   role:'Developer',         bg:'#1a3a2a', offers:['Technical skills'],            needs:['Clients','Visibility'],            time:'6:05', survey:true},
+  {init:'TK',name:'Tanya K.',    role:'Designer',          bg:'#2a1a3a', offers:['Brand strategy','Feedback'],   needs:['Funding'],                         time:'6:07', survey:true},
+  {init:'SR',name:'Sam R.',      role:'Investor',          bg:'#1a2a3a', offers:['Capital','Introductions'],     needs:['Deal flow'],                       time:'6:09', survey:false},
+  {init:'NF',name:'Nia F.',      role:'Creative',          bg:'#3a2a1a', offers:['Media coverage'],              needs:['Collaborators','Brand strategy'],   time:'6:11', survey:true},
+  {init:'DL',name:'Devon L.',    role:'Builder',           bg:'#2a3a1a', offers:['Co-founder energy'],           needs:['Funding','Mentorship'],            time:'6:14', survey:true},
+  {init:'PR',name:'Priya R.',    role:'Educator',          bg:'#3a1a2a', offers:['Feedback','Accountability'],   needs:['Visibility'],                      time:'6:16', survey:false},
+  {init:'CB',name:'Chris B.',    role:'Storyteller',       bg:'#1a3a3a', offers:['Media coverage','Introductions'],needs:['A mentor','Community'],          time:'6:19', survey:true},
+  {init:'ZW',name:'Zoe W.',      role:'Community Org.',    bg:'#2a2a3a', offers:['Accountability'],              needs:['Technical help','Funding'],        time:'6:21', survey:true},
+  {init:'EL',name:'Eli L.',      role:'Nonprofit',         bg:'#3a3a1a', offers:['Legal advice'],                needs:['Funding','Collaborators'],         time:'6:24', survey:true},
+  {init:'KM',name:'Kira M.',     role:'Founder',           bg:'#1a2a2a', offers:['Brand strategy','Capital'],    needs:['Clients'],                         time:'6:26', survey:false},
+  {init:'JT',name:'Jordan T.',   role:'Student',           bg:'#2a1a2a', offers:['Research','Feedback'],         needs:['Mentorship','A co-founder'],       time:'6:29', survey:true},
+  {init:'BW',name:'Blake W.',    role:'Builder',           bg:'#1a2a3a', offers:['Co-founder energy'],           needs:['Technical help'],                  time:'6:31', survey:true},
+  {init:'LM',name:'Laila M.',    role:'Creative',          bg:'#3a1a3a', offers:['Introductions'],               needs:['Visibility','Community'],          time:'6:33', survey:true},
+  {init:'RD',name:'Ray D.',      role:'Developer',         bg:'#2a3a2a', offers:['Technical skills','Feedback'], needs:['Clients','Funding'],               time:'6:35', survey:false},
+  {init:'VK',name:'Vera K.',     role:'Investor',          bg:'#3a2a2a', offers:['Capital'],                     needs:['Introductions','Deal flow'],       time:'6:37', survey:true},
+  {init:'OS',name:'Omar S.',     role:'Nonprofit',         bg:'#1a3a2a', offers:['Community','Accountability'],  needs:['Funding','Visibility'],            time:'6:40', survey:true},
+  {init:'HL',name:'Hana L.',     role:'Designer',          bg:'#2a1a3a', offers:['Brand strategy'],              needs:['Clients','A co-founder'],          time:'6:42', survey:true},
+  {init:'TN',name:'Theo N.',     role:'Founder',           bg:'#1a2a3a', offers:['Mentorship','Introductions'],  needs:['Capital','Technical skills'],      time:'6:44', survey:false},
+  {init:'SC',name:'Sofia C.',    role:'Educator',          bg:'#3a3a2a', offers:['Feedback'],                    needs:['Community','Visibility'],          time:'6:46', survey:true},
+  {init:'JK',name:'James K.',    role:'Builder',           bg:'#2a2a3a', offers:['Technical skills'],            needs:['Co-founder energy','Funding'],     time:'6:48', survey:true},
+  {init:'AM',name:'Amara M.',    role:'Storyteller',       bg:'#3a1a2a', offers:['Media coverage'],              needs:['Brand strategy','Clients'],        time:'6:51', survey:false},
+  {init:'PL',name:'Pryor L.',    role:'Community Org.',    bg:'#1a3a3a', offers:['Introductions','Accountability'],needs:['Technical help'],                time:'6:53', survey:true},
+  {init:'CW',name:'Cass W.',     role:'Creative',          bg:'#2a3a3a', offers:['Feedback','Media coverage'],   needs:['A mentor','Funding'],              time:'6:55', survey:true},
+];
+
+const SYNC_RESPONSES = [
+  {name:'Marcus J.',init:'MJ',bg:'#1a3a2a',text:'The gap between technical talent and community capital. Builders can\'t find investors. Investors can\'t find builders.'},
+  {name:'Tanya K.', init:'TK',bg:'#2a1a3a',text:'Black-owned design studios have no pipeline to corporate contracts. The talent exists. The connection infrastructure doesn\'t.'},
+  {name:'Devon L.', init:'DL',bg:'#2a3a1a',text:'Who owns the data layer of Cleveland\'s economic development story? Right now, nobody does.'},
+  {name:'Nia F.',   init:'NF',bg:'#3a2a1a',text:'Creative talent leaves because they can\'t afford to stay, not because there\'s no opportunity.'},
+  {name:'Zoe W.',   init:'ZW',bg:'#2a2a3a',text:'Nonprofits and startups are solving the same problems with zero coordination. The siloing costs both sides real impact.'},
+  {name:'Chris B.', init:'CB',bg:'#1a3a3a',text:'Nobody is documenting the oral history of Cleveland\'s Black entrepreneurial ecosystem. That knowledge walks out with every retirement.'},
+];
+
+const SURVEY_DATA = [
+  {name:'Alysha J.', vibe:'🔥 Energized', r:'★★★★★', nps:'10', open:'The connections were everything.'},
+  {name:'Marcus J.', vibe:'🔥 Energized', r:'★★★★★', nps:'9',  open:'The energy was different. People were listening, not just waiting to talk.'},
+  {name:'Tanya K.',  vibe:'💡 Inspired',  r:'★★★★☆', nps:'8',  open:'Best lineup yet.'},
+  {name:'Nia F.',    vibe:'🤝 Connected', r:'★★★★★', nps:'10', open:'Keep this exact format.'},
+  {name:'Devon L.',  vibe:'🔥 Energized', r:'★★★★☆', nps:'9',  open:'Need a session for builders looking for technical co-founders.'},
+  {name:'Chris B.',  vibe:'💡 Inspired',  r:'★★★★★', nps:'10', open:'The room app changed how I network.'},
+  {name:'Zoe W.',    vibe:'🤝 Connected', r:'★★★★★', nps:'10', open:'I came looking for accountability and left with three.'},
+  {name:'Eli L.',    vibe:'🌿 Calm',      r:'★★★★☆', nps:'7',  open:'More nonprofit-specific programming.'},
+  {name:'Blake W.',  vibe:'🔥 Energized', r:'★★★★☆', nps:'8',  open:'Great crowd tonight.'},
+  {name:'Laila M.',  vibe:'🤝 Connected', r:'★★★★★', nps:'9',  open:'I found my people.'},
+  {name:'Vera K.',   vibe:'💡 Inspired',  r:'★★★★☆', nps:'8',  open:'Strong programming, solid room.'},
+  {name:'Omar S.',   vibe:'🌿 Calm',      r:'★★★★☆', nps:'7',  open:'More nonprofit representation.'},
+  {name:'Hana L.',   vibe:'🔥 Energized', r:'★★★★★', nps:'10', open:'Best Futureland event so far.'},
+  {name:'James K.',  vibe:'💡 Inspired',  r:'★★★★☆', nps:'9',  open:'Need more builders in the room.'},
+  {name:'Sofia C.',  vibe:'🤝 Connected', r:'★★★★☆', nps:'8',  open:'Loved the chip matching concept.'},
+  {name:'Pryor L.',  vibe:'🔥 Energized', r:'★★★★★', nps:'10', open:'The room app changed how I network.'},
+  {name:'Cass W.',   vibe:'🌿 Calm',      r:'★★★★☆', nps:'8',  open:'Good vibe. Would come back.'},
+  {name:'Jordan T.', vibe:'🤝 Connected', r:'★★★★★', nps:'9',  open:'As a student I felt included tonight.'},
+];
+
+const NUDGE_QUEUE = [
+  {from:'Alysha J.',to:'Sam R.',   fromInit:'AJ',toInit:'SR',toBg:'#1a2a3a',why:'Alysha needs Funding · Sam offers Capital. Direct match.'},
+  {from:'Marcus J.',to:'Kira M.',  fromInit:'MJ',toInit:'KM',toBg:'#1a2a2a',why:'Marcus offers Technical skills · Kira needs Technical skills.'},
+  {from:'Devon L.', to:'Vera K.',  fromInit:'DL',toInit:'VK',toBg:'#3a2a2a',why:'Devon needs Funding · Vera offers Capital. Two-way overlap.'},
+  {from:'Tanya K.', to:'Theo N.',  fromInit:'TK',toInit:'TN',toBg:'#1a2a3a',why:'Tanya offers Brand strategy · Theo needs Brand strategy.'},
+  {from:'Jordan T.',to:'Priya R.', fromInit:'JT',toInit:'PR',toBg:'#3a1a2a',why:'Jordan needs Mentorship · Priya offers Mentorship and Feedback.'},
+];
+
+const PAIRS_DEMO = [
+  {a:{init:'AJ',bg:'#203229'},b:{init:'SR',bg:'#1a2a3a'},names:'Alysha + Sam'},
+  {a:{init:'MJ',bg:'#1a3a2a'},b:{init:'KM',bg:'#1a2a2a'},names:'Marcus + Kira'},
+  {a:{init:'TK',bg:'#2a1a3a'},b:{init:'EL',bg:'#3a3a1a'},names:'Tanya + Eli'},
+  {a:{init:'NF',bg:'#3a2a1a'},b:{init:'DL',bg:'#2a3a1a'},names:'Nia + Devon'},
+  {a:{init:'PR',bg:'#3a1a2a'},b:{init:'CB',bg:'#1a3a3a'},names:'Priya + Chris'},
+  {a:{init:'ZW',bg:'#2a2a3a'},b:{init:'OS',bg:'#1a3a2a'},names:'Zoe + Omar'},
+];
+
+const OFFERS = [{l:'Mentorship',ct:6},{l:'Introductions',ct:5},{l:'Technical skills',ct:4},{l:'Brand strategy',ct:4},{l:'Capital',ct:4},{l:'Feedback',ct:5},{l:'Media coverage',ct:4}];
+const NEEDS  = [{l:'Funding',ct:8},{l:'Mentorship',ct:7},{l:'Visibility',ct:5},{l:'Clients',ct:4},{l:'Collaborators',ct:4},{l:'A co-founder',ct:4},{l:'Technical help',ct:3}];
+
+const ACTIVITY = [
+  {icon:'✦',text:'<strong>Alysha J.</strong> matched with <strong>Sam R.</strong>',time:'7:14 PM'},
+  {icon:'◉',text:'Round 2 roulette completed — <strong>6 pairs</strong>',time:'7:09 PM'},
+  {icon:'◎',text:'<strong>Zoe W.</strong> submitted survey — NPS 10',time:'7:06 PM'},
+  {icon:'✦',text:'<strong>Marcus J.</strong> matched with <strong>Kira M.</strong>',time:'6:58 PM'},
+  {icon:'📥',text:'<strong>Brett K.</strong> scanned in',time:'6:54 PM'},
+  {icon:'◎',text:'<strong>Chris B.</strong> submitted survey',time:'6:49 PM'},
+];
+
+const SIM_PEOPLE = [
+  {init:'BK',name:'Brett K.',role:'Founder',bg:'#1a2a3a',offers:['Capital'],needs:['Technical skills'],time:'',survey:false},
+  {init:'YR',name:'Yara R.', role:'Designer',bg:'#3a1a2a',offers:['Brand strategy'],needs:['Clients'],time:'',survey:false},
+];
+
+// ── STATE ─────────────────────────────────────────────────
+let currentView = 'room';
+let syncLive = false, syncTick = null, streamTick = null;
+let shownResponses = 0, namesOn = false;
+let nudgeSent = new Set();
+let simIdx = 0;
+let pairCount = 0, nudgeCount = 0;
+
+// ── INIT ──────────────────────────────────────────────────
+buildRoomGrid();
+buildChipBars();
+buildActivityFeed();
+buildNudgeQueue();
+buildSurveyTable();
+
+// ── VIEW SWITCHING ────────────────────────────────────────
+function switchView(v) {
+  currentView = v;
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.act-tab').forEach(el => el.classList.toggle('active', el.dataset.view===v));
+  document.querySelectorAll('.act-tab-m').forEach(el => el.classList.toggle('active', el.dataset.view===v));
+  updatePhonePreview(v);
+}
+
+function updatePhonePreview(v) {
+  const label = document.getElementById('pp-label');
+  const content = document.getElementById('pp-content');
+  const previews = {
+    room:     ['Room view',     `<div class="pp-h">You're in the <span>room.</span></div><div class="pp-sub">24 people here tonight.</div><div class="pp-cards-sim"><div class="pp-card-sim you"></div><div class="pp-card-sim"></div><div class="pp-card-sim"></div></div>`],
+    sync:     ['Creative Sync', `<div class="pp-h" style="font-size:13px;color:var(--g)">Creative Sync — Act 1</div><div class="pp-sub" style="font-style:italic;color:var(--t0);margin:8px 0">In one sentence: what problem are you working on...</div><div class="pp-input-sim"></div><div class="pp-btn-sim"></div>`],
+    roulette: ['Roulette',      `<div class="pp-h">Spin the <span>room.</span></div><div style="width:60px;height:60px;border-radius:50%;border:1px solid var(--am);margin:8px auto;display:flex;align-items:center;justify-content:center;font-size:20px">🎲</div><div class="pp-btn-sim" style="background:rgba(245,158,11,.3)"></div>`],
+    nudge:    ['Quiet Nudge',   `<div class="pp-h" style="font-size:12px">Someone<br/><span>here can help.</span></div><div class="pp-card-sim" style="height:44px;border-color:rgba(59,215,92,.3)"></div><div style="display:flex;gap:4px;width:90%;margin-top:4px"><div class="pp-btn-sim" style="flex:1;height:24px;background:transparent;border:1px solid var(--bd)"></div><div class="pp-btn-sim" style="flex:1;height:24px"></div></div>`],
+    survey:   ['Survey',        `<div class="pp-h" style="font-size:13px">How did<br/><span>tonight feel?</span></div><div class="pp-cards-sim" style="gap:4px"><div class="pp-card-sim"></div><div class="pp-card-sim"></div><div class="pp-card-sim"></div></div>`],
+  };
+  const p = previews[v] || previews.room;
+  label.textContent = p[0];
+  content.innerHTML = p[1];
+}
+
+// ── ROOM GRID ─────────────────────────────────────────────
+function buildRoomGrid() {
+  const grid = document.getElementById('room-grid');
+  grid.innerHTML = '';
+  PEOPLE.forEach((p,i) => {
+    const el = document.createElement('div');
+    el.className = 'rc';
+    el.innerHTML = `
+      <div class="rc-time">${p.time}</div>
+      <div class="rc-av" style="background:${p.bg}">${p.init}</div>
+      <div class="rc-name">${p.name}${p.you?' ✦':''}</div>
+      <div class="rc-role">${p.role}</div>
+      <div class="rc-chips">
+        ${p.offers.map(o=>`<span class="rc-chip o">✦ ${o}</span>`).join('')}
+        ${p.needs.map(n=>`<span class="rc-chip n">↗ ${n}</span>`).join('')}
+      </div>
+      <div class="rc-s ${p.survey?'done':'pend'}">${p.survey?'✦':'⏳'}</div>`;
+    grid.appendChild(el);
+  });
+  updateCounts();
+}
+
+function simulateScan() {
+  if (simIdx >= SIM_PEOPLE.length) { toast('No more demo scans'); return; }
+  const p = SIM_PEOPLE[simIdx++];
+  p.time = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  PEOPLE.unshift(p);
+  buildRoomGrid();
+  const cards = document.querySelectorAll('.rc');
+  if (cards.length) cards[0].classList.add('new-scan');
+  document.getElementById('tb-ct').textContent = PEOPLE.length + ' in room';
+  addActivity('📥', `<strong>${p.name}</strong> just scanned in`, 'Just now');
+  toast(`${p.name} scanned in`);
+}
+
+function updateCounts() {
+  const n = PEOPLE.length;
+  document.getElementById('sc-scanned').textContent = n;
+  document.getElementById('lp-scanned').textContent = n;
+  document.getElementById('tb-ct').textContent = n + ' in room';
+}
+
+// ── CHIP BARS ─────────────────────────────────────────────
+function buildChipBars() {
+  const maxO = Math.max(...OFFERS.map(x=>x.ct));
+  const maxN = Math.max(...NEEDS.map(x=>x.ct));
+  document.getElementById('offer-bars').innerHTML = OFFERS.map(o=>`
+    <div class="cb-row">
+      <div class="cb-label">${o.l}</div>
+      <div class="cb-track"><div class="cb-fill g" style="width:${(o.ct/maxO*100).toFixed(0)}%"></div></div>
+      <div class="cb-n">${o.ct}</div>
+    </div>`).join('');
+  document.getElementById('need-bars').innerHTML = NEEDS.map(n=>`
+    <div class="cb-row">
+      <div class="cb-label">${n.l}</div>
+      <div class="cb-track"><div class="cb-fill a" style="width:${(n.ct/maxN*100).toFixed(0)}%"></div></div>
+      <div class="cb-n">${n.ct}</div>
+    </div>`).join('');
+}
+
+// ── ACTIVITY FEED ─────────────────────────────────────────
+function buildActivityFeed() {
+  document.getElementById('activity-feed').innerHTML = ACTIVITY.map(a=>`
+    <div class="af-item">
+      <div class="af-icon">${a.icon}</div>
+      <div><div class="af-text">${a.text}</div><div class="af-time">${a.time}</div></div>
+    </div>`).join('');
+}
+
+function addActivity(icon, text, time) {
+  const feed = document.getElementById('activity-feed');
+  const el = document.createElement('div');
+  el.className = 'af-item';
+  el.innerHTML = `<div class="af-icon">${icon}</div><div><div class="af-text">${text}</div><div class="af-time">${time}</div></div>`;
+  feed.insertBefore(el, feed.firstChild);
+}
+
+// ── SURVEY TABLE ──────────────────────────────────────────
+function buildSurveyTable() {
+  document.getElementById('survey-tbody').innerHTML = SURVEY_DATA.map(r=>`
+    <tr>
+      <td style="font-weight:500;color:var(--t0)">${r.name}</td>
+      <td>${r.vibe}</td>
+      <td class="sv-rating">${r.r}</td>
+      <td class="sv-rating">${r.nps}/10</td>
+      <td class="sv-open">${r.open}</td>
+    </tr>`).join('');
+}
+
+// ── NUDGE QUEUE ───────────────────────────────────────────
+function buildNudgeQueue() {
+  document.getElementById('nudge-queue').innerHTML = NUDGE_QUEUE.map((n,i)=>`
+    <div class="nq-item ${nudgeSent.has(i)?'sent':''}" id="nqi-${i}">
+      <div class="nq-av" style="background:${n.toBg}">${n.toInit}</div>
+      <div class="nq-body">
+        <div class="nq-name">${n.to}</div>
+        <div class="nq-to">Nudge for ${n.from}</div>
+        <div class="nq-why">${n.why}</div>
+      </div>
+      ${nudgeSent.has(i)
+        ? `<div class="nq-sent">✦ Sent</div>`
+        : `<button class="nq-btn" onclick="sendSingleNudge(${i})">Send →</button>`}
+    </div>`).join('');
+}
+
+// ── ACT 1: CREATIVE SYNC ─────────────────────────────────
+function fireSync() {
+  const prompt = document.getElementById('ctrl-prompt').value.trim();
+  if (!prompt) return;
+  syncLive = true;
+  document.getElementById('sync-prompt-display').textContent = prompt;
+  document.getElementById('sync-prompt-display').classList.remove('empty');
+  document.getElementById('sync-badge').textContent = 'Live';
+  document.getElementById('sync-badge').classList.remove('idle');
+  document.getElementById('sync-badge').classList.add('live');
+  document.getElementById('sync-timer-big').style.display = 'block';
+  document.getElementById('ctrl-fire').textContent = '✦ Prompt live';
+  document.getElementById('ctrl-fire').disabled = true;
+  document.getElementById('sc-resp-d').textContent = 'responses streaming';
+  switchView('sync');
+  updatePhonePreview('sync');
+  addActivity('✦', 'Creative Sync prompt fired to <strong>all phones</strong>', 'Just now');
+  toast('Prompt fired to all phones');
+
+  let secs = 120;
+  const te = document.getElementById('sync-timer-big');
+  syncTick = setInterval(()=>{
+    secs--;
+    te.textContent = Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0');
+    if (secs<=0){ clearInterval(syncTick); te.textContent='Done'; enableWall(); }
+  }, 1000);
+
+  let idx = 0;
+  const feed = document.getElementById('response-feed');
+  feed.innerHTML = '';
+  streamTick = setInterval(()=>{
+    if (idx < SYNC_RESPONSES.length) {
+      const r = SYNC_RESPONSES[idx++];
+      const el = document.createElement('div');
+      el.className = 'rf-card';
+      el.innerHTML = `<div class="rf-text">"${r.text}"</div><div class="rf-foot"><div class="rf-anon">Anonymous ◐</div><div class="rf-name">— ${r.name}</div><div class="rf-reacts"><button class="rb" onclick="react(this,'🔥')">🔥</button><button class="rb" onclick="react(this,'💡')">💡</button><button class="rb" onclick="react(this,'✦')">✦</button></div></div>`;
+      feed.insertBefore(el, feed.firstChild);
+      shownResponses++;
+      document.getElementById('sc-resp').textContent = shownResponses;
+      document.getElementById('sync-resp-count').textContent = shownResponses + ' responses in';
+      if (shownResponses >= 4) enableWall();
+    } else clearInterval(streamTick);
+  }, 2800);
+}
+
+function enableWall() {
+  document.getElementById('ctrl-wall').disabled = false;
+}
+
+function openWall() {
+  document.getElementById('ctrl-reveal').disabled = false;
+  document.getElementById('ctrl-wall').textContent = '✦ Wall is open';
+  document.getElementById('ctrl-wall').disabled = true;
+  addActivity('◎', 'Response wall opened to the room', 'Just now');
+  toast('Wall opened — all phones showing responses');
+}
+
+function revealNames() {
+  namesOn = true;
+  document.querySelectorAll('.rf-card').forEach(c => c.classList.add('named'));
+  document.getElementById('ctrl-reveal').textContent = '✦ Names revealed';
+  document.getElementById('ctrl-reveal').disabled = true;
+  addActivity('◎', 'Names revealed on response wall', 'Just now');
+  toast('Names revealed to the room');
+}
+
+function react(btn, e) {
+  btn.classList.toggle('on');
+  btn.textContent = btn.classList.contains('on') ? e+' 1' : e;
+}
+
+// ── ACT 2: ROULETTE ───────────────────────────────────────
+function spinRoom() {
+  switchView('roulette');
+  document.getElementById('rou-status').textContent = 'Spinning...';
+  document.getElementById('ctrl-spin').disabled = true;
+  setTimeout(()=>{
+    const grid = document.getElementById('pairs-grid');
+    grid.innerHTML = '';
+    PAIRS_DEMO.forEach((p,i)=>{
+      const el = document.createElement('div');
+      el.className = 'pair-chip';
+      el.style.animationDelay = (i*.08)+'s';
+      el.innerHTML = `<div class="pc-avs"><div class="pc-av" style="background:${p.a.bg}">${p.a.init}</div><div class="pc-av" style="background:${p.b.bg}">${p.b.init}</div></div><span>${p.names}</span>`;
+      grid.appendChild(el);
+    });
+    pairCount++;
+    document.getElementById('sc-pairs').textContent = pairCount;
+    document.getElementById('rou-status').textContent = `Round ${pairCount} active · 5:00 min`;
+    document.getElementById('ctrl-spin').disabled = false;
+    document.getElementById('ctrl-respin').disabled = false;
+    addActivity('◉', `Roulette round ${pairCount} — <strong>${PAIRS_DEMO.length} pairs</strong> formed`, 'Just now');
+    toast(`Round ${pairCount} — ${PAIRS_DEMO.length} pairs matched`);
+  }, 1200);
+}
+
+// ── ACT 3: NUDGE ──────────────────────────────────────────
+function sendSingleNudge(idx) {
+  nudgeSent.add(idx);
+  nudgeCount++;
+  document.getElementById('sc-nudges').textContent = nudgeCount;
+  buildNudgeQueue();
+  addActivity('◐', `Quiet nudge sent to <strong>${NUDGE_QUEUE[idx].from}</strong>`, 'Just now');
+  toast(`Nudge sent privately to ${NUDGE_QUEUE[idx].from}`);
+}
+
+function sendNudge() {
+  switchView('nudge');
+  const unsent = NUDGE_QUEUE.findIndex((_,i) => !nudgeSent.has(i));
+  if (unsent === -1) { toast('All nudges sent'); return; }
+  sendSingleNudge(unsent);
+}
+
+function sendAllNudges() {
+  NUDGE_QUEUE.forEach((_,i) => nudgeSent.add(i));
+  nudgeCount = NUDGE_QUEUE.length;
+  document.getElementById('sc-nudges').textContent = nudgeCount;
+  buildNudgeQueue();
+  switchView('nudge');
+  addActivity('◐', `All <strong>${NUDGE_QUEUE.length} nudges</strong> sent privately`, 'Just now');
+  toast(`All ${NUDGE_QUEUE.length} nudges sent`);
+}
+
+// ── EXPORT ────────────────────────────────────────────────
+function fakeExport(btn, msg) {
+  const orig = btn.textContent;
+  btn.textContent = '↓ Preparing...'; btn.disabled = true;
+  setTimeout(()=>{ btn.textContent = '✦ Downloaded'; toast(msg); }, 900);
+}
+
+// ── TOAST ─────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = '✦ ' + msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>

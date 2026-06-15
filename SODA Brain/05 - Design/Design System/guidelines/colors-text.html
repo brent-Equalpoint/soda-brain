@@ -1,0 +1,22 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Text ramp" subtitle="Four levels of white-on-black, from headline to ghost" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; background: var(--bg-canvas); padding: 22px; }
+  .row { display: flex; gap: 28px; flex-wrap: wrap; align-items: baseline; }
+  .item .big { font-size: 22px; font-weight: 600; }
+  .item .nm { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); margin-top: 6px; text-transform: uppercase; letter-spacing: .5px; }
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="item"><div class="big" style="color:var(--t0)">Primary</div><div class="nm">--t0 · #F5F5F5 · headlines, values</div></div>
+  <div class="item"><div class="big" style="color:var(--t1)">Secondary</div><div class="nm">--t1 · #c8ccc8 · body copy</div></div>
+  <div class="item"><div class="big" style="color:var(--t2)">Muted</div><div class="nm">--t2 · #8A8A8A · labels, meta</div></div>
+  <div class="item"><div class="big" style="color:var(--t3)">Faint</div><div class="nm">--t3 · #4a4d4a · placeholders</div></div>
+</div>
+</body>
+</html>

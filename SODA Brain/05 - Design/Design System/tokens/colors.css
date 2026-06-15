@@ -1,0 +1,83 @@
+/* ============================================================
+   SODA — Color tokens
+   The system is dark-native. Near-black canvas, one vivid green
+   that means "interactive / alive", a sacred purple that means
+   "private / for you only", amber for live timers & decay, red
+   reserved strictly for errors.
+   ============================================================ */
+:root {
+  /* ---- Base palette (raw values) ---- */
+  --ch:        #111111;  /* primary canvas — the app background        */
+  --ink-deep:  #0a0b0a;  /* deepest black — behind the device, footers */
+
+  --g:         #3BD75C;  /* SODA green — the one interactive color      */
+  --g2:        #5FF088;  /* bright green — accents on dark green surface */
+  --dg:        #203229;  /* deep green surface — calm insight cards      */
+
+  --pu:        #A47BFF;  /* private purple — The Nudge, follow-ups       */
+  --pu2:       #1c1726;  /* purple surface — private/held containers     */
+
+  --am:        #F59E0B;  /* amber — live timers ONLY (SODA-007)          */
+  --ye:        #FFD23F;  /* yellow — "specified / pending" status        */
+  --rd:        #FF5470;  /* red — errors ONLY, nothing else              */
+
+  /* ---- Surfaces ---- */
+  --c1:        #1A1A1A;  /* card / panel surface 1                       */
+  --c2:        #222422;  /* raised surface 2 (inputs, chips at rest)     */
+
+  /* ---- Borders ---- */
+  --bd:        #262826;  /* hairline border — cards, dividers            */
+  --bd2:       #363936;  /* stronger border — inputs, interactive edges  */
+
+  /* ---- Text ---- */
+  --t0:        #F5F5F5;  /* primary — near white, headlines & values     */
+  --t1:        #c8ccc8;  /* secondary — body copy                        */
+  --t2:        #8A8A8A;  /* muted — labels, meta, captions. AA: 5.47 on canvas, 5.04 on cards (SODA-032) */
+  --t3:        #4a4d4a;  /* faint — placeholders, disabled, ghost lines  */
+
+  /* ============================================================
+     Semantic aliases — prefer these in product code
+     ============================================================ */
+  --bg-canvas:       var(--ch);
+  --bg-deep:         var(--ink-deep);
+  --surface-1:       var(--c1);
+  --surface-2:       var(--c2);
+  --surface-green:   var(--dg);   /* warm, calm "your experience" cards  */
+  --surface-purple:  var(--pu2);  /* private / follow-up containers       */
+
+  --border:          var(--bd);
+  --border-strong:   var(--bd2);
+
+  --text-primary:    var(--t0);
+  --text-secondary:  var(--t1);
+  --text-muted:      var(--t2);
+  --text-faint:      var(--t3);
+
+  --accent:          var(--g);    /* means interactive / present / alive */
+  --accent-bright:   var(--g2);
+  --on-accent:       var(--ch);   /* text/icon ON a green fill           */
+  --private:         var(--pu);   /* means "only for you"                */
+  --on-private:      var(--ch);
+  --warn:            var(--am);    /* live timers only                    */
+  --pending:         var(--ye);   /* spec'd-not-built status              */
+  --danger:          var(--rd);   /* errors only                         */
+
+  /* ---- Translucent fills (hover / soft badges) ---- */
+  --accent-soft:     rgba(59, 215, 92, 0.12);
+  --accent-hover:    rgba(59, 215, 92, 0.06);
+  --private-soft:    rgba(164, 123, 255, 0.14);
+  --private-border:  rgba(164, 123, 255, 0.30);
+  --warn-soft:       rgba(245, 158, 11, 0.12);
+  --danger-soft:     rgba(255, 84, 112, 0.12);
+
+  /* ---- Avatar / identity palette ----
+     Deterministic colors for initials-avatars across the app. */
+  --av-1: #3BD75C;
+  --av-2: #A47BFF;
+  --av-3: #F59E0B;
+  --av-4: #5FB0F0;
+  --av-5: #FF7AB0;
+  --av-6: #5FF088;
+  --av-7: #FFD23F;
+  --av-8: #7C8CF0;
+}

@@ -1,0 +1,15 @@
+# ── SODA design-corpus backup ──
+# This repo backs up the design vault (SODA Brain) and the build system (GMW Team).
+# The application code has its own GitHub repo (github.com/brent-Equalpoint/soda),
+# so we do NOT duplicate its 1.5 GB working tree here.
+/Soda/
+
+# Never back up real secret files. Templates like .env.example ARE kept on purpose.
+.env
+.env.local
+.env.*.local
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini

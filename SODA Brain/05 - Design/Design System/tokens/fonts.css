@@ -1,0 +1,11 @@
+/* ============================================================
+   SODA — Webfonts
+   Display : Archivo Black  (heavy uppercase headlines, numbers)
+   Sans    : DM Sans        (body & UI, 300/400/500/600/700)
+   Mono    : DM Mono        (eyebrows, labels, meta, counts)
+   All three are the real fonts used in the SODA prototypes and
+   are available on Google Fonts. Consumers can self-host by
+   replacing this @import with @font-face rules pointing at the
+   binaries; the rest of the system reads them via --font-* tokens.
+   ============================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap");

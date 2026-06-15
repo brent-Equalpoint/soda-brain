@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0"/>
+<title>SODA · Host Flow Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--g:#3BD75C;--g2:#5FF088;--dg:#203229;--ch:#0c0d0c;--c1:#161816;--c2:#1d1f1d;--bd:#262826;--bd2:#363936;--pu:#A47BFF;--ye:#FFD23F;--am:#F59E0B;--t0:#fff;--t1:#c8ccc8;--t2:#74786f;--t3:#3e423e}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--ch);color:var(--t1);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:var(--g);color:var(--ch)}
+.wrap{max-width:760px;margin:0 auto;padding:30px 18px 80px}
+.head{margin-bottom:24px}
+.brand{font-family:'DM Mono';font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--g);margin-bottom:12px}
+.head h1{font-family:'Archivo Black';font-size:clamp(26px,6vw,40px);color:var(--t0);text-transform:uppercase;letter-spacing:-.02em;line-height:.95;margin-bottom:14px}
+.head p{font-size:15px;color:var(--t1);font-weight:300;max-width:600px}
+.head .own{font-family:'DM Mono';font-size:11px;color:var(--t3);margin-top:12px}
+.life{display:flex;gap:8px;margin:24px 0 8px;align-items:stretch}
+.life-state{flex:1;background:var(--c1);border:1px solid var(--bd);border-radius:13px;padding:13px 13px}
+.life-state.live{border-color:var(--g);background:rgba(59,215,92,.05)}
+.life-state .tag{font-family:'DM Mono';font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
+.life-state.draft .tag{color:var(--t2)}.life-state.live .tag{color:var(--g)}.life-state.closed .tag{color:var(--t2)}
+.life-state .d{font-size:12px;color:var(--t1);font-weight:300;line-height:1.4}
+.life-arrow{align-self:center;color:var(--t3);font-size:16px;flex:0 0 auto}
+.life-note{font-family:'DM Mono';font-size:11px;color:var(--t2);text-align:center;margin-bottom:26px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px;font-family:'DM Mono';font-size:11px;color:var(--t2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.lg{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+.part{margin-top:30px}
+.part-h{font-family:'Archivo Black';font-size:20px;color:var(--t0);text-transform:uppercase;letter-spacing:-.01em;padding-bottom:8px;border-bottom:2px solid var(--g);margin-bottom:6px}
+.part-h .ps{display:block;font-family:'DM Mono';font-size:11px;color:var(--t2);text-transform:none;margin-top:5px;font-weight:400;letter-spacing:.3px}
+.phase-label{font-family:'DM Mono';font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--g);margin:20px 0 10px}
+.node{display:flex;gap:13px;align-items:flex-start;background:var(--c1);border:1px solid var(--bd);border-radius:14px;padding:14px 15px;margin-bottom:8px}
+.node.act{border-color:rgba(59,215,92,.32)}
+.node.monitor{border-color:var(--bd);background:#121412}
+.node.life{border-color:rgba(245,158,11,.32);background:rgba(245,158,11,.04)}
+.node.nudge{border-color:rgba(164,123,255,.35);background:rgba(164,123,255,.04)}
+.node-n{font-family:'DM Mono';font-size:10px;font-weight:500;color:var(--ch);background:var(--g);border-radius:6px;padding:5px 7px;line-height:1;flex:0 0 auto;letter-spacing:.5px;white-space:nowrap}
+.node.monitor .node-n{background:var(--t2)}
+.node.life .node-n{background:var(--am)}
+.node.nudge .node-n{background:var(--pu);color:#fff}
+.node-body{flex:1;min-width:0}
+.node-body h3{font-size:15.5px;color:var(--t0);font-weight:700;line-height:1.25}
+.node-body h3 .spec{font-family:'DM Mono';font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ye);background:rgba(255,210,63,.13);padding:2px 6px;border-radius:100px;margin-left:8px;vertical-align:middle}
+.node-body .trig{font-family:'DM Mono';font-size:11px;color:var(--t2);margin-top:4px;line-height:1.45}
+.node-body .trig b{color:var(--g);font-weight:500}
+.arrow{text-align:center;color:var(--t3);font-size:15px;margin:1px 0 1px 16px;line-height:1}
+.seam{background:var(--dg);border:1px solid var(--g);border-radius:14px;padding:16px;margin:14px 0;text-align:center}
+.seam .st{font-family:'DM Mono';font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--g);margin-bottom:6px}
+.seam h3{font-family:'Archivo Black';font-size:18px;color:var(--t0);text-transform:uppercase;margin-bottom:6px}
+.seam p{font-size:12.5px;color:var(--t1);font-weight:300}
+.ambient{background:#101210;border:1px dashed var(--bd2);border-radius:12px;padding:13px 15px;margin-top:10px}
+.ambient .at{font-family:'DM Mono';font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:7px}
+.ambient .ai{font-size:13px;color:var(--t1);font-weight:300;line-height:1.5}
+.ambient .ai b{color:var(--t0);font-weight:600}
+.foot{margin-top:40px;padding-top:24px;border-top:1px solid var(--bd);text-align:center}
+.foot p{font-size:13px;color:var(--t2);font-style:italic}
+@media(max-width:520px){.life{flex-direction:column}.life-arrow{transform:rotate(90deg)}}
+</style></head>
+<body><div class="wrap">
+<div class="head">
+  <div class="brand">SODA ✦ HOST FLOW MAP</div>
+  <h1>Running an Event,<br/>Admin to Command Center</h1>
+  <p>The host journey across both tools, held together by the event lifecycle. The Admin is the back office where an event is built and closed. The Command Center is the live cockpit where the night is run. You move between them as the event moves through its states.</p>
+  <div class="own">A product of Equalpoint, Inc. · Current as of the Event Layer update</div>
+</div>
+
+<div class="life">
+  <div class="life-state draft"><div class="tag">Draft</div><div class="d">Built in the Admin. QR not yet live.</div></div>
+  <div class="life-arrow">→</div>
+  <div class="life-state live"><div class="tag">● Live</div><div class="d">Run from the Command Center.</div></div>
+  <div class="life-arrow">→</div>
+  <div class="life-state closed"><div class="tag">Closed</div><div class="d">Reviewed and exported in the Admin.</div></div>
+</div>
+<div class="life-note">The lifecycle is the spine. It decides which tool the host is working in.</div>
+
+<div class="legend">
+  <span><span class="lg" style="background:var(--g)"></span> Host action</span>
+  <span><span class="lg" style="background:var(--t2)"></span> Monitor / passive view</span>
+  <span><span class="lg" style="background:var(--pu)"></span> Private (Nudge)</span>
+  <span><span class="lg" style="background:var(--am)"></span> Lifecycle</span>
+  <span><span class="lg" style="background:rgba(255,210,63,.5)"></span> Specified, not yet built</span>
+</div>
+
+<!-- PART A: ADMIN -->
+<div class="part">
+  <div class="part-h">Part A · The Admin Panel<span class="ps">The back office. Where the event is built before, and closed after.</span></div>
+
+  <div class="phase-label">Draft · build the event</div>
+
+  <div class="node"><div class="node-n">CREATE</div><div class="node-body"><h3>Event Creation <span class="spec">Specified</span></h3><div class="trig">action: <b>create the event</b> with a required name and date. Begins it in draft.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node"><div class="node-n">BRAND</div><div class="node-body"><h3>Host Identity and Branding <span class="spec">Specified</span></h3><div class="trig">action: <b>type the required host name</b>, optionally upload a logo. This is what every attendee screen wears.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node"><div class="node-n">SETUP</div><div class="node-body"><h3>Event Setup and Active Event</h3><div class="trig">action: <b>select the active event</b> and open its settings. Scopes everything that follows.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node"><div class="node-n">PROMPTS</div><div class="node-body"><h3>Prompt and Pairing Settings</h3><div class="trig">action: <b>load the questions</b> for the Drop and tune how pairing behaves. The queue panel.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node"><div class="node-n">WRITE</div><div class="node-body"><h3>Question Creator</h3><div class="trig">action: <b>write custom questions</b> for the Drop or the survey. Feeds the question bank.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node"><div class="node-n">CHIPS</div><div class="node-body"><h3>Chip Queue and Moderation</h3><div class="trig">action: <b>review and approve</b> the chip vocabulary so the shared language stays clean.</div></div></div>
+
+  <div class="ambient"><div class="at">Ready before doors</div><div class="ai">The <b>Check-In Panel</b> stands ready for manual sign-ins, and the <b>Room Panel</b> will fill as people arrive. Both wait in the Admin for the moment the event goes live.</div></div>
+</div>
+
+<!-- SEAM -->
+<div class="seam">
+  <div class="st">The seam between the two tools</div>
+  <h3>Go Live</h3>
+  <p>Event Lifecycle Control flips the event from draft to live. This single action activates the entry QR for attendees and unlocks the acts in the Command Center. Specified in the Event Layer.</p>
+</div>
+
+<!-- PART B: COMMAND CENTER -->
+<div class="part">
+  <div class="part-h">Part B · The Command Center<span class="ps">The live cockpit. One screen the host drives the whole night from.</span></div>
+
+  <div class="ambient"><div class="at">Always on, the whole night</div><div class="ai">Four things stay live across every view: the <b>Live Stat Bar</b> (scanned in, responses, pairs, nudges, surveys), the <b>Activity Feed</b> (a running ticker), the <b>Connection Status Badge</b> (the realtime link is healthy), and <b>Lifecycle State Awareness</b>, which confirms the event is live and is the gate that lets the acts fire at all.</div></div>
+
+  <div class="phase-label">Live · run the night</div>
+
+  <div class="node monitor"><div class="node-n">WATCH</div><div class="node-body"><h3>Room View (Host)</h3><div class="trig">the default view. The host watches the room fill and reads who is present. The home base of the cockpit.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node act"><div class="node-n">ACT 1</div><div class="node-body"><h3>Sync Control · drives The Drop</h3><div class="trig">action: <b>set a prompt and fire it</b> to every phone at once. Watch the timer and responses land.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node act"><div class="node-n">ACT 2</div><div class="node-body"><h3>Chance Control · drives The Chance</h3><div class="trig">action: <b>pair the room</b>, re-spin if needed. The pairs grid fills as people are matched.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node nudge"><div class="node-n">ACT 3</div><div class="node-body"><h3>Nudge Control · drives The Nudge</h3><div class="trig">action: <b>send private matches</b>, one to one. Each goes only to its recipient, never to a shared view.</div></div></div>
+
+  <div class="ambient"><div class="at">Read and steer, anytime during live</div><div class="ai">The host can drop into the <b>Intelligence View</b> to read the room's offers, needs, and gaps, scan the <b>Open Mic Feed</b> of live responses, open the <b>Survey Monitor</b> as responses arrive, push a message through <b>Broadcast and Announce</b>, or step back to the Admin <b>Check-In Panel</b> to add someone by hand. <b>Toasts</b> confirm each action across both tools.</div></div>
+</div>
+
+<!-- SEAM 2 -->
+<div class="seam" style="background:#15140f;border-color:var(--am)">
+  <div class="st" style="color:var(--am)">The seam back to the Admin</div>
+  <h3 style="color:var(--t0)">Close the Event</h3>
+  <p>Event Lifecycle Control flips live to closed. The acts can no longer fire, the data is final, and the host returns to the Admin to review and pull it out.</p>
+</div>
+
+<!-- PART C: ADMIN CLOSE -->
+<div class="part">
+  <div class="part-h">Part C · Back in the Admin<span class="ps">Closed. Review the record and pull the data out.</span></div>
+  <div class="phase-label">Closed · review and export</div>
+
+  <div class="node monitor"><div class="node-n">REVIEW</div><div class="node-body"><h3>Matches Panel and Survey Panel</h3><div class="trig">the host reviews every match the engine surfaced and the full survey data for the night.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node"><div class="node-n">EXPORT</div><div class="node-body"><h3>Export Panel</h3><div class="trig">action: <b>pull the data out</b>, attendees, connections, survey. Where Futureland's ownership of its own event data is exercised.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node monitor"><div class="node-n">RECAP</div><div class="node-body"><h3>Recap goes out</h3><div class="trig">the recap email fires automatically to attendees. The event is now a closed record.</div></div></div>
+</div>
+
+<div class="foot"><p>A name tag knows you showed up. SODA knows who you became to the room.</p></div>
+</div></body></html>

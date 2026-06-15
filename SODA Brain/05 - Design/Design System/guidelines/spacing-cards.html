@@ -1,0 +1,28 @@
+<!-- @dsCard group="Spacing" viewport="700x200" name="Cards, borders & the one shadow" subtitle="Flat cards = surface + 1px hairline. Press swaps border to green. No drop shadow except the device." -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; background: var(--bg-canvas); padding: 24px; font-family: var(--font-sans); }
+  .row { display: flex; gap: 18px; flex-wrap: wrap; align-items: stretch; }
+  .card { width: 150px; background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px; }
+  .card .t { font-size: 13px; color: var(--text-primary); font-weight: 600; }
+  .card .s { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); margin-top: 6px; }
+  .green { border-color: var(--accent); }
+  .ins { background: var(--surface-green); border: none; }
+  .priv { background: var(--surface-purple); border: 1px solid var(--private-border); }
+  .dev { background: var(--surface-1); border: 1px solid var(--border); box-shadow: var(--shadow-device); }
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="card"><div class="t">Default card</div><div class="s">surface-1 + hairline</div></div>
+  <div class="card green"><div class="t">Pressed / active</div><div class="s">border → green</div></div>
+  <div class="card ins"><div class="t" style="color:var(--accent-bright)">Insight card</div><div class="s" style="color:var(--text-secondary)">deep green, no border</div></div>
+  <div class="card priv"><div class="t" style="color:var(--private)">Private card</div><div class="s">purple-tint border</div></div>
+  <div class="card dev"><div class="t">The one shadow</div><div class="s">only the device casts it</div></div>
+</div>
+</body>
+</html>

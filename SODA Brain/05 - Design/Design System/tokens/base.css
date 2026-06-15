@@ -1,0 +1,59 @@
+/* ============================================================
+   SODA — Base & helpers
+   Minimal global resets and a few reusable utility classes that
+   ride on the tokens. Kept intentionally small: SODA is dark,
+   quiet, and lets the green do the talking.
+   ============================================================ */
+:root { color-scheme: dark; }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-canvas);
+  color: var(--text-secondary);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection { background: var(--accent); color: var(--on-accent); }
+
+/* ---- Accessibility baseline (SODA-032) ----
+   Every interactive element shows a visible focus ring when reached
+   by keyboard. The green does the talking here too. */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---- Brand voice helpers ---- */
+.soda-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.soda-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-tag-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.soda-display {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-display);
+  line-height: var(--lh-tight);
+  color: var(--text-primary);
+}
+.soda-mono { font-family: var(--font-mono); }
+
+/* ---- Thin scrollbar used in scroll regions ---- */
+.soda-scroll { scrollbar-width: thin; scrollbar-color: var(--bd2) transparent; }
+.soda-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+.soda-scroll::-webkit-scrollbar-thumb { background: var(--bd2); border-radius: 3px; }

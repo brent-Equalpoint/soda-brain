@@ -1,0 +1,123 @@
+<!-- @dsCard group="Command Center" viewport="1280x800" name="Command Center — live cockpit" subtitle="Stat bar, room, and the three act controls the host drives the night from" -->
+<!-- @startingPoint section="Command Center" subtitle="The host's live cockpit for running an event" viewport="1280x800" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SODA · Command Center</title>
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html,body{margin:0;background:var(--bg-deep);min-height:100vh;color:var(--text-secondary);}
+  .cockpit{max-width:1280px;margin:0 auto;padding:20px 24px 48px;}
+  .topbar{display:flex;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:8px;font-family:var(--font-display);text-transform:uppercase;font-size:18px;color:var(--text-primary);letter-spacing:-.01em;}
+  .brand .s{color:var(--accent);}
+  .evt{font-family:var(--font-mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);}
+  .grid{display:grid;grid-template-columns:200px 1fr 300px;gap:18px;align-items:start;margin-top:18px;}
+  .nav{display:flex;flex-direction:column;gap:4px;position:sticky;top:18px;}
+  .nav .gh{font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-faint);margin:14px 0 6px;}
+  .navbtn{display:flex;align-items:center;gap:9px;text-align:left;background:none;border:none;cursor:pointer;font-family:var(--font-sans);font-size:13.5px;color:var(--text-muted);padding:9px 11px;border-radius:9px;transition:color .12s;}
+  .navbtn:hover{color:var(--text-secondary);}
+  .navbtn.on{color:var(--accent);background:var(--accent-soft);}
+  .navbtn .ic{font-size:14px;width:18px;text-align:center;}
+  .feed{position:sticky;top:18px;background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-xl);padding:18px 18px;}
+  .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--accent);color:var(--text-primary);font-size:13px;padding:11px 18px;border-radius:var(--r-pill);box-shadow:var(--shadow-toast);display:flex;align-items:center;gap:8px;z-index:80;}
+  @media(max-width:1024px){.grid{grid-template-columns:1fr;}.nav{flex-direction:row;flex-wrap:wrap;position:static;}.feed{position:static;}}
+  @media(max-width:480px){.cockpit{padding:14px 12px 40px;}.evt{display:none;}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="cc.jsx"></script>
+<script type="text/babel" src="views.jsx"></script>
+<script type="text/babel">
+const { StatBar, LiveBadge, ConnBadge, ActivityFeed, CC_FEED, RoomHost, SyncControl, ChanceControl, NudgeControl, SurveyMonitor, IntelView, usePhase, Mono } = window;
+
+const STATS=[
+  {value:128,label:'Scanned in'},
+  {value:94,label:'Responses'},
+  {value:42,label:'Pairs'},
+  {value:17,label:'Nudges',color:'var(--private)'},
+  {value:'71%',label:'Surveys'},
+];
+const STATS_ZERO=[
+  {value:0,label:'Scanned in',color:'var(--text-muted)'},
+  {value:0,label:'Responses',color:'var(--text-muted)'},
+  {value:0,label:'Pairs',color:'var(--text-muted)'},
+  {value:0,label:'Nudges',color:'var(--text-muted)'},
+  {value:'0%',label:'Surveys',color:'var(--text-muted)'},
+];
+const VIEWS=[
+  ['room','▦','Room'],
+  ['sync','◉','The Drop'],
+  ['chance','⟳','The Chance'],
+  ['nudge','✦','The Nudge'],
+  ['survey','★','Survey'],
+  ['intel','▤','Intelligence'],
+];
+
+function App(){
+  const [view,setView]=React.useState('room');
+  const [phase,setPhase]=usePhase('live');
+  const [moment,setMoment]=React.useState('mid'); // 'start' (zero states) | 'mid'
+  const empty=moment==='start';
+  const [toast,setToast]=React.useState(null);
+  const flash=(m)=>{setToast(m);clearTimeout(window.__t);window.__t=setTimeout(()=>setToast(null),1900);};
+
+  let main;
+  if(view==='room') main=<RoomHost empty={empty}/>;
+  else if(view==='sync') main=<SyncControl onToast={flash} phase={phase} empty={empty}/>;
+  else if(view==='chance') main=<ChanceControl onToast={flash} phase={phase} empty={empty}/>;
+  else if(view==='nudge') main=<NudgeControl key={empty?'e':'f'} onToast={flash} phase={phase} empty={empty}/>;
+  else if(view==='survey') main=<SurveyMonitor empty={empty}/>;
+  else main=<IntelView empty={empty}/>;
+
+  return (
+    <div className="cockpit">
+      <div className="topbar">
+        <div className="brand">SODA <span className="s">✦</span></div>
+        <div className="evt">Command Center · Futureland · Creative Meetup</div>
+        <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:14}}>
+          <div style={{display:'flex',alignItems:'center',gap:4}} title="Preview the night at zero or in full swing.">
+            {[['start','night start'],['mid','mid-night']].map(([k,lb])=>(
+              <button key={k} onClick={()=>setMoment(k)} style={{background:'none',border:'none',cursor:'pointer',
+                fontFamily:'var(--font-mono)',fontSize:10,letterSpacing:'1px',textTransform:'uppercase',padding:'6px 7px',borderRadius:6,
+                color:moment===k?'var(--text-primary)':'var(--text-faint)',textDecoration:moment===k?'underline':'none',textUnderlineOffset:3}}>{lb}</button>
+            ))}
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:4}} title="The event state is set in the Admin. This switch previews it.">
+            {['draft','live','closed'].map(p=>(
+              <button key={p} onClick={()=>setPhase(p)} style={{background:'none',border:'none',cursor:'pointer',
+                fontFamily:'var(--font-mono)',fontSize:10,letterSpacing:'1px',textTransform:'uppercase',padding:'6px 7px',borderRadius:6,
+                color:phase===p?'var(--text-primary)':'var(--text-faint)',textDecoration:phase===p?'underline':'none',textUnderlineOffset:3}}>{p}</button>
+            ))}
+          </div>
+          <ConnBadge/><LiveBadge phase={phase}/>
+        </div>
+      </div>
+      <StatBar stats={empty?STATS_ZERO:STATS}/>
+      <div className="grid">
+        <div className="nav">
+          <div className="gh">Run the night</div>
+          {VIEWS.map(([id,ic,lb])=>(
+            <button key={id} className="navbtn" onClick={()=>setView(id)}
+              style={{color:view===id?'var(--accent)':'var(--text-muted)',background:view===id?'var(--accent-soft)':'transparent'}}>
+              <span className="ic">{ic}</span>{lb}
+            </button>
+          ))}
+        </div>
+        <div>{main}</div>
+        <div className="feed"><ActivityFeed feed={empty?[]:CC_FEED}/></div>
+      </div>
+      {toast&&<div className="toast"><span style={{width:7,height:7,borderRadius:'50%',background:'var(--accent)'}}/>{toast}</div>}
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

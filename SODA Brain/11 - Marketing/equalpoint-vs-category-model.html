@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equal Point vs. The Card Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Public+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --dark-green:#16211B;
+    --panel-green:#1E2D25;
+    --light-green:#B1FA63;
+    --green:#3BD75C;
+    --amber:#F59E0B;
+    --cool:#9CA3AF;
+    --off-white:#FBFBFB;
+    --muted:#8FA396;
+    --border:#2C3F34;
+    --purple:#813BD7;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--dark-green);
+    color:var(--off-white);
+    font-family:'Public Sans',sans-serif;
+    font-weight:300;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(1200px 600px at 80% -10%, rgba(177,250,99,.07), transparent 60%),
+               radial-gradient(900px 500px at -10% 110%, rgba(129,59,215,.06), transparent 55%);
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:clamp(28px,5vw,72px) clamp(20px,4vw,48px);position:relative;z-index:1}
+
+  /* Header */
+  .eyebrow{
+    font-size:12px;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--light-green);font-weight:700;display:flex;align-items:center;gap:12px;
+  }
+  .eyebrow::before{content:"";width:34px;height:1px;background:var(--light-green);display:inline-block}
+  h1{
+    font-family:'Instrument Serif',serif;font-weight:400;
+    font-size:clamp(38px,6.5vw,76px);line-height:1.02;letter-spacing:-.01em;
+    margin:18px 0 0;max-width:16ch;
+  }
+  h1 em{font-style:italic;color:var(--light-green)}
+  .sub{
+    margin-top:22px;max-width:54ch;font-size:clamp(16px,2vw,19px);
+    color:var(--muted);font-weight:300;
+  }
+
+  /* The two-panel comparison */
+  .arena{
+    display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:clamp(40px,6vw,72px);
+    border:1px solid var(--border);border-radius:18px;overflow:hidden;
+    background:linear-gradient(180deg,rgba(255,255,255,.015),transparent);
+  }
+  .panel{padding:clamp(24px,3.4vw,40px);position:relative}
+  .panel.theirs{background:rgba(156,163,175,.035)}
+  .panel.ours{background:rgba(59,215,92,.04);border-left:1px solid var(--border)}
+  .ptag{font-size:11px;letter-spacing:.22em;text-transform:uppercase;font-weight:700}
+  .theirs .ptag{color:var(--cool)}
+  .ours .ptag{color:var(--green)}
+  .ptitle{font-family:'Instrument Serif',serif;font-size:clamp(24px,3vw,32px);margin-top:6px;font-weight:400}
+  .pwho{font-size:13px;color:var(--muted);margin-top:4px}
+
+  /* THEIRS — the linear pipe */
+  .pipe{margin-top:34px;position:relative;height:210px}
+  .pipe-line{
+    position:absolute;top:38px;left:6%;right:6%;height:2px;
+    background:repeating-linear-gradient(90deg,var(--cool) 0 8px,transparent 8px 16px);
+    opacity:.5;
+  }
+  .pulse-cold{
+    position:absolute;top:32px;left:6%;width:14px;height:14px;border-radius:50%;
+    background:var(--green);box-shadow:0 0 14px var(--green);
+    animation:travel 5s linear infinite;
+  }
+  @keyframes travel{
+    0%{left:6%;background:var(--green);box-shadow:0 0 14px var(--green);opacity:1}
+    55%{background:var(--amber);box-shadow:0 0 14px var(--amber)}
+    82%{left:88%;background:var(--cool);box-shadow:0 0 6px var(--cool);opacity:.9}
+    92%{left:88%;opacity:.15}
+    100%{left:88%;opacity:0}
+  }
+  .stops{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:0 2%}
+  .stop{width:19%;text-align:center}
+  .dot{width:13px;height:13px;border-radius:50%;background:var(--panel-green);border:2px solid var(--cool);margin:33px auto 0}
+  .stop:last-child .dot{border-color:var(--cool);background:transparent;position:relative}
+  .stop:last-child .dot::after{content:"";position:absolute;inset:2px;border-radius:50%;background:var(--cool);opacity:.3}
+  .stop .lbl{font-size:12px;color:var(--off-white);font-weight:600;margin-top:14px}
+  .stop .slbl{font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.3}
+  .deadend{
+    margin-top:18px;font-size:12.5px;color:var(--cool);
+    display:flex;align-items:center;gap:8px;
+  }
+  .deadend b{color:var(--off-white);font-weight:700}
+
+  /* OURS — the living loop */
+  .loop{margin-top:24px;position:relative;height:248px;display:flex;align-items:center;justify-content:center}
+  .ring{
+    position:absolute;width:200px;height:200px;border-radius:50%;
+    border:2px dashed rgba(177,250,99,.35);
+  }
+  .orbit{
+    position:absolute;width:200px;height:200px;
+    animation:spin 6s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .orbit .pellet{
+    position:absolute;top:-8px;left:50%;margin-left:-8px;
+    width:16px;height:16px;border-radius:50%;background:var(--light-green);
+    box-shadow:0 0 16px var(--light-green);
+  }
+  .node{
+    position:absolute;font-size:10.5px;font-weight:700;letter-spacing:.02em;
+    background:var(--panel-green);border:1px solid var(--border);
+    padding:6px 10px;border-radius:999px;white-space:nowrap;color:var(--off-white);
+  }
+  .node.n1{top:-14px;left:50%;transform:translateX(-50%);border-color:var(--green);color:var(--green)}
+  .node.n2{top:50%;right:-22px;transform:translateY(-50%)}
+  .node.n3{bottom:-14px;left:50%;transform:translateX(-50%);border-color:var(--light-green);color:var(--light-green)}
+  .node.n4{top:50%;left:-22px;transform:translateY(-50%)}
+  .loop-core{text-align:center;z-index:2}
+  .loop-core .k{font-family:'Instrument Serif',serif;font-size:30px;color:var(--light-green);line-height:1}
+  .loop-core .kk{font-size:10.5px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;margin-top:6px}
+
+  /* warmth meter */
+  .warmth{margin-top:30px;background:rgba(0,0,0,.18);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .warmth-top{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .warmth-val{font-family:'Instrument Serif',serif;font-size:22px;color:var(--off-white)}
+  .bar{height:8px;border-radius:6px;background:rgba(255,255,255,.07);margin-top:10px;overflow:hidden}
+  .bar-fill{height:100%;width:100%;border-radius:6px;transition:width .25s linear,background .4s}
+  .warmth-cap{font-size:11.5px;color:var(--muted);margin-top:10px}
+  .warmth-cap b{color:var(--green);font-weight:700}
+
+  /* comparison rows */
+  .rows{margin-top:clamp(44px,6vw,72px)}
+  .rows h2{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(24px,3.4vw,36px);margin-bottom:8px}
+  .rows .h2sub{color:var(--muted);font-size:15px;margin-bottom:26px}
+  .row{
+    display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:0;align-items:stretch;
+    border-top:1px solid var(--border);
+  }
+  .row:last-child{border-bottom:1px solid var(--border)}
+  .cell{padding:20px clamp(14px,2vw,26px)}
+  .cell.dim{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--light-green);font-weight:700;display:flex;align-items:center}
+  .cell.t{color:var(--cool);font-size:14.5px;border-left:1px solid var(--border)}
+  .cell.o{color:var(--off-white);font-size:14.5px;border-left:1px solid var(--border);background:rgba(59,215,92,.03)}
+  .cell.o b{color:var(--light-green);font-weight:700}
+  .rowhead{display:grid;grid-template-columns:1.1fr 1fr 1fr;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700}
+  .rowhead div{padding:0 clamp(14px,2vw,26px) 14px}
+  .rowhead .a{color:transparent}
+  .rowhead .b{color:var(--cool);border-left:1px solid transparent}
+  .rowhead .c{color:var(--green)}
+
+  /* takeaway */
+  .take{
+    margin-top:clamp(44px,6vw,72px);padding:clamp(28px,4vw,48px);
+    border:1px solid var(--border);border-radius:18px;
+    background:linear-gradient(120deg,rgba(177,250,99,.07),rgba(129,59,215,.06));
+    position:relative;overflow:hidden;
+  }
+  .take .tk{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--light-green);font-weight:700}
+  .take p{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(22px,3.2vw,34px);line-height:1.25;margin-top:16px;max-width:30ch}
+  .take p em{font-style:italic;color:var(--light-green)}
+  .take .fine{font-family:'Public Sans';font-size:14.5px;color:var(--muted);margin-top:18px;max-width:62ch;font-weight:300}
+
+  .foot{margin-top:40px;font-size:12px;color:var(--muted);letter-spacing:.02em}
+
+  @media(max-width:760px){
+    .arena{grid-template-columns:1fr}
+    .panel.ours{border-left:none;border-top:1px solid var(--border)}
+    .row,.rowhead{grid-template-columns:1fr}
+    .cell.t,.cell.o{border-left:none;border-top:1px solid var(--border)}
+    .cell.dim{border-top:1px solid var(--border);padding-bottom:4px}
+    .rowhead{display:none}
+    .cell.t::before{content:"Card model — ";color:var(--cool);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+    .cell.o::before{content:"Equal Point — ";color:var(--green);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Equal Point · Model Comparison</div>
+  <h1>They own the handshake.<br>We own the <em>relationship.</em></h1>
+  <p class="sub">Blinq, Popl, and HiHello all build the same shape: a pipe that captures a contact and pushes it into a database. They've added real AI for follow-ups — but it writes the message and then leaves the remembering to you. Equal Point builds a loop that remembers for you. Watch both run.</p>
+
+  <div class="arena">
+    <!-- THEIRS -->
+    <div class="panel theirs">
+      <div class="ptag">The Card Model</div>
+      <div class="ptitle">A pipe</div>
+      <div class="pwho">Blinq · Popl · HiHello · Mobilo</div>
+
+      <div class="pipe">
+        <div class="pipe-line"></div>
+        <div class="pulse-cold"></div>
+        <div class="stops">
+          <div class="stop"><div class="dot"></div><div class="lbl">You</div><div class="slbl">your card</div></div>
+          <div class="stop"><div class="dot"></div><div class="lbl">Tap / QR</div><div class="slbl">the moment</div></div>
+          <div class="stop"><div class="dot"></div><div class="lbl">Capture</div><div class="slbl">contact saved</div></div>
+          <div class="stop"><div class="dot"></div><div class="lbl">CRM</div><div class="slbl">exported</div></div>
+          <div class="stop"><div class="dot"></div><div class="lbl">Cold</div><div class="slbl">never revisited</div></div>
+        </div>
+      </div>
+
+      <div class="deadend">→ One direction. The lead enters warm and <b>dies cold</b> in a database nobody reopens.</div>
+    </div>
+
+    <!-- OURS -->
+    <div class="panel ours">
+      <div class="ptag">The Equal Point Model</div>
+      <div class="ptitle">A loop</div>
+      <div class="pwho">Relational OS · co-owned · time-aware</div>
+
+      <div class="loop">
+        <div class="ring"></div>
+        <div class="orbit"><div class="pellet"></div></div>
+        <div class="node n1">Connection</div>
+        <div class="node n2">Warmth decays</div>
+        <div class="node n3">AI drafts → you approve</div>
+        <div class="node n4">Warmth resets</div>
+        <div class="loop-core">
+          <div class="k">∞</div>
+          <div class="kk">Never closes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- live warmth meter spanning under ours conceptually -->
+  <div class="warmth" id="warmthBox">
+    <div class="warmth-top">
+      <span>Live warmth — one connection over time</span>
+      <span class="warmth-val" id="warmthVal">100</span>
+    </div>
+    <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+    <div class="warmth-cap" id="warmthCap">Decaying at <b>e^(−0.01 × days)</b> since last contact…</div>
+  </div>
+
+  <!-- COMPARISON ROWS -->
+  <div class="rows">
+    <h2>The same five differences, line by line</h2>
+    <div class="h2sub">Where the two shapes diverge in practice.</div>
+
+    <div class="rowhead">
+      <div class="a">.</div><div class="b">The card model</div><div class="c">Equal Point</div>
+    </div>
+
+    <div class="row">
+      <div class="cell dim">Unit of value</div>
+      <div class="cell t">The card — a broadcast of you, owned by you alone.</div>
+      <div class="cell o">The <b>connection</b> — a record co-owned by both people.</div>
+    </div>
+    <div class="row">
+      <div class="cell dim">Relationship to time</div>
+      <div class="cell t">Frozen at the moment of capture. Time does nothing.</div>
+      <div class="cell o">Time is a <b>force</b>. Warmth decays continuously until you act.</div>
+    </div>
+    <div class="row">
+      <div class="cell dim">What the AI does</div>
+      <div class="cell t">Writes the follow-up, enriches the contact, scans the badge. All content, all capture.</div>
+      <div class="cell o">Drafts the follow-up too — and <b>never auto-sends.</b> You hold the gate.</div>
+    </div>
+    <div class="row">
+      <div class="cell dim">Who remembers to act</div>
+      <div class="cell t"><b style="color:var(--off-white)">You do.</b> It writes the message, then goes quiet. The timing is left on you.</div>
+      <div class="cell o"><b>The system does.</b> Decay surfaces who's cooling and pings you — then drafts.</div>
+    </div>
+    <div class="row">
+      <div class="cell dim">Optimizes for</div>
+      <div class="cell t">Lead capture volume. Top of funnel.</div>
+      <div class="cell o"><b>Relationship health</b> over the whole arc.</div>
+    </div>
+    <div class="row">
+      <div class="cell dim">Failure mode</div>
+      <div class="cell t">Contact goes cold, unseen, in a database.</div>
+      <div class="cell o">Cooling surfaces <b>before</b> it dies — Active → Followed Up → Cooling.</div>
+    </div>
+  </div>
+
+  <!-- TAKEAWAY -->
+  <div class="take">
+    <div class="tk">The strategic line</div>
+    <p>A pipe ends. A loop <em>compounds.</em></p>
+    <div class="fine"><b style="color:var(--off-white);font-weight:700">Blinq automates the writing. Equal Point automates the remembering.</b> Their AI got good at drafting the follow-up — but the trigger to act still sits on the user, so the lead quietly cools while the AI waits to be asked. Equal Point starts where their model ends: warmth decay surfaces who's going cold, the system pings you, then drafts. They answer "what do I say?" We answer "who do I owe, and when?" They sell the introduction. We hold the whole relationship.</div>
+  </div>
+
+  <div class="foot">Equal Point · Relational OS — model comparison built from live category research (Blinq, Popl, HiHello, Mobilo) and Equal Point architecture.</div>
+
+</div>
+
+<script>
+  // Live warmth simulation, synced to the loop's ~6s orbit.
+  // Decays for most of the cycle, then "you approve" resets it.
+  const fill = document.getElementById('barFill');
+  const val  = document.getElementById('warmthVal');
+  const cap  = document.getElementById('warmthCap');
+  const base = 100;
+  const cycle = 6000;          // matches orbit spin duration
+  const start = performance.now();
+
+  function color(w){
+    if(w >= 66) return getComputedStyle(document.documentElement).getPropertyValue('--green');
+    if(w >= 33) return getComputedStyle(document.documentElement).getPropertyValue('--amber');
+    return getComputedStyle(document.documentElement).getPropertyValue('--cool');
+  }
+
+  function tick(now){
+    const t = ((now - start) % cycle) / cycle;   // 0..1 around the loop
+    let w, msg;
+    if(t < 0.82){
+      // map the decay portion to ~140 simulated days using the real formula
+      const days = (t/0.82) * 140;
+      w = Math.max(0, Math.round(base * Math.exp(-0.01 * days)));
+      msg = 'Decaying at <b>e^(−0.01 × days)</b> — ' + Math.round(days) + ' days since last contact…';
+    } else {
+      // approval beat: snap back to full
+      w = base;
+      msg = '<b>You approved the draft.</b> Warmth resets. Loop continues.';
+    }
+    fill.style.width = w + '%';
+    fill.style.background = color(w).trim();
+    val.textContent = w;
+    val.style.color = color(w).trim();
+    cap.innerHTML = msg;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+</script>
+</body>
+</html>

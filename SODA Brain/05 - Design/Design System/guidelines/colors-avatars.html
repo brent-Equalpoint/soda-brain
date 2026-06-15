@@ -1,0 +1,27 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Identity avatars" subtitle="Deterministic 8-color palette for initials avatars" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; background: var(--bg-canvas); padding: 22px; }
+  .row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .av { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-sans); font-weight: 700; font-size: 19px; color: #fff; }
+  .cap { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="av" style="background:var(--av-1)">MC</div>
+  <div class="av" style="background:var(--av-2)">JB</div>
+  <div class="av" style="background:var(--av-3)">PN</div>
+  <div class="av" style="background:var(--av-4)">MW</div>
+  <div class="av" style="background:var(--av-5)">TB</div>
+  <div class="av" style="background:var(--av-6)">DC</div>
+  <div class="av" style="background:var(--av-7)">AR</div>
+  <div class="av" style="background:var(--av-8)">LK</div>
+</div>
+<div class="cap">--av-1 … --av-8 · assigned by a stable hash of the name · white initials, no photo</div>
+</body>
+</html>

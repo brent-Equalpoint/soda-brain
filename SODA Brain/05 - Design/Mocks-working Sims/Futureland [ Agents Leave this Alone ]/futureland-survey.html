@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Futureland — Event Experience Survey</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --fl-green:      #3BD75C;
+    --fl-dark-green: #203229;
+    --fl-charcoal:   #212121;
+    --fl-off-white:  #FBFBFB;
+    --fl-purple:     #813BD7;
+    --beige:         #F5F0E8;
+    --beige-mid:     #EDE6D6;
+    --warm-white:    #FDFCFA;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--beige);
+    color: var(--fl-charcoal);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Noise texture overlay ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── Progress bar ── */
+  #progress-bar {
+    position: fixed; top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--fl-green), var(--fl-purple));
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    z-index: 100;
+  }
+
+  /* ── Shell ── */
+  .shell {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 48px 20px 80px;
+  }
+
+  /* ── Header ── */
+  .brand {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px; margin-bottom: 40px;
+  }
+  .brand-wordmark {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 700;
+    color: var(--fl-dark-green);
+    letter-spacing: -0.5px;
+  }
+  .brand-tag {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--fl-green);
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--warm-white);
+    border: 1px solid var(--beige-mid);
+    border-radius: 24px;
+    width: 100%; max-width: 520px;
+    padding: 40px 36px;
+    box-shadow: 0 2px 6px rgba(32,50,41,0.06), 0 16px 48px rgba(32,50,41,0.08);
+    position: relative; overflow: hidden;
+  }
+
+  .card::after {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(59,215,92,0.12), transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ── Step header ── */
+  .step-label {
+    font-size: 10px; font-weight: 500; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--fl-green);
+    margin-bottom: 10px;
+  }
+  .step-question {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(20px, 5vw, 26px);
+    font-weight: 700; line-height: 1.25;
+    color: var(--fl-dark-green);
+    margin-bottom: 8px;
+  }
+  .step-sub {
+    font-size: 13px; color: #7a7a6e; font-weight: 300;
+    margin-bottom: 32px; line-height: 1.6;
+  }
+
+  /* ── Option buttons ── */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .opt {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px;
+    border: 1.5px solid var(--beige-mid);
+    border-radius: 14px;
+    background: var(--beige);
+    cursor: pointer;
+    font-size: 14px; font-weight: 400;
+    color: var(--fl-charcoal);
+    transition: all 0.2s ease;
+    text-align: left;
+  }
+  .opt:hover { border-color: var(--fl-green); background: #f0faf3; }
+  .opt.selected {
+    border-color: var(--fl-green);
+    background: #edf9f1;
+    color: var(--fl-dark-green);
+    font-weight: 500;
+  }
+  .opt-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--warm-white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+    border: 1px solid var(--beige-mid);
+  }
+  .opt.selected .opt-icon { background: var(--fl-green); border-color: var(--fl-green); }
+
+  /* ── Grid options (emoji grid) ── */
+  .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .opt-grid .opt { flex-direction: column; align-items: flex-start; padding: 16px; }
+  .opt-grid .opt-icon { width: 40px; height: 40px; margin-bottom: 8px; }
+
+  /* ── Star rating ── */
+  .stars { display: flex; gap: 8px; margin-bottom: 24px; }
+  .star {
+    font-size: 36px; cursor: pointer;
+    transition: transform 0.15s, filter 0.15s;
+    filter: grayscale(1) opacity(0.35);
+    line-height: 1;
+  }
+  .star.lit { filter: none; transform: scale(1.1); }
+  .star:hover { transform: scale(1.2); }
+
+  /* ── Text area ── */
+  .fl-textarea {
+    width: 100%;
+    background: var(--beige);
+    border: 1.5px solid var(--beige-mid);
+    border-radius: 14px;
+    padding: 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: var(--fl-charcoal);
+    resize: none; outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+  .fl-textarea:focus { border-color: var(--fl-green); }
+  .fl-textarea::placeholder { color: #bbb; }
+
+  /* ── Tag cloud ── */
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag {
+    padding: 8px 16px;
+    border-radius: 100px;
+    border: 1.5px solid var(--beige-mid);
+    background: var(--beige);
+    font-size: 13px; cursor: pointer;
+    transition: all 0.2s;
+    color: var(--fl-charcoal);
+  }
+  .tag:hover { border-color: var(--fl-green); }
+  .tag.selected {
+    background: var(--fl-dark-green);
+    color: var(--fl-green);
+    border-color: var(--fl-dark-green);
+    font-weight: 500;
+  }
+
+  /* ── Sliding scale ── */
+  .scale-wrap { padding: 4px 0 16px; }
+  .scale-labels { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; margin-bottom: 8px; }
+  input[type=range] {
+    -webkit-appearance: none; width: 100%; height: 4px;
+    background: linear-gradient(90deg, var(--fl-green) 0%, var(--beige-mid) 0%);
+    border-radius: 2px; outline: none; cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--fl-dark-green);
+    border: 3px solid var(--fl-green);
+    cursor: pointer;
+  }
+  .scale-value {
+    text-align: center; margin-top: 12px;
+    font-size: 28px; font-weight: 700;
+    font-family: 'Playfair Display', serif;
+    color: var(--fl-dark-green);
+  }
+
+  /* ── Navigation ── */
+  .nav { display: flex; gap: 12px; margin-top: 32px; align-items: center; }
+  .btn {
+    border: none; border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+    padding: 14px 28px;
+  }
+  .btn-primary {
+    background: var(--fl-dark-green); color: var(--fl-green);
+    flex: 1;
+  }
+  .btn-primary:hover { background: #162620; transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-ghost {
+    background: transparent; color: #aaa;
+    border: 1.5px solid var(--beige-mid);
+    padding: 14px 20px;
+  }
+  .btn-ghost:hover { color: var(--fl-charcoal); border-color: #ccc; }
+
+  /* ── Step counter dots ── */
+  .dots { display: flex; gap: 6px; justify-content: center; margin-top: 24px; }
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--beige-mid); transition: all 0.3s;
+  }
+  .dot.active { width: 20px; border-radius: 3px; background: var(--fl-green); }
+  .dot.done { background: var(--fl-dark-green); }
+
+  /* ── Thank you screen ── */
+  .ty-screen {
+    text-align: center; display: flex;
+    flex-direction: column; align-items: center; gap: 16px;
+  }
+  .ty-circle {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: var(--fl-dark-green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; margin-bottom: 8px;
+    animation: popIn 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .ty-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px; font-weight: 700;
+    color: var(--fl-dark-green); line-height: 1.2;
+  }
+  .ty-sub { font-size: 14px; color: #7a7a6e; max-width: 300px; line-height: 1.7; }
+  .ty-pill {
+    display: inline-block; padding: 8px 20px;
+    border-radius: 100px; font-size: 12px;
+    background: var(--fl-dark-green); color: var(--fl-green);
+    font-weight: 500; letter-spacing: 0.5px;
+    margin-top: 8px;
+  }
+
+  /* ── Slide transition ── */
+  .card { transition: opacity 0.3s, transform 0.3s; }
+  .card.fade-out { opacity: 0; transform: translateX(-20px); }
+  .card.fade-in  { animation: slideIn 0.35s ease forwards; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ── Char counter ── */
+  .char-count { text-align: right; font-size: 11px; color: #bbb; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div id="progress-bar" style="width:0%"></div>
+
+<div class="shell">
+  <div class="brand">
+    <span class="brand-wordmark">Futureland</span>
+    <span class="brand-tag">Creative Meetups</span>
+  </div>
+
+  <div class="card fade-in" id="card">
+    <!-- JS renders here -->
+  </div>
+
+  <div class="dots" id="dots"></div>
+</div>
+
+<script>
+const STEPS = [
+  {
+    id: 'vibe',
+    type: 'single',
+    label: 'Step 1 of 6 — Vibe Check',
+    question: 'How did tonight feel?',
+    sub: 'Go with your gut. First instinct wins.',
+    options: [
+      { icon: '🔥', label: 'Energized & inspired' },
+      { icon: '🌿', label: 'Calm and connected' },
+      { icon: '💡', label: 'Mind officially blown' },
+      { icon: '🤝', label: 'All about the people' },
+    ],
+    grid: true,
+  },
+  {
+    id: 'rating',
+    type: 'star',
+    label: 'Step 2 of 6 — Overall',
+    question: 'Rate your experience',
+    sub: 'How did this meetup land for you overall?',
+  },
+  {
+    id: 'highlights',
+    type: 'tags',
+    label: 'Step 3 of 6 — Highlights',
+    question: 'What made it memorable?',
+    sub: 'Pick everything that applies. More is more.',
+    tags: ['Speaker quality','Networking','The venue','Content depth','Creative energy','Community vibe','Hands-on moments','The conversations','New connections','Swag / resources'],
+  },
+  {
+    id: 'likelihood',
+    type: 'scale',
+    label: 'Step 4 of 6 — Word of Mouth',
+    question: 'Would you send a friend?',
+    sub: 'On a scale of 0–10, how likely are you to recommend this meetup?',
+    min: 0, max: 10, step: 1, default: 8,
+  },
+  {
+    id: 'next',
+    type: 'single',
+    label: 'Step 5 of 6 — Next Time',
+    question: 'What should we do more of?',
+    sub: 'Help us shape the next chapter.',
+    options: [
+      { icon: '🎤', label: 'Keynote speakers' },
+      { icon: '🛠️', label: 'Workshops & builds' },
+      { icon: '🌐', label: 'Panel conversations' },
+      { icon: '🎉', label: 'Pure social energy' },
+    ],
+    grid: true,
+  },
+  {
+    id: 'open',
+    type: 'text',
+    label: 'Step 6 of 6 — Open Mic',
+    question: 'Anything else on your mind?',
+    sub: 'Real talk only. We read every single one.',
+    placeholder: 'Drop your thoughts here — feedback, ideas, shoutouts, anything...',
+  },
+];
+
+const answers = {};
+let current = 0;
+
+function updateProgress() {
+  const pct = ((current) / STEPS.length) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+function renderDots() {
+  const el = document.getElementById('dots');
+  el.innerHTML = STEPS.map((_, i) => {
+    const cls = i === current ? 'dot active' : i < current ? 'dot done' : 'dot';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+}
+
+function renderStep() {
+  const step = STEPS[current];
+  const card = document.getElementById('card');
+  card.classList.remove('fade-in');
+  void card.offsetWidth; // reflow
+  card.classList.add('fade-in');
+
+  let body = '';
+
+  if (step.type === 'single') {
+    const cls = step.grid ? 'options opt-grid' : 'options';
+    body = `<div class="${cls}" id="opts">` +
+      step.options.map((o, i) => {
+        const sel = answers[step.id] === i ? 'selected' : '';
+        return `<button class="opt ${sel}" data-i="${i}">
+          <div class="opt-icon">${o.icon}</div>
+          <span>${o.label}</span>
+        </button>`;
+      }).join('') +
+    `</div>`;
+
+  } else if (step.type === 'star') {
+    const val = answers[step.id] || 0;
+    body = `<div class="stars" id="stars">` +
+      [1,2,3,4,5].map(n =>
+        `<span class="star ${val >= n ? 'lit' : ''}" data-v="${n}">⭐</span>`
+      ).join('') +
+    `</div>
+    <p style="font-size:13px;color:#aaa;margin-top:-8px;">
+      ${val === 0 ? 'Tap a star' : val === 5 ? 'Legendary! 🙌' : val >= 4 ? 'Solid!' : val >= 3 ? 'Good to know.' : 'We appreciate the honesty.'}
+    </p>`;
+
+  } else if (step.type === 'tags') {
+    const sel = answers[step.id] || [];
+    body = `<div class="tags" id="tags">` +
+      step.tags.map(t =>
+        `<button class="tag ${sel.includes(t) ? 'selected' : ''}" data-t="${t}">${t}</button>`
+      ).join('') +
+    `</div>`;
+
+  } else if (step.type === 'scale') {
+    const val = answers[step.id] ?? step.default;
+    body = `<div class="scale-wrap">
+      <div class="scale-labels"><span>${step.min} — No way</span><span>Absolutely — ${step.max}</span></div>
+      <input type="range" id="slider" min="${step.min}" max="${step.max}" step="${step.step}" value="${val}" />
+      <div class="scale-value" id="scaleVal">${val}</div>
+    </div>`;
+
+  } else if (step.type === 'text') {
+    const val = answers[step.id] || '';
+    body = `<textarea class="fl-textarea" id="textarea" rows="5" maxlength="400"
+      placeholder="${step.placeholder}">${val}</textarea>
+      <div class="char-count" id="charCount">${val.length}/400</div>`;
+  }
+
+  const isLast = current === STEPS.length - 1;
+  const backBtn = current > 0
+    ? `<button class="btn btn-ghost" id="backBtn">← Back</button>` : '';
+  const canNext = canAdvance(step);
+
+  card.innerHTML = `
+    <div class="step-label">${step.label}</div>
+    <h2 class="step-question">${step.question}</h2>
+    <p class="step-sub">${step.sub}</p>
+    ${body}
+    <div class="nav">
+      ${backBtn}
+      <button class="btn btn-primary" id="nextBtn" ${canNext ? '' : 'disabled'}>
+        ${isLast ? 'Submit ✦' : 'Continue →'}
+      </button>
+    </div>
+  `;
+
+  bindEvents(step);
+  updateProgress();
+  renderDots();
+}
+
+function canAdvance(step) {
+  if (step.type === 'single')  return answers[step.id] !== undefined;
+  if (step.type === 'star')    return answers[step.id] > 0;
+  if (step.type === 'tags')    return (answers[step.id] || []).length > 0;
+  if (step.type === 'scale')   return true;
+  if (step.type === 'text')    return true;
+  return false;
+}
+
+function bindEvents(step) {
+  const nextBtn = document.getElementById('nextBtn');
+  const backBtn = document.getElementById('backBtn');
+
+  if (backBtn) backBtn.onclick = () => { current--; renderStep(); };
+
+  nextBtn.onclick = () => {
+    if (current < STEPS.length - 1) { current++; renderStep(); }
+    else showThankYou();
+  };
+
+  if (step.type === 'single') {
+    document.querySelectorAll('.opt').forEach(btn => {
+      btn.onclick = () => {
+        answers[step.id] = parseInt(btn.dataset.i);
+        document.querySelectorAll('.opt').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        nextBtn.disabled = false;
+      };
+    });
+  }
+
+  if (step.type === 'star') {
+    const stars = document.querySelectorAll('.star');
+    stars.forEach(s => {
+      s.onclick = () => {
+        const v = parseInt(s.dataset.v);
+        answers[step.id] = v;
+        stars.forEach(x => x.classList.toggle('lit', parseInt(x.dataset.v) <= v));
+        nextBtn.disabled = false;
+        renderStep(); // re-render label
+      };
+    });
+  }
+
+  if (step.type === 'tags') {
+    if (!answers[step.id]) answers[step.id] = [];
+    document.querySelectorAll('.tag').forEach(t => {
+      t.onclick = () => {
+        const tag = t.dataset.t;
+        const arr = answers[step.id];
+        const idx = arr.indexOf(tag);
+        if (idx > -1) arr.splice(idx, 1); else arr.push(tag);
+        t.classList.toggle('selected', arr.includes(tag));
+        nextBtn.disabled = arr.length === 0;
+      };
+    });
+  }
+
+  if (step.type === 'scale') {
+    const slider = document.getElementById('slider');
+    answers[step.id] = parseInt(slider.value);
+    slider.oninput = () => {
+      const v = parseInt(slider.value);
+      answers[step.id] = v;
+      document.getElementById('scaleVal').textContent = v;
+      const pct = ((v - step.min) / (step.max - step.min)) * 100;
+      slider.style.background = `linear-gradient(90deg, var(--fl-green) ${pct}%, var(--beige-mid) ${pct}%)`;
+    };
+    // init fill
+    const initPct = ((parseInt(slider.value) - step.min) / (step.max - step.min)) * 100;
+    slider.style.background = `linear-gradient(90deg, var(--fl-green) ${initPct}%, var(--beige-mid) ${initPct}%)`;
+  }
+
+  if (step.type === 'text') {
+    const ta = document.getElementById('textarea');
+    const cc = document.getElementById('charCount');
+    ta.oninput = () => {
+      answers[step.id] = ta.value;
+      cc.textContent = ta.value.length + '/400';
+    };
+  }
+}
+
+function showThankYou() {
+  document.getElementById('progress-bar').style.width = '100%';
+  document.getElementById('dots').innerHTML = '';
+  const card = document.getElementById('card');
+  card.classList.remove('fade-in');
+  void card.offsetWidth;
+  card.classList.add('fade-in');
+
+  // Pick a star based on rating
+  const rating = answers['rating'] || 5;
+  const emoji = rating >= 5 ? '🌟' : rating >= 4 ? '✨' : '💚';
+
+  card.innerHTML = `
+    <div class="ty-screen">
+      <div class="ty-circle">${emoji}</div>
+      <h2 class="ty-title">You just shaped the future.</h2>
+      <p class="ty-sub">
+        Every response goes directly into how we build the next Futureland experience.
+        Real talk, real impact.
+      </p>
+      <span class="ty-pill">Futureland Creative Meetups ✦</span>
+      <p style="font-size:12px;color:#bbb;margin-top:20px;">
+        Follow us at <strong style="color:#7a7a6e">@wearefutureland</strong>
+      </p>
+    </div>
+  `;
+}
+
+// Boot
+renderStep();
+</script>
+</body>
+</html>

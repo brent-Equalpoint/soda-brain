@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Soda — Realtime Connection Simulation</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --g:#3BD75C;--g-br:#5FF088;--dg:#203229;--ch:#0c0d0c;--c1:#161816;--c2:#1d1f1d;
+  --bd:#262826;--bd2:#363936;--pu:#A47BFF;--ye:#FFD23F;--rd:#FF5470;
+  --t0:#fff;--t1:#c8ccc8;--t2:#74786f;--t3:#3e423e;
+  --ease:cubic-bezier(.4,0,.2,1);--bounce:cubic-bezier(.34,1.56,.64,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--ch);color:var(--t1);line-height:1.5;-webkit-font-smoothing:antialiased;padding:32px 20px 80px}
+.display{font-family:'Archivo Black',sans-serif;text-transform:uppercase;letter-spacing:-.02em;line-height:.9}
+.mono{font-family:'DM Mono',monospace}
+.wrap{max-width:1080px;margin:0 auto}
+::selection{background:var(--g);color:var(--ch)}
+
+/* header */
+.head{text-align:center;margin-bottom:14px}
+.brand{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--g);margin-bottom:14px}
+.head h1{font-size:clamp(28px,5vw,46px);color:var(--t0);font-weight:700;letter-spacing:-.02em;margin-bottom:12px}
+.head h1 .g{color:var(--g)}
+.head p{font-size:16px;color:var(--t2);max-width:580px;margin:0 auto;font-weight:300}
+
+/* the switchboard metaphor explainer */
+.explain{background:var(--c1);border:1px solid var(--bd);border-radius:16px;padding:20px 24px;margin:28px 0;display:flex;gap:16px;align-items:flex-start}
+.explain .ic{font-size:24px;flex-shrink:0}
+.explain p{font-size:14px;color:var(--t1);font-weight:300}
+.explain strong{color:var(--g);font-weight:600}
+
+/* controls */
+.controls{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:24px 0 8px}
+.btn{font-family:'DM Sans';font-weight:600;font-size:15px;border:none;cursor:pointer;border-radius:100px;padding:14px 26px;transition:all .2s var(--bounce)}
+.btn-g{background:var(--g);color:var(--ch)}
+.btn-g:hover{background:var(--g-br);transform:translateY(-2px)}
+.btn-g:active{transform:translateY(0)}
+.btn-ye{background:var(--ye);color:var(--ch)}
+.btn-ye:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.btn-gh{background:transparent;color:var(--t1);border:1px solid var(--bd2)}
+.btn-gh:hover{border-color:var(--rd);color:var(--rd);transform:translateY(-2px)}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none!important}
+.add-note{text-align:center;font-size:12px;color:var(--t3);font-family:'DM Mono';margin-bottom:28px}
+
+/* the two boards */
+.boards{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:760px){.boards{grid-template-columns:1fr}}
+.board{background:var(--c1);border:1px solid var(--bd);border-radius:20px;padding:24px;position:relative;overflow:hidden;transition:border-color .3s}
+.board.bad{border-color:var(--bd)}
+.board.good{border-color:var(--bd)}
+.board.wall.good{border-color:rgba(59,215,92,.5)}
+.board.wall.bad{border-color:rgba(255,84,112,.5)}
+.board-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.bad .board-tag{color:var(--rd)}
+.good .board-tag{color:var(--g)}
+.board h2{font-size:21px;color:var(--t0);font-weight:700;margin-bottom:4px;letter-spacing:-.01em}
+.board-desc{font-size:13px;color:var(--t2);font-weight:300;margin-bottom:18px;min-height:34px}
+
+/* jack meter */
+.meter-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.meter-label{font-family:'DM Mono';font-size:11px;color:var(--t2);letter-spacing:1px;text-transform:uppercase}
+.meter-count{font-family:'Archivo Black';font-size:15px}
+.bad .meter-count{color:var(--rd)}
+.good .meter-count{color:var(--g)}
+.meter{height:10px;background:#0a0b0a;border-radius:6px;overflow:hidden;margin-bottom:4px;border:1px solid var(--bd)}
+.meter-fill{height:100%;width:0%;border-radius:6px;transition:width .4s var(--ease)}
+.bad .meter-fill{background:linear-gradient(90deg,var(--ye),var(--rd))}
+.good .meter-fill{background:linear-gradient(90deg,var(--g),var(--g-br))}
+.meter-max{font-family:'DM Mono';font-size:10px;color:var(--t3);text-align:right;margin-bottom:18px}
+
+/* jacks grid */
+.jacks{display:grid;grid-template-columns:repeat(20,1fr);gap:3px;margin-bottom:18px;min-height:60px;align-content:start}
+.jack{aspect-ratio:1;border-radius:2px;background:#141614;border:1px solid #1e201e;transition:all .25s var(--bounce)}
+.jack.lit{border-color:transparent}
+.good .jack.lit{background:var(--g);box-shadow:0 0 6px rgba(59,215,92,.6)}
+.bad .jack.lit{background:var(--ye);box-shadow:0 0 6px rgba(255,210,63,.5)}
+.bad .jack.lit.second{background:var(--rd);box-shadow:0 0 6px rgba(255,84,112,.5)}
+
+/* phones row */
+.phones-wrap{margin-bottom:16px}
+.phones-label{font-family:'DM Mono';font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--t2);margin-bottom:8px}
+.phones{display:flex;flex-wrap:wrap;gap:5px;min-height:30px}
+.ph{width:22px;height:30px;border-radius:4px;background:#1c1e1c;border:1px solid var(--bd2);position:relative;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .3s var(--bounce)}
+.ph .dots{position:absolute;top:-6px;display:flex;gap:2px}
+.ph .d{width:4px;height:4px;border-radius:50%}
+.good .ph .d{background:var(--g)}
+.bad .ph .d{background:var(--ye)}
+.bad .ph .d.second{background:var(--rd)}
+.ph.dropped{opacity:.35;border-color:var(--rd);border-style:dashed}
+.ph.dropped::after{content:'✕';color:var(--rd);font-size:11px;font-weight:700}
+
+/* status line */
+.status{font-size:13px;font-weight:500;padding:12px 14px;border-radius:10px;min-height:44px;display:flex;align-items:center;gap:8px}
+.good .status{background:rgba(59,215,92,.07);color:var(--g)}
+.bad .status{background:rgba(255,84,112,.07);color:var(--rd)}
+.status .lbl{font-family:'DM Mono';font-size:10px;letter-spacing:1px;text-transform:uppercase;opacity:.7}
+
+/* drop test */
+.drop-row{display:flex;justify-content:center;margin:30px 0 0}
+.legend{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-top:28px;font-size:12px;color:var(--t2)}
+.legend span{display:inline-flex;align-items:center;gap:7px;font-family:'DM Mono';letter-spacing:.5px}
+.lg{width:11px;height:11px;border-radius:3px}
+
+/* three meters */
+.meters-sec{margin-top:40px}
+.meters-head{text-align:center;margin-bottom:24px}
+.meters-head h2{font-size:clamp(22px,3.5vw,32px);color:var(--t0);font-weight:700;letter-spacing:-.02em;margin-bottom:8px}
+.meters-head h2 .g{color:var(--g)}
+.meters-head p{font-size:14px;color:var(--t2);font-weight:300;max-width:600px;margin:0 auto}
+.meters-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:760px){.meters-grid{grid-template-columns:1fr}}
+.mcard{background:var(--c1);border:1px solid var(--bd);border-radius:18px;padding:22px;position:relative;overflow:hidden;transition:border-color .3s}
+.mcard .mtag{font-family:'DM Mono';font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.mcard.conn .mtag{color:var(--rd)} .mcard.store .mtag{color:var(--g)} .mcard.egress .mtag{color:var(--ye)}
+.mcard h3{font-size:17px;color:var(--t0);font-weight:700;margin-bottom:3px;letter-spacing:-.01em}
+.mcard .msub{font-size:12px;color:var(--t2);font-weight:300;margin-bottom:18px;min-height:32px}
+.mcard .mbignum{font-family:'Archivo Black';font-size:34px;line-height:1;letter-spacing:-.02em;margin-bottom:4px}
+.mcard.conn .mbignum{color:var(--rd)} .mcard.store .mbignum{color:var(--g)} .mcard.egress .mbignum{color:var(--ye)}
+.mcard .mof{font-family:'DM Mono';font-size:12px;color:var(--t2);margin-bottom:16px}
+.mcard .mbar{height:8px;background:#0a0b0a;border:1px solid var(--bd);border-radius:5px;overflow:hidden;margin-bottom:14px}
+.mcard .mbarfill{height:100%;width:0%;border-radius:5px;transition:width .5s var(--ease)}
+.mcard.conn .mbarfill{background:linear-gradient(90deg,var(--ye),var(--rd))}
+.mcard.store .mbarfill{background:linear-gradient(90deg,var(--g),var(--g-br))}
+.mcard.egress .mbarfill{background:linear-gradient(90deg,var(--g),var(--ye))}
+.mcard .mverdict{font-size:12px;font-weight:500;padding:9px 12px;border-radius:9px;line-height:1.4}
+.mcard.conn .mverdict{background:rgba(255,84,112,.08);color:var(--rd)}
+.mcard.store .mverdict{background:rgba(59,215,92,.08);color:var(--g)}
+.mcard.egress .mverdict{background:rgba(255,210,63,.08);color:var(--ye)}
+.mcard .mwhat{font-size:11px;color:var(--t3);font-family:'DM Mono';margin-top:12px;line-height:1.5}
+
+/* data-capture toggle */
+.dtoggle{display:flex;align-items:center;justify-content:center;gap:14px;margin:22px 0 6px;flex-wrap:wrap}
+.dtoggle .lbl{font-size:13px;color:var(--t1);font-weight:500}
+.dtoggle .opts{display:flex;gap:6px;background:var(--c1);border:1px solid var(--bd);border-radius:100px;padding:4px}
+.dtoggle button{font-family:'DM Sans';font-size:12px;font-weight:600;border:none;background:transparent;color:var(--t2);padding:8px 14px;border-radius:100px;cursor:pointer;transition:all .2s}
+.dtoggle button.on{background:var(--g);color:var(--ch)}
+.dtoggle-note{text-align:center;font-size:12px;color:var(--t3);font-family:'DM Mono';margin-bottom:24px}
+
+/* takeaway */
+.takeaway{background:var(--dg);border-radius:18px;padding:26px 28px;margin-top:32px;text-align:center}
+.takeaway h3{font-size:13px;font-family:'DM Mono';letter-spacing:2px;text-transform:uppercase;color:var(--g);margin-bottom:12px}
+.takeaway p{font-size:clamp(17px,2.4vw,22px);color:var(--t0);font-weight:600;max-width:680px;margin:0 auto;line-height:1.35;letter-spacing:-.01em}
+.takeaway p .g{color:var(--g)}.takeaway p .r{color:var(--rd)}
+.takeaway .q{margin-top:18px;font-size:14px;color:#9bb3a4;font-weight:300}
+.takeaway .q strong{color:var(--g);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <div class="brand">SODA ✦ REALTIME SIMULATION</div>
+    <h1>One phone, one jack. <span class="g">Or one phone, two.</span></h1>
+    <p>Supabase Realtime is a switchboard with 200 jacks on the free plan. Watch how the two ways of building fill it. Add guests and see who hits the wall first.</p>
+  </div>
+
+  <div class="explain">
+    <span class="ic">🎚️</span>
+    <p>Every guest's phone needs to hear two things during your event: <strong>The Drop</strong> (the room-wide prompt) and <strong>The Nudge</strong> (their private match signal). The only question that matters: does each phone use <strong>one jack to hear both</strong>, or <strong>grab two jacks</strong>? Supabase counts jacks (connections), not what you listen to over them.</p>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-g" id="add1">+ Add 1 guest</button>
+    <button class="btn btn-ye" id="add10">+ Add 10 guests</button>
+    <button class="btn btn-g" id="fireDrop">⚡ Fire The Drop</button>
+    <button class="btn btn-gh" id="reset">Reset</button>
+  </div>
+  <div class="add-note">Free plan limit: 200 concurrent connections · Add guests to both rooms at once and compare</div>
+
+  <div class="boards">
+
+    <!-- BAD -->
+    <div class="board bad" id="boardBad">
+      <div class="board-tag">Worst practice</div>
+      <h2>Two jacks per phone</h2>
+      <div class="board-desc">A separate connection for The Drop and another for The Nudge. Each phone takes two jacks.</div>
+
+      <div class="meter-top">
+        <span class="meter-label">Jacks in use</span>
+        <span class="meter-count"><span id="badConn">0</span> / 200</span>
+      </div>
+      <div class="meter"><div class="meter-fill" id="badFill"></div></div>
+      <div class="meter-max" id="badMax">0 guests connected</div>
+
+      <div class="jacks" id="badJacks"></div>
+
+      <div class="phones-wrap">
+        <div class="phones-label">Guests in the room</div>
+        <div class="phones" id="badPhones"></div>
+      </div>
+
+      <div class="status" id="badStatus"><span class="lbl">Status</span> Room empty. Add guests to begin.</div>
+    </div>
+
+    <!-- GOOD -->
+    <div class="board good" id="boardGood">
+      <div class="board-tag">Best practice</div>
+      <h2>One jack per phone</h2>
+      <div class="board-desc">One connection per phone, both The Drop and The Nudge multiplexed over it. Each phone takes one jack.</div>
+
+      <div class="meter-top">
+        <span class="meter-label">Jacks in use</span>
+        <span class="meter-count"><span id="goodConn">0</span> / 200</span>
+      </div>
+      <div class="meter"><div class="meter-fill" id="goodFill"></div></div>
+      <div class="meter-max" id="goodMax">0 guests connected</div>
+
+      <div class="jacks" id="goodJacks"></div>
+
+      <div class="phones-wrap">
+        <div class="phones-label">Guests in the room</div>
+        <div class="phones" id="goodPhones"></div>
+      </div>
+
+      <div class="status" id="goodStatus"><span class="lbl">Status</span> Room empty. Add guests to begin.</div>
+    </div>
+
+  </div>
+
+  <div class="legend">
+    <span><span class="lg" style="background:var(--g)"></span> Connection (good)</span>
+    <span><span class="lg" style="background:var(--ye)"></span> Drop jack</span>
+    <span><span class="lg" style="background:var(--rd)"></span> Nudge jack (the extra one)</span>
+    <span><span class="lg" style="background:#141614;border:1px solid var(--bd2)"></span> Empty jack</span>
+  </div>
+
+  <!-- THREE METERS -->
+  <div class="meters-sec">
+    <div class="meters-head">
+      <h2>But that is only one meter. <span class="g">Where does the chip and survey data go?</span></h2>
+      <p>Every guest also leaves behind chips, a profile, a Drop answer, and survey responses. That data is real and it piles up. But it lands on different meters than the live jacks, and text is astonishingly cheap. Here are all three meters at once.</p>
+    </div>
+
+    <div class="dtoggle">
+      <span class="lbl">Keep data from</span>
+      <div class="opts" id="eventOpts">
+        <button data-ev="1" class="on">1 event</button>
+        <button data-ev="12">12 months</button>
+        <button data-ev="60">5 years</button>
+      </div>
+    </div>
+    <div class="dtoggle-note" id="dtoggleNote">A monthly 250-person event. Watch storage barely move while the live jacks stay tight.</div>
+
+    <div class="meters-grid">
+
+      <div class="mcard conn">
+        <div class="mtag">Meter 1 · Live</div>
+        <h3>Realtime jacks</h3>
+        <div class="msub">Open connections during The Drop. Chips and surveys add nothing here.</div>
+        <div class="mbignum" id="m1num">0</div>
+        <div class="mof">of 200 jacks (free)</div>
+        <div class="mbar"><div class="mbarfill" id="m1bar"></div></div>
+        <div class="mverdict" id="m1verdict">The only meter the room size pushes on.</div>
+        <div class="mwhat">Holds: nothing stored. Just live phones.</div>
+      </div>
+
+      <div class="mcard store">
+        <div class="mtag">Meter 2 · Stored</div>
+        <h3>Database storage</h3>
+        <div class="msub">Where chips, profiles, Drop answers, and surveys actually live.</div>
+        <div class="mbignum" id="m2num">0 MB</div>
+        <div class="mof">of 500 MB (free)</div>
+        <div class="mbar"><div class="mbarfill" id="m2bar"></div></div>
+        <div class="mverdict" id="m2verdict">This is your chip and survey data. Tiny.</div>
+        <div class="mwhat" id="m2what">Holds: 67% of each row is chips + survey + Drop text.</div>
+      </div>
+
+      <div class="mcard egress">
+        <div class="mtag">Meter 3 · Sent out</div>
+        <h3>Monthly egress</h3>
+        <div class="msub">Data sent to phones. Text is light. Photos are the heavy part.</div>
+        <div class="mbignum" id="m3num">0 GB</div>
+        <div class="mof">of 5 GB / month (free)</div>
+        <div class="mbar"><div class="mbarfill" id="m3bar"></div></div>
+        <div class="mverdict" id="m3verdict">The one to watch as you grow, driven by photos.</div>
+        <div class="mwhat">Holds: room views + avatar images served repeatedly.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="takeaway">
+    <h3>What you just saw</h3>
+    <p id="takeawayText">Add guests to both rooms and watch the worst-practice room hit the wall at <span class="r">100 guests</span> while the best-practice room keeps going to <span class="g">200</span>.</p>
+    <p class="q">The question to ask Brent: <strong>"Is each phone opening one realtime connection with both channels on it, or a separate connection for each?"</strong></p>
+  </div>
+
+</div>
+
+<script>
+const MAX=200, JACKS_SHOWN=200;
+let guests=0;
+const badJacksEl=document.getElementById('badJacks');
+const goodJacksEl=document.getElementById('goodJacks');
+const badPhonesEl=document.getElementById('badPhones');
+const goodPhonesEl=document.getElementById('goodPhones');
+
+// build jack grids (show 200 jacks each, 20 cols x 10 rows)
+for(let i=0;i<JACKS_SHOWN;i++){
+  const j1=document.createElement('div');j1.className='jack';badJacksEl.appendChild(j1);
+  const j2=document.createElement('div');j2.className='jack';goodJacksEl.appendChild(j2);
+}
+const badJackEls=[...badJacksEl.children];
+const goodJackEls=[...goodJacksEl.children];
+
+function render(){
+  const badConn=guests*2;   // 2 jacks per phone
+  const goodConn=guests*1;  // 1 jack per phone
+
+  // how many phones actually connect before the wall
+  const badConnected=Math.min(guests, Math.floor(MAX/2)); // 100
+  const goodConnected=Math.min(guests, MAX);              // 200
+  const badUsed=Math.min(badConn,MAX);
+  const goodUsed=Math.min(goodConn,MAX);
+
+  // counts
+  document.getElementById('badConn').textContent=badUsed;
+  document.getElementById('goodConn').textContent=goodUsed;
+  document.getElementById('badFill').style.width=(badUsed/MAX*100)+'%';
+  document.getElementById('goodFill').style.width=(goodUsed/MAX*100)+'%';
+  document.getElementById('badMax').textContent=badConnected+' guests connected'+(guests>badConnected?' · '+(guests-badConnected)+' shut out':'');
+  document.getElementById('goodMax').textContent=goodConnected+' guests connected'+(guests>goodConnected?' · '+(guests-goodConnected)+' shut out':'');
+
+  // light jacks
+  badJackEls.forEach((j,i)=>{j.className='jack'+(i<badUsed?' lit'+(i%2===1?' second':''):'')});
+  goodJackEls.forEach((j,i)=>{j.className='jack'+(i<goodUsed?' lit':'')});
+
+  // phones
+  renderPhones(badPhonesEl,guests,badConnected,true);
+  renderPhones(goodPhonesEl,guests,goodConnected,false);
+
+  // status
+  const badWall=guests>=Math.floor(MAX/2);
+  const goodWall=guests>=MAX;
+  document.getElementById('boardBad').classList.toggle('wall',badWall);
+  document.getElementById('boardGood').classList.toggle('wall',goodWall);
+
+  setStatus('badStatus', badWall
+    ? `WALL HIT. ${guests-badConnected} guest${guests-badConnected!==1?'s':''} cannot connect and will miss The Drop.`
+    : `${guests} guest${guests!==1?'s':''} connected, using ${badUsed} jacks. ${MAX-badUsed} left.`);
+  setStatus('goodStatus', goodWall
+    ? `Wall reached at the full 200. Time to upgrade to Pro for more room.`
+    : `${guests} guest${guests!==1?'s':''} connected, using ${goodUsed} jack${goodUsed!==1?'s':''}. ${MAX-goodUsed} left.`);
+
+  updateTakeaway();
+}
+
+function renderPhones(el,total,connected,isBad){
+  el.innerHTML='';
+  const show=Math.min(total,120); // cap visual
+  for(let i=0;i<show;i++){
+    const p=document.createElement('div');
+    const dropped=i>=connected;
+    p.className='ph'+(dropped?' dropped':'');
+    if(!dropped){
+      const dots=document.createElement('div');dots.className='dots';
+      const d1=document.createElement('div');d1.className='d';dots.appendChild(d1);
+      if(isBad){const d2=document.createElement('div');d2.className='d second';dots.appendChild(d2);}
+      p.appendChild(dots);
+    }
+    el.appendChild(p);
+  }
+  if(total>show){
+    const more=document.createElement('div');
+    more.style.cssText='font-family:DM Mono;font-size:11px;color:var(--t3);align-self:center;margin-left:4px';
+    more.textContent='+'+(total-show);
+    el.appendChild(more);
+  }
+}
+
+function setStatus(id,msg){
+  const el=document.getElementById(id);
+  el.innerHTML='<span class="lbl">Status</span> '+msg;
+}
+
+function updateTakeaway(){
+  const t=document.getElementById('takeawayText');
+  if(guests===0){
+    t.innerHTML='Add guests to both rooms and watch the worst-practice room hit the wall at <span class="r">100 guests</span> while the best-practice room keeps going to <span class="g">200</span>.';
+  }else if(guests>=100&&guests<200){
+    t.innerHTML='The worst-practice room is <span class="r">full at 100 guests</span> and shutting people out. The best-practice room still has room to spare. <span class="g">Same event. Same features. Double the capacity.</span>';
+  }else if(guests>=200){
+    t.innerHTML='Both rooms are now full, but the good build held <span class="g">twice as many guests</span> before reaching the wall. That is the difference one engineering decision makes.';
+  }else{
+    t.innerHTML='Keep adding. The worst-practice room fills <span class="r">twice as fast</span> because every phone grabs two jacks instead of one.';
+  }
+}
+
+function fireDrop(){
+  // pulse the connected phones; dropped ones flash red
+  [['badPhones',Math.floor(MAX/2)],['goodPhones',MAX]].forEach(([id,cap])=>{
+    const phones=[...document.getElementById(id).children];
+    phones.forEach((p,i)=>{
+      if(p.classList.contains('dropped'))return;
+      p.style.transition='transform .2s';
+      p.style.transform='scale(1.3)';
+      p.style.background=id==='goodPhones'?'var(--g)':'var(--ye)';
+      setTimeout(()=>{p.style.transform='';p.style.background=''},250+i*4);
+    });
+  });
+  // status
+  const badConnected=Math.min(guests,Math.floor(MAX/2));
+  const goodConnected=Math.min(guests,MAX);
+  if(guests===0){setStatus('badStatus','Add guests first, then fire The Drop.');setStatus('goodStatus','Add guests first, then fire The Drop.');return;}
+  setStatus('badStatus',`The Drop fired. ${badConnected} phones got it.`+(guests>badConnected?` ${guests-badConnected} missed it entirely.`:''));
+  setStatus('goodStatus',`The Drop fired. All ${goodConnected} connected phones got it.`);
+}
+
+document.getElementById('add1').onclick=()=>{guests=Math.min(guests+1,260);render()};
+document.getElementById('add10').onclick=()=>{guests=Math.min(guests+10,260);render()};
+document.getElementById('reset').onclick=()=>{guests=0;render()};
+document.getElementById('fireDrop').onclick=fireDrop;
+
+// ===== THREE METERS =====
+// per-attendee stored bytes (matches the math we ran)
+const PER_PERSON_BYTES=3660;      // chips+survey+drop+profile+matches
+const DB_LIMIT_MB=500;
+const EGRESS_LIMIT_GB=5;
+const PHOTO_KB=80;                // compressed avatar
+let eventsKept=1;                 // toggle: 1, 12, or 60 events of history
+const EVENT_SIZE_FOR_HISTORY=250; // the recurring monthly event size
+
+function fmtMB(mb){ return mb<1 ? (mb*1000).toFixed(0)+' KB' : mb.toFixed(mb<10?2:1)+' MB'; }
+
+function renderMeters(){
+  // Meter 1: realtime jacks — uses the GOOD build (1 per phone), current room
+  const jacks=Math.min(guests,MAX);
+  document.getElementById('m1num').textContent=jacks;
+  document.getElementById('m1bar').style.width=(jacks/MAX*100)+'%';
+  document.getElementById('m1verdict').textContent=
+    guests>=MAX ? 'Full at 200. The room size is the only thing that fills this.'
+    : guests===0 ? 'Empty. Only live phones during The Drop fill this.'
+    : `${jacks} live now. Room size is the only thing that pushes this meter.`;
+
+  // Meter 2: database storage — accumulated across kept events
+  // current event contributes current guests; history uses standard event size
+  const peopleStored = eventsKept===1
+    ? Math.max(guests,0)
+    : guests + EVENT_SIZE_FOR_HISTORY*(eventsKept-1) + (guests===0?EVENT_SIZE_FOR_HISTORY:0);
+  // simpler: if viewing history, base it on the recurring size * events, plus live adds
+  const storedPeople = eventsKept===1 ? guests : EVENT_SIZE_FOR_HISTORY*eventsKept;
+  const dbMB=(storedPeople*PER_PERSON_BYTES)/1_000_000;
+  const dbPct=Math.min(dbMB/DB_LIMIT_MB*100,100);
+  document.getElementById('m2num').textContent=fmtMB(dbMB);
+  document.getElementById('m2bar').style.width=Math.max(dbPct,dbMB>0?0.4:0)+'%';
+  const dbYears=(DB_LIMIT_MB*1_000_000)/(PER_PERSON_BYTES*EVENT_SIZE_FOR_HISTORY*12);
+  document.getElementById('m2verdict').innerHTML=
+    eventsKept===1 ? `One event of chips + surveys = ${fmtMB(dbMB)}. Barely a scratch.`
+    : `${eventsKept} months of full data = ${fmtMB(dbMB)}. Still almost nothing.`;
+  document.getElementById('m2what').textContent=`Would take ~${Math.round(dbYears)} years of monthly events to fill 500 MB.`;
+
+  // Meter 3: egress — per month. text light, photos heavy.
+  // model: per event, each phone loads room view ~20x + sees ~30% of avatars
+  const n = eventsKept===1 ? (guests||0) : EVENT_SIZE_FOR_HISTORY;
+  const roomViewBytes = n*300*20*n;             // n phones each load n-person view 20x
+  const photoBytes = PHOTO_KB*1000*n*0.3*n;     // each phone sees ~30% of n avatars
+  const egressPerEventGB=(roomViewBytes+photoBytes)/1_000_000_000;
+  const eventsThisMonth = eventsKept===1?1:1;   // egress is monthly; show one month's worth
+  const egGB=egressPerEventGB*eventsThisMonth;
+  const egPct=Math.min(egGB/EGRESS_LIMIT_GB*100,100);
+  document.getElementById('m3num').textContent=egGB<0.01?'0 GB':egGB.toFixed(2)+' GB';
+  document.getElementById('m3bar').style.width=Math.max(egPct,egGB>0?0.4:0)+'%';
+  document.getElementById('m3verdict').innerHTML=
+    egGB>EGRESS_LIMIT_GB ? `Over 5 GB in one month, mostly from photos. Compress + cache, or go Pro.`
+    : n===0 ? 'Nothing sent yet. Photos, not surveys, drive this.'
+    : `${egGB.toFixed(2)} GB this month. Survey text is invisible here. Photos do the work.`;
+}
+
+document.querySelectorAll('#eventOpts button').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('#eventOpts button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    eventsKept=parseInt(btn.dataset.ev);
+    const note=document.getElementById('dtoggleNote');
+    note.textContent = eventsKept===1
+      ? 'A single event. Storage barely moves while the live jacks stay tight.'
+      : eventsKept===12
+      ? 'A monthly 250-person event, a full year of chips and surveys kept. Watch storage stay tiny.'
+      : 'Five years of monthly 250-person events, every chip and survey retained. Still nowhere near full.';
+    render();
+  };
+});
+
+// hook meters into the main render
+const _origRender=render;
+render=function(){ _origRender(); renderMeters(); };
+render();
+</script>
+</body>
+</html>

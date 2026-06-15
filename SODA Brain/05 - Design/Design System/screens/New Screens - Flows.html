@@ -1,0 +1,119 @@
+<!-- @dsCard group="Attendee App" viewport="1280x980" name="New Screens — click-through flows" subtitle="The 10 new screens wired into three flows: Access & Sessions, Host Access, Collaborator Onboarding" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SODA · New Screens — Flows</title>
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  html, body { margin: 0; background: var(--bg-deep); min-height: 100vh; }
+  .soda-scroll::-webkit-scrollbar { width: 0; height: 0; }
+  .stage { display: flex; gap: 40px; align-items: flex-start; justify-content: center; padding: 30px 26px 70px; flex-wrap: wrap; }
+  .rail { width: 256px; flex: 0 0 auto; position: sticky; top: 24px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-family: var(--font-display); text-transform: uppercase; font-size: 22px; color: var(--text-primary); letter-spacing: -.01em; }
+  .brand .s { color: var(--accent); }
+  .sub { font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin: 4px 0 22px; }
+  .navgrp { margin-bottom: 18px; }
+  .navgrp .gh { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px; }
+  .navbtn { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; background: none; border: none; cursor: pointer;
+    font-family: var(--font-sans); font-size: 13px; color: var(--text-muted); padding: 7px 10px; border-radius: 8px; transition: color .12s, background .12s; }
+  .navbtn:hover { color: var(--text-secondary); background: rgba(255,255,255,.03); }
+  .navbtn .n { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); width: 18px; }
+  .phonewrap { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; }
+  .hint { margin-top: 16px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="frames.jsx"></script>
+<script type="text/babel" src="kit.jsx"></script>
+<script type="text/babel" src="access.jsx"></script>
+<script type="text/babel" src="host.jsx"></script>
+<script type="text/babel" src="collab.jsx"></script>
+<script type="text/babel">
+const {
+  PhoneFrame, TabletFrame, AdminShell, Button,
+  CodeHelp, WelcomeBack, AddToHome,
+  EventModeControl, HostSignIn, HostAccountSetup, CollaboratorManagement,
+  CollaboratorWelcome, CollaboratorTutorial, HostWelcomeBack,
+} = window;
+
+/* flow groups + global order */
+const FLOWS = [
+  ['Access & Sessions', [['code-help', 'Code help state'], ['welcome-back', 'Welcome back'], ['add-to-home', 'Add to home']]],
+  ['Host Access', [['event-mode', 'Event Mode control'], ['host-signin', 'Host sign-in'], ['host-setup', 'Host account setup'], ['collab-mgmt', 'Collaborator mgmt']]],
+  ['Collaborator Onboarding', [['collab-welcome', 'Collaborator welcome'], ['collab-tutorial', 'Collaborator tutorial'], ['host-welcome-back', 'Host welcome-back']]],
+];
+const ORDER = FLOWS.flatMap(([, items]) => items.map(([id]) => id));
+
+function PhoneStage({ children }) { return <PhoneFrame statusHost="Futureland">{children}</PhoneFrame>; }
+function TabletStage({ children }) {
+  return <div style={{ transform: 'scale(0.84)', transformOrigin: 'top center' }}><TabletFrame statusHost="Futureland">{children}</TabletFrame></div>;
+}
+function AdminStage({ children }) {
+  return (
+    <div style={{ width: 880, maxWidth: '100%' }}>
+      <AdminShell height={620}>{children}</AdminShell>
+    </div>
+  );
+}
+
+function App() {
+  const [id, setId] = React.useState('code-help');
+  const go = (n) => setId(n);
+  const next = () => { const i = ORDER.indexOf(id); if (i >= 0 && i < ORDER.length - 1) go(ORDER[i + 1]); };
+
+  let stage;
+  switch (id) {
+    case 'code-help': stage = <PhoneStage><CodeHelp /></PhoneStage>; break;
+    case 'welcome-back': stage = <PhoneStage><WelcomeBack onContinue={next} /></PhoneStage>; break;
+    case 'add-to-home': stage = <PhoneStage><AddToHome onClose={next} /></PhoneStage>; break;
+    case 'event-mode': stage = <AdminStage><EventModeControl /></AdminStage>; break;
+    case 'host-signin': stage = <TabletStage><HostSignIn onContinue={next} /></TabletStage>; break;
+    case 'host-setup': stage = <TabletStage><HostAccountSetup onCreate={next} /></TabletStage>; break;
+    case 'collab-mgmt': stage = <AdminStage><CollaboratorManagement /></AdminStage>; break;
+    case 'collab-welcome': stage = <PhoneStage><CollaboratorWelcome onShow={next} onSkip={() => go('host-welcome-back')} /></PhoneStage>; break;
+    case 'collab-tutorial': stage = <PhoneStage><CollaboratorTutorial onDone={next} onSkip={next} /></PhoneStage>; break;
+    case 'host-welcome-back': stage = <TabletStage><HostWelcomeBack onEnter={() => go('code-help')} /></TabletStage>; break;
+    default: stage = null;
+  }
+
+  const i = ORDER.indexOf(id);
+  const hasNext = i >= 0 && i < ORDER.length - 1;
+
+  return (
+    <div className="stage">
+      <div className="rail">
+        <div className="brand">SODA <span className="s">✦</span></div>
+        <div className="sub">New screens · click-through</div>
+        {FLOWS.map(([g, items]) => (
+          <div className="navgrp" key={g}>
+            <div className="gh">{g}</div>
+            {items.map(([sid, label]) => (
+              <button key={sid} className="navbtn" onClick={() => go(sid)}
+                style={{ color: id === sid ? 'var(--accent)' : 'var(--text-muted)', background: id === sid ? 'var(--accent-soft)' : 'transparent' }}>
+                <span className="n" style={{ color: id === sid ? 'var(--accent)' : 'var(--text-faint)' }}>{String(ORDER.indexOf(sid) + 1).padStart(2, '0')}</span>{label}
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+      <div className="phonewrap">
+        {stage}
+        <div className="hint">
+          {hasNext
+            ? <Button variant="ghost" size="sm" onClick={next}>Next screen →</Button>
+            : <Button variant="ghost" size="sm" onClick={() => go('code-help')}>↺ Start over</Button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

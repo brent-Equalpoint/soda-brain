@@ -1,0 +1,134 @@
+SODA . ATTENDEE FLOW MAP (TEXT VERSION)
+The Attendee Journey, Across the Event Lifecycle
+A product of Equalpoint, Inc. . Current as of the Event Layer update
+
+Every screen a guest can reach, and what moves them forward. Refreshed to
+fold in the event lifecycle, so it shows the live path plus what a guest
+sees when they scan before doors open or after the event closes.
+
+LEGEND
+  [N]   main step in the live journey
+  (B)   branch off the main path
+  {L}   lifecycle state or lifecycle-driven screen
+
+
+================================================================
+THE EVENT LIFECYCLE
+================================================================
+The lifecycle state decides which path a scan leads to. The host flips
+it from the Admin.
+
+    {DRAFT}  ......>  {LIVE}  ......>  {CLOSED}
+   host setting up   doors open,      event ended,
+   QR not yet live   journey runs     survey + send-off remain
+
+
+================================================================
+WHEN THE SCAN HAPPENS, THE LIFECYCLE DECIDES
+================================================================
+
+{L} THE SCAN
+    A guest scans the event QR. What they see next depends on the event state:
+      - draft  -> not-yet-open message
+      - live   -> the journey (below)
+      - closed -> event-ended message
+
+      (B) BRANCH . event not live
+          {L} LIFECYCLE MESSAGE
+              Before doors open, a warm not-yet-open note in the host identity.
+              After close, an event-ended note with a path to the survey.
+              This is the new screen the lifecycle adds.
+
+
+================================================================
+THE LIVE JOURNEY
+================================================================
+
+[1] ENTRY QR
+     trigger: guest scans while the event is live.
+     note: the eyebrow shows the event name pulled from the event record.
+      |
+      v
+[2] WELCOME
+     trigger: tap to begin.
+     note: wears the host logo, or the host name in type if no logo.
+      |
+      |   (B) BRANCH . returning guest
+      |       (R) RECOGNITION
+      |           A known guest is greeted by name with their history, then
+      |           enters the room directly, skipping setup.
+      |           Rejoins the main path at the Room View [8].
+      v
+[3] SIGN-IN
+     trigger: system verifies the six-digit code sent to email.
+      |
+      v
+[4] PHOTO
+     trigger: add photo or skip. either advances.
+      |
+      |   (B) BRANCH . skip the photo
+      |       (S) INITIALS AVATAR
+      |           Skipping generates a colored initials avatar and moves on
+      |           with no friction. A first-class choice.
+      v
+[5] ROLE CHIPS
+     trigger: pick a role, then continue.   (step 1 of 3)
+      |
+      v
+[6] OFFER CHIPS
+     trigger: pick what you offer, then continue.   (step 2 of 3)
+      |
+      v
+[7] NEED CHIPS
+     trigger: pick what you need, then enter the room.   (step 3 of 3)
+      |
+      v
+[8] ROOM VIEW
+     The home base. The three acts are launched into this screen by the host.
+     Re-entry by email returns here.
+      |
+      v
+[9] THE DROP   (Act 1)
+     trigger: host fires the prompt to every phone at once.
+     Answer, then watch the wall fill.
+      |
+      v
+[10] THE CHANCE   (Act 2)
+     trigger: host pairs the room.
+     A countdown runs in amber. Go talk to your match.
+      |
+      v
+[11] THE NUDGE   (Act 3)
+     trigger: a private match arrives for one person only.
+     One person, one reason.
+
+
+================================================================
+AFTER THE EVENT CLOSES
+================================================================
+
+[12] SURVEY
+     trigger: reached by survey QR or recap email. available in the closed state.
+      |
+      v
+[13] SEND-OFF
+     trigger: survey complete.
+     Warm close in the host identity, soft prompt to the next step.
+      |
+      v
+[14] RECAP EMAIL
+     trigger: sent automatically at event end.
+     Profile card, matches, recap link. Wears the host identity.
+
+
+================================================================
+THE THREE BRANCHES, IN SHORT
+================================================================
+  - Returning guest: at Welcome [2], a known guest sees Recognition (R)
+    first, then enters the room directly because their profile exists.
+  - Skip the photo: at Photo [4], skipping (S) makes an initials avatar
+    and moves on with no friction.
+  - Re-entry by email: a guest who reopens the link mid-event returns
+    straight to the Room View [8] without repeating sign-in.
+
+A name tag knows you showed up. SODA knows who you became to the room.

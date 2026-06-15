@@ -1,0 +1,90 @@
+<!-- @dsCard group="Command Center" viewport="430x860" name="Command Center — mobile" subtitle="The live cockpit on a phone: compact stat strip, tab strip, stacked panels" -->
+<!-- @startingPoint section="Command Center" subtitle="The host's live cockpit, mobile" viewport="430x860" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SODA · Command Center · Mobile</title>
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html,body{margin:0;background:var(--bg-deep);min-height:100vh;display:flex;justify-content:center;padding:24px 12px 48px;}
+  .phone{width:390px;max-width:100%;background:#000;border:9px solid #1c1d1c;border-radius:var(--r-device);overflow:hidden;box-shadow:var(--shadow-device);}
+  .screen{background:var(--bg-canvas);height:800px;display:flex;flex-direction:column;overflow:hidden;}
+  .statusbar{flex:0 0 auto;height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);}
+  .hdr{flex:0 0 auto;padding:6px 16px 12px;border-bottom:1px solid var(--border);}
+  .hrow{display:flex;align-items:center;gap:10px;}
+  .brand{display:flex;align-items:center;gap:7px;font-family:var(--font-display);text-transform:uppercase;font-size:16px;color:var(--text-primary);letter-spacing:-.01em;}
+  .brand .s{color:var(--accent);}
+  .evt{font-family:var(--font-mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-top:2px;}
+  .statstrip{display:flex;gap:8px;overflow-x:auto;padding:12px 0 4px;scrollbar-width:none;}
+  .statstrip::-webkit-scrollbar{display:none;}
+  .ministat{flex:0 0 auto;background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-md);padding:8px 13px;min-width:78px;}
+  .ministat .n{font-family:var(--font-display);font-size:20px;line-height:1;}
+  .ministat .l{font-family:var(--font-mono);font-size:8px;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);margin-top:4px;}
+  .tabstrip{flex:0 0 auto;display:flex;gap:7px;overflow-x:auto;padding:11px 16px;border-bottom:1px solid var(--border);scrollbar-width:none;}
+  .tabstrip::-webkit-scrollbar{display:none;}
+  .tab{flex:0 0 auto;font-family:var(--font-sans);font-size:13px;font-weight:600;padding:7px 13px;border-radius:var(--r-pill);cursor:pointer;border:1px solid var(--border-strong);white-space:nowrap;}
+  .body{flex:1;overflow-y:auto;padding:16px;}
+  .toast{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--accent);color:var(--text-primary);font-size:13px;padding:11px 18px;border-radius:var(--r-pill);box-shadow:var(--shadow-toast);display:flex;align-items:center;gap:8px;z-index:80;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="cc.jsx"></script>
+<script type="text/babel" src="views.jsx"></script>
+<script type="text/babel">
+const { LiveBadge, ConnBadge, ActivityFeed, CC_FEED, RoomHost, SyncControl, ChanceControl, NudgeControl, SurveyMonitor, IntelView, usePhase } = window;
+
+const STATS=[
+  {value:128,label:'Scanned'},{value:94,label:'Resp'},{value:42,label:'Pairs'},
+  {value:17,label:'Nudges',color:'var(--private)'},{value:'71%',label:'Survey'},
+];
+const TABS=[['room','Room'],['sync','The Drop'],['chance','The Chance'],['nudge','The Nudge'],['survey','Survey'],['intel','Intel'],['feed','Feed']];
+
+function App(){
+  const [view,setView]=React.useState('room');
+  const [phase]=usePhase('live'); // set in the Admin; read here
+  const [toast,setToast]=React.useState(null);
+  const flash=(m)=>{setToast(m);clearTimeout(window.__t);window.__t=setTimeout(()=>setToast(null),1800);};
+  let main;
+  if(view==='room') main=<RoomHost/>;
+  else if(view==='sync') main=<SyncControl onToast={flash} phase={phase}/>;
+  else if(view==='chance') main=<ChanceControl onToast={flash} phase={phase}/>;
+  else if(view==='nudge') main=<NudgeControl onToast={flash} phase={phase}/>;
+  else if(view==='survey') main=<SurveyMonitor/>;
+  else if(view==='intel') main=<IntelView/>;
+  else main=<div style={{background:'var(--surface-1)',border:'1px solid var(--border)',borderRadius:'var(--r-xl)',padding:'18px 20px'}}><ActivityFeed feed={CC_FEED}/></div>;
+
+  return (
+    <div className="phone"><div className="screen" style={{position:'relative'}}>
+      <div className="statusbar"><span>9:41</span><span style={{fontSize:9,letterSpacing:'1px'}}>FUTURELAND</span><span>● ● ●</span></div>
+      <div className="hdr">
+        <div className="hrow">
+          <div><div className="brand">SODA <span className="s">✦</span></div><div className="evt">Command Center · Creative Meetup</div></div>
+          <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:10}}><ConnBadge/><LiveBadge phase={phase}/></div>
+        </div>
+        <div className="statstrip">
+          {STATS.map((s,i)=>(
+            <div className="ministat" key={i}><div className="n" style={{color:s.color||'var(--accent)'}}>{s.value}</div><div className="l">{s.label}</div></div>
+          ))}
+        </div>
+      </div>
+      <div className="tabstrip">
+        {TABS.map(([id,lb])=>(
+          <button key={id} className="tab" onClick={()=>setView(id)}
+            style={{background:view===id?'var(--accent)':'var(--surface-1)',color:view===id?'var(--on-accent)':'var(--text-muted)',borderColor:view===id?'var(--accent)':'var(--border-strong)'}}>{lb}</button>
+        ))}
+      </div>
+      <div className="body soda-scroll">{main}</div>
+      {toast&&<div className="toast"><span style={{width:7,height:7,borderRadius:'50%',background:'var(--accent)'}}/>{toast}</div>}
+    </div></div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

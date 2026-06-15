@@ -1,0 +1,155 @@
+SODA . HOST FLOW MAP (TEXT VERSION)
+Running an Event, Admin to Command Center
+A product of Equalpoint, Inc. . Current as of the Event Layer update
+
+The host journey across both tools, held together by the event lifecycle.
+The Admin is the back office where an event is built and closed. The Command
+Center is the live cockpit where the night is run. The host moves between
+them as the event moves through its states. These are not linear screen
+journeys like the attendee flow; they are cockpits, so this maps the order
+a host actually works in.
+
+LEGEND
+  [A]   host action
+  [M]   monitor / passive view
+  [P]   private control (the Nudge)
+  {L}   lifecycle state or seam
+  *spec* marks a piece newly defined in the Event Layer, not yet built
+
+
+================================================================
+THE LIFECYCLE IS THE SPINE
+================================================================
+It decides which tool the host is working in.
+
+   {DRAFT}  ......>  {LIVE}  ......>  {CLOSED}
+   built in the      run from the     reviewed and
+   Admin, QR not     Command Center   exported in the
+   yet live                           Admin
+
+
+================================================================
+PART A . THE ADMIN PANEL
+The back office. Where the event is built before, and closed after.
+================================================================
+
+DRAFT . build the event
+
+[A] EVENT CREATION  *spec*
+    create the event with a required name and date. begins it in draft.
+     |
+     v
+[A] HOST IDENTITY AND BRANDING  *spec*
+    type the required host name, optionally upload a logo.
+    this is what every attendee screen wears.
+     |
+     v
+[A] EVENT SETUP AND ACTIVE EVENT
+    select the active event and open its settings. scopes everything that follows.
+     |
+     v
+[A] PROMPT AND PAIRING SETTINGS
+    load the questions for the Drop and tune how pairing behaves. the queue panel.
+     |
+     v
+[A] QUESTION CREATOR
+    write custom questions for the Drop or the survey. feeds the question bank.
+     |
+     v
+[A] CHIP QUEUE AND MODERATION
+    review and approve the chip vocabulary so the shared language stays clean.
+
+    READY BEFORE DOORS:
+      The Check-In Panel stands ready for manual sign-ins, and the Room Panel
+      will fill as people arrive. Both wait in the Admin for go-live.
+
+
+================================================================
+{L} THE SEAM . GO LIVE
+================================================================
+Event Lifecycle Control flips the event from draft to live. This single
+action activates the entry QR for attendees and unlocks the acts in the
+Command Center. Specified in the Event Layer.
+
+
+================================================================
+PART B . THE COMMAND CENTER
+The live cockpit. One screen the host drives the whole night from.
+================================================================
+
+ALWAYS ON, THE WHOLE NIGHT:
+  Four things stay live across every view:
+    - Live Stat Bar: scanned in, responses, pairs, nudges, surveys
+    - Activity Feed: a running ticker of everything happening
+    - Connection Status Badge: the realtime link is healthy
+    - Lifecycle State Awareness *spec*: confirms the event is live, and is
+      the gate that lets the acts fire at all
+
+LIVE . run the night
+
+[M] ROOM VIEW (HOST)
+    the default view. watch the room fill and read who is present.
+    the home base of the cockpit.
+     |
+     v
+[A] SYNC CONTROL . drives THE DROP   (Act 1)
+    set a prompt and fire it to every phone at once.
+    watch the timer and responses land.
+     |
+     v
+[A] CHANCE CONTROL . drives THE CHANCE   (Act 2)
+    pair the room, re-spin if needed. the pairs grid fills as people match.
+     |
+     v
+[P] NUDGE CONTROL . drives THE NUDGE   (Act 3)
+    send private matches, one to one. each goes only to its recipient,
+    never to a shared view.
+
+    READ AND STEER, ANYTIME DURING LIVE:
+      - Intelligence View: read the room's offers, needs, and gaps
+      - Open Mic Feed: scan live responses as they come in
+      - Survey Monitor: watch responses as they arrive
+      - Broadcast and Announce: push a message to the whole room
+      - Check-In Panel (Admin): add someone by hand
+      - Toasts: confirm each action across both tools
+
+
+================================================================
+{L} THE SEAM BACK . CLOSE THE EVENT
+================================================================
+Event Lifecycle Control flips live to closed. The acts can no longer fire,
+the data is final, and the host returns to the Admin to review and export.
+
+
+================================================================
+PART C . BACK IN THE ADMIN
+Closed. Review the record and pull the data out.
+================================================================
+
+CLOSED . review and export
+
+[M] MATCHES PANEL AND SURVEY PANEL
+    review every match the engine surfaced and the full survey data.
+     |
+     v
+[A] EXPORT PANEL
+    pull the data out: attendees, connections, survey. where Futureland's
+    ownership of its own event data is exercised.
+     |
+     v
+[M] RECAP GOES OUT
+    the recap email fires automatically to attendees.
+    the event is now a closed record.
+
+
+================================================================
+THE TWO TOOLS, IN SHORT
+================================================================
+  - Admin builds the event in draft and closes it after. Event creation,
+    host branding, prompts, chips, check-in, matches, survey, export.
+  - Command Center runs the live night. Stat bar, room view, the three
+    act controls, intelligence, survey monitor, broadcast, activity feed.
+  - The lifecycle connects them. Go live moves the host from Admin into the
+    Command Center. Closing moves them back to the Admin to export.
+
+A name tag knows you showed up. SODA knows who you became to the room.

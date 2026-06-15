@@ -1,0 +1,179 @@
+<!-- @dsCard group="Attendee App" viewport="1280x820" name="Attendee — the spine" subtitle="QR → Welcome → Sign-In → micro-profile → Room → the three Acts → Survey → Home" -->
+<!-- @startingPoint section="Attendee App" subtitle="The full mobile attendee spine, click-through" viewport="1280x820" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SODA · Attendee Spine</title>
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html,body{margin:0;background:var(--bg-deep);min-height:100vh;}
+  .stage{display:flex;gap:34px;align-items:flex-start;justify-content:center;padding:30px 26px 60px;flex-wrap:wrap;}
+  .rail{width:248px;flex:0 0 auto;position:sticky;top:24px;}
+  .brand{display:flex;align-items:center;gap:9px;font-family:var(--font-display);text-transform:uppercase;font-size:22px;color:var(--text-primary);letter-spacing:-.01em;margin-bottom:4px;}
+  .brand .s{color:var(--accent);}
+  .sub{font-family:var(--font-mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:22px;}
+  .navgrp{margin-bottom:18px;}
+  .navgrp .gh{font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-faint);margin-bottom:8px;}
+  .navbtn{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;cursor:pointer;
+    font-family:var(--font-sans);font-size:13px;color:var(--text-muted);padding:7px 10px;border-radius:8px;transition:color .12s;}
+  .navbtn:hover{color:var(--text-secondary);background:rgba(255,255,255,.03);}
+  .navbtn.on{color:var(--accent);background:var(--accent-soft);}
+  .navbtn .n{font-family:var(--font-mono);font-size:10px;color:var(--text-faint);width:16px;}
+  .navbtn.on .n{color:var(--accent);}
+  .phonewrap{flex:0 0 auto;}
+  .hint{margin-top:14px;text-align:center;font-family:var(--font-mono);font-size:10px;letter-spacing:.5px;color:var(--text-faint);max-width:380px;}
+  .modal{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;z-index:60;}
+  .sheet{width:100%;background:var(--surface-1);border-top:1px solid var(--border-strong);border-radius:18px 18px 0 0;padding:20px 18px 24px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="ui.jsx"></script>
+<script type="text/babel" src="onboarding.jsx"></script>
+<script type="text/babel" src="room.jsx"></script>
+<script type="text/babel" src="survey.jsx"></script>
+<script type="text/babel" src="home.jsx"></script>
+<script type="text/babel">
+const { PhoneFrame, CenterScreen, Eyebrow, Display, KButton, KAvatar, HostMark } = window;
+
+/* Lifecycle message screen: one flexible screen, two text variations.
+   'early' for a draft event, 'ended' for a closed one. The ended
+   variation carries the path to the survey, per the Event Layer. */
+function Lifecycle({variant='early',onSurvey}){
+  const early=variant==='early';
+  return (
+    <CenterScreen>
+      <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center',textAlign:'center'}}>
+        <HostMark host="Futureland" sub="Creative Meetup"/>
+        <div style={{height:30}}/>
+        <Display size={26} style={{maxWidth:280}}>{early?"Doors aren't open yet":'That was the night'}</Display>
+        <p style={{fontWeight:300,fontSize:15,color:'var(--text-secondary)',marginTop:14,maxWidth:270}}>
+          {early
+            ? "You're early. The room goes live at 7pm. Keep this tab open and you'll be the first one in."
+            : 'Creative Meetup has wrapped. Your recap and connections are on their way to your email.'}
+        </p>
+      </div>
+      {!early&&(
+        <div style={{marginBottom:18}}>
+          <KButton block size="lg" onClick={onSurvey}>Take the two-minute survey</KButton>
+          <p style={{textAlign:'center',fontWeight:300,fontSize:13,color:'var(--text-muted)',marginTop:12}}>
+            It shapes the next one.
+          </p>
+        </div>
+      )}
+      <div style={{textAlign:'center',fontFamily:'var(--font-mono)',fontSize:9,letterSpacing:'1.5px',color:'var(--text-faint)',textTransform:'uppercase'}}>SODA ✦ powered by Equalpoint</div>
+    </CenterScreen>
+  );
+}
+
+/* Comment sheet */
+function CommentSheet({person,onClose}){
+  return (
+    <div className="modal" onClick={onClose}>
+      <div className="sheet" role="dialog" aria-modal="true" aria-label={`Message ${person.name}`} onClick={e=>e.stopPropagation()}>
+        <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:16}}>
+          <KAvatar name={person.name} size={44}/>
+          <div><div style={{fontSize:16,fontWeight:600,color:'var(--text-primary)'}}>{person.name}</div>
+          <div style={{fontFamily:'var(--font-mono)',fontSize:11,color:'var(--text-muted)'}}>{person.role}</div></div>
+        </div>
+        <textarea placeholder={`Say something to ${person.name.split(' ')[0]}…`} rows={2}
+          style={{width:'100%',background:'var(--surface-2)',border:'1px solid var(--border-strong)',borderRadius:'var(--r-md)',padding:'12px',color:'var(--text-primary)',fontFamily:'var(--font-sans)',fontSize:14,resize:'none',outline:'none'}}/>
+        <div style={{display:'flex',gap:10,marginTop:14}}>
+          <KButton variant="ghost" block onClick={onClose}>Close</KButton>
+          <KButton block onClick={onClose}>Send</KButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const GROUPS=[
+  ['Onboarding',[['welcome','Welcome'],['recognition','Returning guest'],['signin','Sign-In + code'],['photo','Photo'],['role','Role chips'],['offer','Offer chips'],['need','Need chips']]],
+  ['The room & acts',[['room','Room View'],['drop','The Drop · Act 1'],['chance','The Chance · Act 2'],['nudge','The Nudge · Act 3']]],
+  ['After',[['survey','Survey'],['sendoff','Send-Off']]],
+  ['Lives between events',[['home','Home']]],
+  ['Every-event states',[['early','Early room'],['nomatch','Nudge · no match']]],
+  ['Lifecycle',[['lifecycle','Not-yet-open'],['ended','Event ended']]],
+];
+const ORDER=['welcome','signin','photo','role','offer','need','room','drop','chance','nudge','survey','sendoff'];
+
+function App(){
+  const [screen,setScreen]=React.useState('welcome');
+  const [comment,setComment]=React.useState(null);
+  const [toast,setToast]=React.useState(null);
+  const [role,setRole]=React.useState([]);
+  const [offer,setOffer]=React.useState([]);
+  const [need,setNeed]=React.useState([]);
+
+  const go=(s)=>{setScreen(s);setComment(null);};
+  const advance=()=>{const i=ORDER.indexOf(screen);if(i>=0&&i<ORDER.length-1)go(ORDER[i+1]);};
+  const flash=(m)=>{setToast(m);setTimeout(()=>setToast(null),1800);};
+
+  let body;
+  switch(screen){
+    case 'welcome': body=<window.Welcome onBegin={()=>go('signin')}/>; break;
+    case 'recognition': body=<window.Recognition onEnter={()=>go('room')}/>; break;
+    case 'signin': body=<window.SignIn onVerified={()=>go('photo')}/>; break;
+    case 'photo': body=<window.Photo onNext={()=>go('role')}/>; break;
+    case 'role': body=<window.ChipStep step={1} title="Who are you?" sub="Pick the one that fits tonight." options={window.ROLES} value={role} setValue={setRole} onNext={()=>go('offer')}/>; break;
+    case 'offer': body=<window.ChipStep step={2} title="What can you offer?" sub="Pick a few. The room is matched on these." options={window.OFFERS} multi value={offer} setValue={setOffer} onNext={()=>go('need')}/>; break;
+    case 'need': body=<window.ChipStep step={3} title="What do you need?" sub="The mirror image — what you're looking for." options={window.NEEDS} multi value={need} setValue={setNeed} onNext={()=>go('room')}/>; break;
+    case 'room': body=<window.RoomView onComment={setComment}/>; break;
+    case 'early': body=<window.RoomView early onComment={setComment}/>; break;
+    case 'nomatch': body=<window.TheNudge noMatch onDone={()=>go('room')}/>; break;
+    case 'drop': body=<window.TheDrop onDone={()=>go('room')}/>; break;
+    case 'chance': body=<window.TheChance onDone={()=>go('room')}/>; break;
+    case 'nudge': body=<window.TheNudge onDone={()=>go('room')}/>; break;
+    case 'survey': body=<window.Survey onDone={()=>go('sendoff')}/>; break;
+    case 'sendoff': body=<window.SendOff onRestart={()=>flash('On the waitlist ✓')}/>; break;
+    case 'home': body=<window.Home/>; break;
+    case 'lifecycle': body=<Lifecycle/>; break;
+    case 'ended': body=<Lifecycle variant="ended" onSurvey={()=>go('survey')}/>; break;
+    default: body=null;
+  }
+
+  const inSpine=ORDER.includes(screen);
+  return (
+    <div className="stage">
+      <div className="rail">
+        <div className="brand">SODA <span className="s">✦</span></div>
+        <div className="sub">Attendee · the spine</div>
+        {GROUPS.map(([g,items])=>(
+          <div className="navgrp" key={g}>
+            <div className="gh">{g}</div>
+            {items.map(([id,label])=>{
+              const n=ORDER.indexOf(id);
+              return (
+                <button key={id} className="navbtn" onClick={()=>go(id)}
+                  style={{color:screen===id?'var(--accent)':'var(--text-muted)',background:screen===id?'var(--accent-soft)':'transparent'}}>
+                  <span className="n">{n>=0?String(n+1).padStart(2,'0'):'·'}</span>{label}
+                </button>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+      <div className="phonewrap">
+        <PhoneFrame statusHost="Futureland">
+          {body}
+          {toast&&<window.KToast message={toast} show={true}/>}
+          {comment&&<CommentSheet person={comment} onClose={()=>setComment(null)}/>}
+        </PhoneFrame>
+        <div className="hint">
+          {inSpine
+            ? <KButton variant="ghost" size="sm" onClick={advance}>Next screen →</KButton>
+            : 'Standalone screen — pick another from the rail.'}
+        </div>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

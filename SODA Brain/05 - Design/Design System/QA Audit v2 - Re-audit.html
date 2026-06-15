@@ -1,0 +1,138 @@
+<!-- @dsCard group="Brand" viewport="1060x900" name="QA Audit v2 — the re-audit" subtitle="Specs versus build, run again after the four-pass remediation. No P1s remain." -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SODA · QA Audit v2 · The Re-audit</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+  html, body { margin: 0; background: var(--bg-canvas); color: var(--text-secondary); }
+  body { font-family: var(--font-sans); font-size: 15px; line-height: 1.55; font-weight: 300; }
+  .page { max-width: 980px; margin: 0 auto; padding: 52px 40px 110px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); }
+  h1 { font-family: var(--font-display); text-transform: uppercase; letter-spacing: var(--ls-display); font-size: 44px; line-height: 1.0; color: var(--text-primary); margin: 14px 0 10px; }
+  .meta { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }
+  h2 { font-family: var(--font-display); text-transform: uppercase; letter-spacing: var(--ls-display); font-size: 24px; color: var(--text-primary); margin: 0 0 4px; }
+  .secnum { font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; display: block; margin-bottom: 8px; }
+  section { margin-top: 60px; }
+  p { margin: 0 0 12px; max-width: 760px; text-wrap: pretty; }
+  b { font-weight: 600; color: var(--text-primary); }
+  code { font-family: var(--font-mono); font-size: 0.86em; background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--text-primary); }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0 8px; font-size: 13.5px; }
+  th { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); text-align: left; font-weight: 500; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--border-strong); }
+  td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text-secondary); }
+  td:first-child { color: var(--text-primary); font-weight: 600; }
+  .pill { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 10px; border-radius: var(--r-pill); white-space: nowrap; }
+  .pass { color: var(--accent); background: var(--accent-soft); }
+  .part { color: var(--warn); background: var(--warn-soft); }
+  .open { color: var(--text-muted); background: var(--surface-2); border: 1px solid var(--border-strong); }
+  .p2 { color: var(--warn); background: var(--warn-soft); }
+  .p3 { color: var(--text-muted); background: var(--surface-2); border: 1px solid var(--border-strong); }
+  .scorecard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 24px 0 6px; }
+  .score { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px 17px; }
+  .score .doc { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 9px; min-height: 26px; }
+  .score .verdict { font-family: var(--font-display); text-transform: uppercase; font-size: 21px; line-height: 1; color: var(--accent); }
+  .score .why { font-size: 12px; color: var(--text-muted); margin-top: 7px; line-height: 1.45; }
+  ul { margin: 0 0 14px; padding-left: 20px; max-width: 760px; }
+  li { margin-bottom: 7px; }
+  li::marker { color: var(--accent); }
+  .hr { height: 1px; background: var(--border); margin: 44px 0 0; }
+  .foot { margin-top: 70px; text-align: center; font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-faint); }
+  .callout { background: var(--surface-green); border-radius: var(--r-lg); padding: 17px 19px; margin: 18px 0; max-width: 760px; }
+  @media (max-width: 860px) { .scorecard { grid-template-columns: 1fr 1fr; } .page { padding: 36px 22px 80px; } h1 { font-size: 34px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header data-screen-label="Re-audit header">
+    <div class="eyebrow">SODA · Design QA · Second pass</div>
+    <h1>The re-audit:<br />after remediation</h1>
+    <div class="meta">Four passes executed · June 11, 2026 · governed by SODA-032 and SODA-033</div>
+    <p style="margin-top:18px;">The same specs-versus-build audit, run again after the four-pass remediation plan. Every surface was re-checked against the corpus, with the decision log as the tiebreaker. The headline: <b>all four P1 spec breaks are closed, the four every-event states are built, the accessibility baseline is applied, and the tracker now tells the truth.</b> No P1s remain.</p>
+  </header>
+
+  <section data-screen-label="Scorecard">
+    <span class="secnum">00 · Scorecard</span>
+    <h2>The four passes</h2>
+    <div class="scorecard">
+      <div class="score"><div class="doc">Pass 1 · Correctness</div><div class="verdict">4 / 4 closed</div><div class="why">Misfire gate, identity lock, event-ended message, phone field removed.</div></div>
+      <div class="score"><div class="doc">Pass 2 · States</div><div class="verdict">4 / 4 built</div><div class="why">Early room, waiting wall, no-match nudge, host zero states.</div></div>
+      <div class="score"><div class="doc">Pass 3 · Accessibility</div><div class="verdict">Applied</div><div class="why">Muted #8A8A8A, 44px targets, focus ring, keyboard paths.</div></div>
+      <div class="score"><div class="doc">Pass 4 · Truth-up</div><div class="verdict">Done</div><div class="why">Six statuses restated, orphans reconciled and deleted.</div></div>
+    </div>
+  </section>
+
+  <section data-screen-label="P1 verification">
+    <span class="secnum">01 · The P1s, re-verified</span>
+    <h2>Each former spec break, checked in the build</h2>
+    <table>
+      <tr><th>Former P1</th><th>Now</th><th>Verified behavior</th></tr>
+      <tr><td>Command Center misfire gate</td><td><span class="pill pass">Closed</span></td><td>The cockpit reads the event phase from the same persisted state the Admin writes. In draft and closed, Fire the Drop, Spin the room, and Send render disabled (confirmed: <code>disabled=true</code>, opacity 0.5) with a one-line reason. The Live badge becomes a muted Draft or Closed badge. Cancelled is handled too.</td></tr>
+      <tr><td>Identity lock by lifecycle</td><td><span class="pill pass">Closed</span></td><td>Event name, host name, date, and logo are editable in draft, disabled in live and closed (confirmed via DOM probe), with the quiet line "Locked while the event is live." or "Final. The event is a record." Save draft disables outside draft.</td></tr>
+      <tr><td>Event-ended message</td><td><span class="pill pass">Closed</span></td><td>The lifecycle screen now has both variations. The ended one reads "That was the night" with the recap line and a green "Take the two-minute survey" path that routes to the survey.</td></tr>
+      <tr><td>Sign-in data scope (SODA-033)</td><td><span class="pill pass">Closed</span></td><td>The phone field, the method toggle, and all phone copy are gone. Sign-in is email code plus the three social providers SODA-025 names: Google, Apple, LinkedIn. The privacy policy's full-list claim is true of the build again.</td></tr>
+    </table>
+  </section>
+
+  <section data-screen-label="States verification">
+    <span class="secnum">02 · The every-event states</span>
+    <h2>Built and reachable</h2>
+    <table>
+      <tr><th>State</th><th>Now</th><th>Where</th></tr>
+      <tr><td>The early room</td><td><span class="pill pass">Built</span></td><td>A climbing count (2, then 3, then 4), the headline "The room is filling. You are early. Good.", real cards, and dimmed dashed placeholders. In the spine under Every-event states.</td></tr>
+      <tr><td>The Drop waiting wall</td><td><span class="pill pass">Built</span></td><td>After sending, the wall starts with your answer alone and the line "Answers are landing. Yours is first." Answers then land one at a time. The beat exists now instead of an instantly full wall.</td></tr>
+      <tr><td>The Nudge no-match</td><td><span class="pill pass">Built</span></td><td>The private purple treatment holds: a dashed held-nudge card, "No single match stood out yet. The night is not over. Keep working the room.", and "If one appears, it lands right here." It never vanishes.</td></tr>
+      <tr><td>Host zero states</td><td><span class="pill pass">Built</span></td><td>A night start switch in the cockpit zeroes the stat bar and renders the spec copy for room, feed, Drop, Chance, Nudge, survey, and intelligence. In the Admin, matches and export show their zero states while the event is a draft. Chip queue already had its own.</td></tr>
+      <tr><td>Sign-in errors</td><td><span class="pill pass">Held</span></td><td>Was already built; unchanged and re-verified.</td></tr>
+    </table>
+  </section>
+
+  <section data-screen-label="A11y verification">
+    <span class="secnum">03 · The accessibility baseline</span>
+    <h2>SODA-032, measured</h2>
+    <ul>
+      <li><b>Muted token.</b> <code>--t2</code> is #8A8A8A in the foundation (confirmed live in the rendered kit), in the guideline card, and in the legacy profile simulation. 5.47 to 1 on canvas, 5.04 to 1 on cards. AA clears.</li>
+      <li><b>Touch targets, measured in the DOM:</b> chips 44px, survey scale cells 44px, stars 45px, the settings gear 44px, the follow-ups dismiss 44px, room view toggles 44px. The DS Chip component carries the same floor for consuming projects.</li>
+      <li><b>Focus.</b> A global <code>:focus-visible</code> ring in the foundation: 2px green outline, 2px offset, on every interactive element in every kit.</li>
+      <li><b>Keyboard.</b> Person cards, room list rows, and contact rows are real buttons now (confirmed). The photo step is a labelled button, the hidden code input has a label, the comment sheet and the DS BottomSheet declare dialog semantics, the tab bar marks the active tab, survey stars and scale carry group labels.</li>
+      <li><b>Decision-log corrections found on the way.</b> SODA-007 reserves purple for the nudge and amber for timers. The Send-Off waitlist button was purple and is now the standard green primary. The Home's cooling-contact dots were amber and are now neutral. The amber token comment now says timers only.</li>
+    </ul>
+  </section>
+
+  <section data-screen-label="Truth-up verification">
+    <span class="secnum">04 · The truth-up</span>
+    <h2>The tracker matches the kits</h2>
+    <ul>
+      <li><b>Six statuses restated</b> in the component inventory, in all three of its forms (markdown, desktop render, mobile render): the Room Panel, Survey Panel, Prompt and Pairing Settings, Question Creator, Open Mic Feed, and Broadcast and Announce now read "Prototyped. Rendered in the admin simulation only, not yet in the production kit." The inventory's status note now states the SODA-032 vocabulary: Built means the kit, Prototyped means a simulation, Specified means paper.</li>
+      <li><b>The orphans are gone.</b> The divergent edit in the root files forced every Admin button to exactly 170px. It is reconciled into the kit as a minimum width of 170px on medium buttons, so the intent (uniform, substantial buttons) survives and long labels still fit. Root <code>admin.jsx</code> and <code>panels.jsx</code> are deleted. The kit is the single source.</li>
+    </ul>
+    <div class="callout">
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-bright);margin-bottom:8px;">Verdict</div>
+      <p style="margin:0;color:var(--text-primary);">No P1s remain. The states pass and the accessibility pass hold under re-measurement. The remediation plan's exit condition is met.</p>
+    </div>
+  </section>
+
+  <section data-screen-label="Remaining findings">
+    <span class="secnum">05 · What remains</span>
+    <h2>Open findings, none of them P1</h2>
+    <table>
+      <tr><th>Finding</th><th>Grade</th><th>Note</th></tr>
+      <tr><td>Six Prototyped panels not yet ported to the Admin kit</td><td><span class="pill p2">P2</span></td><td>The status is now honest, but the Host Flow Map's closed-state review (matches plus survey data, then export) still cannot be fully walked in the kit until the Survey Panel, at minimum, is ported.</td></tr>
+      <tr><td>Host-access screens not wired to the Admin</td><td><span class="pill p2">P2</span></td><td>Host sign-in, account setup, and collaborator management still live only in the new-screens package. No sign-in gate in front of the Admin; collaborator management is not an Admin nav item.</td></tr>
+      <tr><td>Event Mode control stranded</td><td><span class="pill p2">P2</span></td><td>The Full and Simple dial exists in the new-screens package while the Admin's EventSetup still shows three act toggles. The two abstractions need reconciling in one place.</td></tr>
+      <tr><td>Home reserved affordances</td><td><span class="pill p2">P2</span></td><td>The scan-to-add icon and the per-contact share action the Home spec deliberately reserves are still absent.</td></tr>
+      <tr><td>Lower-priority states</td><td><span class="pill p3">P3</span></td><td>Survey submitting and failed, photo uploading and failed, room loading skeleton, reconnecting indicator, Chance unpaired, thin-history recognition. The states doc itself ranks these below the four now built.</td></tr>
+      <tr><td>Faint token carrying real content</td><td><span class="pill p3">P3</span></td><td><code>--t3</code> at roughly 2.1 to 1 still colors footer credits and timestamps. Real content should floor at muted; faint should stay for placeholders and disabled.</td></tr>
+      <tr><td>Type floor and grid drift</td><td><span class="pill p3">P3</span></td><td>9 and 10px mono labels remain throughout, and paddings off the 8px grid (7, 9, 11, 13) remain. Worth a stated 11px mono floor and either a grid sweep or a softened claim.</td></tr>
+      <tr><td>Prototype residue</td><td><span class="pill p3">P3</span></td><td>The "(try 417203)" hint, the Recognition screen's invented third event, and the mid-night stat seed (128 scanned against a 12-person room) are demo conveniences to strip before stakeholder review.</td></tr>
+      <tr><td>"Future added you" copy</td><td><span class="pill p3">P3</span></td><td>The collaborator welcome still reads "Future added you", verbatim from its prompt and almost certainly a typo for Futureland. Flagged for the prompt doc and the screen together.</td></tr>
+    </table>
+  </section>
+
+  <div class="hr"></div>
+  <div class="foot">SODA ✦ QA Audit v2 · The Re-audit · June 11, 2026</div>
+</div>
+</body>
+</html>

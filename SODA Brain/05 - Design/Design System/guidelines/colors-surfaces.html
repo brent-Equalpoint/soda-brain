@@ -1,0 +1,25 @@
+<!-- @dsCard group="Colors" viewport="700x180" name="Canvas & surfaces" subtitle="Near-black canvas, barely-lifted warm-grey surfaces, hairline borders" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; background: var(--bg-canvas); padding: 22px; }
+  .row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .sw { width: 150px; }
+  .chip { height: 64px; border-radius: var(--r-lg); border: 1px solid var(--border); }
+  .nm { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); margin-top: 8px; text-transform: uppercase; letter-spacing: .5px; }
+  .hex { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="sw"><div class="chip" style="background:var(--bg-deep)"></div><div class="nm">Deep</div><div class="hex">#0a0b0a · behind device</div></div>
+  <div class="sw"><div class="chip" style="background:var(--bg-canvas)"></div><div class="nm">Canvas</div><div class="hex">#111111 · app bg</div></div>
+  <div class="sw"><div class="chip" style="background:var(--surface-1)"></div><div class="nm">Surface 1</div><div class="hex">#1A1A1A · cards</div></div>
+  <div class="sw"><div class="chip" style="background:var(--surface-2)"></div><div class="nm">Surface 2</div><div class="hex">#222422 · raised</div></div>
+  <div class="sw"><div class="chip" style="background:var(--surface-1);border-color:var(--border-strong)"></div><div class="nm">Border</div><div class="hex">#262826 / #363936</div></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0"/>
+<title>SODA · Attendee Flow Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--g:#3BD75C;--g2:#5FF088;--dg:#203229;--ch:#0c0d0c;--c1:#161816;--c2:#1d1f1d;--bd:#262826;--bd2:#363936;--pu:#A47BFF;--ye:#FFD23F;--am:#F59E0B;--t0:#fff;--t1:#c8ccc8;--t2:#74786f;--t3:#3e423e}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--ch);color:var(--t1);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:var(--g);color:var(--ch)}
+.wrap{max-width:720px;margin:0 auto;padding:30px 18px 80px}
+.head{margin-bottom:24px}
+.brand{font-family:'DM Mono';font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--g);margin-bottom:12px}
+.head h1{font-family:'Archivo Black';font-size:clamp(26px,6vw,40px);color:var(--t0);text-transform:uppercase;letter-spacing:-.02em;line-height:.95;margin-bottom:14px}
+.head p{font-size:15px;color:var(--t1);font-weight:300;max-width:560px}
+.head .own{font-family:'DM Mono';font-size:11px;color:var(--t3);margin-top:12px}
+.life{display:flex;gap:8px;margin:26px 0 10px;align-items:stretch}
+.life-state{flex:1;background:var(--c1);border:1px solid var(--bd);border-radius:13px;padding:14px 14px}
+.life-state.live{border-color:var(--g);background:rgba(59,215,92,.05)}
+.life-state .tag{font-family:'DM Mono';font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
+.life-state.draft .tag{color:var(--t2)}.life-state.live .tag{color:var(--g)}.life-state.closed .tag{color:var(--t2)}
+.life-state .d{font-size:12px;color:var(--t1);font-weight:300;line-height:1.4}
+.life-arrow{align-self:center;color:var(--t3);font-size:16px;flex:0 0 auto}
+.life-note{font-family:'DM Mono';font-size:11px;color:var(--t2);text-align:center;margin-bottom:30px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:26px;font-family:'DM Mono';font-size:11px;color:var(--t2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.lg{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+.phase-label{font-family:'DM Mono';font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--g);margin:22px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+.node{display:flex;gap:14px;align-items:flex-start;background:var(--c1);border:1px solid var(--bd);border-radius:14px;padding:15px 16px;margin-bottom:8px;position:relative}
+.node.act{border-color:rgba(59,215,92,.3)}
+.node.branch{border-color:rgba(164,123,255,.35);background:rgba(164,123,255,.04)}
+.node.life{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)}
+.node-n{font-family:'Archivo Black';font-size:13px;color:var(--ch);background:var(--g);border-radius:7px;padding:5px 8px;line-height:1;flex:0 0 auto;min-width:30px;text-align:center}
+.node.branch .node-n{background:var(--pu);color:#fff}
+.node.life .node-n{background:var(--am);color:var(--ch)}
+.node-body{flex:1;min-width:0}
+.node-body h3{font-size:16px;color:var(--t0);font-weight:700;line-height:1.2}
+.node-body h3 .spec{font-family:'DM Mono';font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ye);background:rgba(255,210,63,.13);padding:2px 6px;border-radius:100px;margin-left:8px;vertical-align:middle}
+.node-body .trig{font-family:'DM Mono';font-size:11px;color:var(--t2);margin-top:4px;line-height:1.45}
+.node-body .trig b{color:var(--g);font-weight:500}
+.arrow{text-align:center;color:var(--t3);font-size:15px;margin:1px 0 1px 14px;line-height:1}
+.branchwrap{margin:8px 0 8px 28px;padding-left:16px;border-left:2px dashed var(--bd2)}
+.branchwrap .blabel{font-family:'DM Mono';font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--pu);margin-bottom:8px}
+.foot{margin-top:40px;padding-top:24px;border-top:1px solid var(--bd);text-align:center}
+.foot p{font-size:13px;color:var(--t2);font-style:italic}
+@media(max-width:520px){.life{flex-direction:column}.life-arrow{transform:rotate(90deg)}}
+</style></head>
+<body><div class="wrap">
+<div class="head">
+  <div class="brand">SODA ✦ ATTENDEE FLOW MAP</div>
+  <h1>The Attendee Journey,<br/>Across the Event Lifecycle</h1>
+  <p>Every screen a guest can reach, and what moves them forward. Current with the event layer, the host branding, and the empty states. All sixteen attendee screens are specified.</p>
+  <div class="own">A product of Equalpoint, Inc. · Current as of the full attendee spec</div>
+</div>
+
+<div class="life">
+  <div class="life-state draft"><div class="tag">Draft</div><div class="d">Host is setting up. QR not yet live.</div></div>
+  <div class="life-arrow">→</div>
+  <div class="life-state live"><div class="tag">● Live</div><div class="d">Doors open. The full attendee journey below runs.</div></div>
+  <div class="life-arrow">→</div>
+  <div class="life-state closed"><div class="tag">Closed</div><div class="d">Event ended. Survey and send-off remain.</div></div>
+</div>
+<div class="life-note">The lifecycle state decides which path a scan leads to. The host flips it from the Admin.</div>
+
+<div class="legend">
+  <span><span class="lg" style="background:var(--g)"></span> Main step</span>
+  <span><span class="lg" style="background:var(--pu)"></span> Branch</span>
+  <span><span class="lg" style="background:var(--am)"></span> Lifecycle state</span>
+  <span><span class="lg" style="background:rgba(255,210,63,.5)"></span> Spec complete</span>
+</div>
+
+<div class="flow">
+
+  <div class="phase-label">When the scan happens, the lifecycle decides</div>
+  <div class="node life"><div class="node-n">L</div><div class="node-body"><h3>The Scan</h3><div class="trig">A guest scans the event QR. What they see next depends on the event state: <b>draft → not-yet-open</b>, <b>live → the journey</b>, <b>closed → event-ended</b>.</div></div></div>
+
+  <div class="branchwrap">
+    <div class="blabel">Branch · event not live</div>
+    <div class="node life"><div class="node-n">16</div><div class="node-body"><h3>Lifecycle Message <span class="spec">Spec done</span></h3><div class="trig">Before doors open, a warm not-yet-open note in the host identity. After close, an event-ended note with a path to the survey. One flexible screen, two variations.</div></div></div>
+  </div>
+
+  <div class="phase-label">The live journey</div>
+
+  <div class="node"><div class="node-n">1</div><div class="node-body"><h3>Entry QR</h3><div class="trig">trigger: <b>guest scans</b> while live. The eyebrow shows the event name pulled from the event record.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node"><div class="node-n">2</div><div class="node-body"><h3>Welcome</h3><div class="trig">trigger: <b>tap to begin</b>. Wears the host logo, or the host name in type if no logo.</div></div></div>
+
+  <div class="branchwrap">
+    <div class="blabel">Branch · returning guest</div>
+    <div class="node branch"><div class="node-n">12</div><div class="node-body"><h3>Returning Recognition <span class="spec">Spec done</span></h3><div class="trig">A known guest is greeted by name with their history, then enters the room directly, skipping setup. <b>Rejoins at the Room View.</b></div></div></div>
+  </div>
+
+  <div class="arrow">↓</div>
+  <div class="node"><div class="node-n">3</div><div class="node-body"><h3>Sign-In</h3><div class="trig">trigger: <b>system verifies</b> the six-digit code sent to email. Consent line sits beneath the button.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node"><div class="node-n">4</div><div class="node-body"><h3>Photo <span class="spec">Spec done</span></h3><div class="trig">trigger: <b>add photo or skip</b>. Either advances. "Only people at your event can see this."</div></div></div>
+
+  <div class="branchwrap">
+    <div class="blabel">Branch · skip the photo</div>
+    <div class="node branch"><div class="node-n">S</div><div class="node-body"><h3>Initials Avatar</h3><div class="trig">Skipping generates a colored initials avatar and moves on with no friction. A first-class choice.</div></div></div>
+  </div>
+
+  <div class="arrow">↓</div>
+  <div class="node"><div class="node-n">5</div><div class="node-body"><h3>Role Chips</h3><div class="trig">trigger: <b>pick a role</b>, then continue. Step 1 of 3.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node"><div class="node-n">6</div><div class="node-body"><h3>Offer Chips</h3><div class="trig">trigger: <b>pick what you offer</b>, then continue. Step 2 of 3.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node"><div class="node-n">7</div><div class="node-body"><h3>Need Chips</h3><div class="trig">trigger: <b>pick what you need</b>, then enter the room. Step 3 of 3.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node act"><div class="node-n">8</div><div class="node-body"><h3>Room View</h3><div class="trig">The home base. The three acts are launched into this screen by the host. Re-entry by email returns here. The early-room empty state lives here.</div></div></div>
+
+  <div class="branchwrap">
+    <div class="blabel">Overlay · on the Room View</div>
+    <div class="node branch"><div class="node-n">13</div><div class="node-body"><h3>The Comment <span class="spec">Spec done</span></h3><div class="trig">A light overlay to leave one short reaction on another person's card, without leaving the room.</div></div></div>
+  </div>
+
+  <div class="arrow">↓</div>
+  <div class="node act"><div class="node-n">9</div><div class="node-body"><h3>The Drop</h3><div class="trig">trigger: <b>host fires the prompt</b> to every phone at once. Answer, then watch the wall.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node act"><div class="node-n">10</div><div class="node-body"><h3>The Chance</h3><div class="trig">trigger: <b>host pairs the room</b>. A countdown runs in amber. Go talk to your match.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node act"><div class="node-n">11</div><div class="node-body"><h3>The Nudge</h3><div class="trig">trigger: <b>a private match arrives</b> for one person only. One person, one reason. The no-match fallback lives here.</div></div></div>
+
+  <div class="phase-label">After the event closes</div>
+  <div class="node"><div class="node-n">14</div><div class="node-body"><h3>Survey <span class="spec">Spec done</span></h3><div class="trig">trigger: <b>reached by survey QR or recap email</b>. One question at a time. Available in the closed state.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node"><div class="node-n">15</div><div class="node-body"><h3>Send-Off <span class="spec">Spec done</span></h3><div class="trig">trigger: <b>survey complete</b>. Warm close in the host identity, soft prompt to the next step. A bookend to the Welcome.</div></div></div>
+  <div class="arrow">↓</div>
+  <div class="node"><div class="node-n">R</div><div class="node-body"><h3>Recap Email</h3><div class="trig">trigger: <b>sent automatically at event end</b>. Profile card, matches, recap link. Wears the host identity.</div></div></div>
+
+</div>
+
+<div class="foot"><p>A name tag knows you showed up. SODA knows who you became to the room.</p></div>
+</div></body></html>

@@ -1,0 +1,80 @@
+<!-- @dsCard group="Admin Panel" viewport="430x720" name="Event QR — display page" subtitle="The standalone scan-to-join page per event: big QR, host identity, print-ready" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SODA · Scan to join</title>
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html,body{margin:0;min-height:100vh;background:var(--bg-deep);color:var(--text-primary);}
+  .page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px 28px;text-align:center;gap:0;}
+  .brandbar{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:26px;}
+  .host{font-family:var(--font-display);text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(28px,7vw,46px);line-height:1;}
+  .event{font-family:var(--font-mono);font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-top:12px;}
+  .card{margin:34px 0 0;background:#fff;border-radius:var(--r-2xl);padding:26px;box-shadow:var(--shadow-pop);}
+  .card canvas,.card img{display:block;width:clamp(220px,62vw,300px);height:auto;image-rendering:pixelated;}
+  .scan{font-family:var(--font-display);text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(22px,5.5vw,30px);margin-top:30px;}
+  .sub{font-weight:300;font-size:16px;color:var(--text-secondary);margin-top:12px;max-width:340px;line-height:1.45;}
+  .codepill{display:inline-flex;align-items:center;gap:9px;margin-top:20px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-pill);padding:10px 18px;}
+  .codepill .lbl{font-family:var(--font-mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);}
+  .codepill .val{font-family:var(--font-mono);font-size:15px;letter-spacing:2px;color:var(--accent);}
+  .foot{margin-top:auto;padding-top:34px;font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-faint);}
+  .toolbar{position:fixed;top:16px;right:16px;display:flex;gap:8px;}
+  .tbtn{font-family:var(--font-sans);font-size:13px;font-weight:600;padding:9px 14px;border-radius:var(--r-md);cursor:pointer;background:var(--surface-2);color:var(--text-secondary);border:1px solid var(--border-strong);display:inline-flex;align-items:center;gap:7px;}
+  .tbtn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent);}
+  /* Print: clean white sheet, hide chrome */
+  @media print{
+    html,body{background:#fff;color:#111;}
+    .page{padding:24px;}
+    .brandbar{color:#111;}
+    .host{color:#111;}
+    .event,.foot{color:#555;}
+    .scan{color:#111;}
+    .sub{color:#333;}
+    .card{box-shadow:none;border:1px solid #ddd;}
+    .codepill{background:#f4f4f4;border-color:#ddd;}
+    .codepill .lbl{color:#666;}
+    .codepill .val{color:#111;}
+    .toolbar{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button class="tbtn" onclick="location.href='index.html'">← Admin</button>
+  <button class="tbtn primary" onclick="window.print()">⎙ Print</button>
+</div>
+<div class="page">
+  <div class="brandbar">SODA <span>✦</span> <span id="brandHost">SCAN TO JOIN</span></div>
+  <div class="host" id="host">Futureland</div>
+  <div class="event" id="event">Creative Meetup</div>
+  <div class="card"><canvas id="qr"></canvas></div>
+  <div class="scan">Scan to join the room</div>
+  <div class="sub" id="sub">Point your camera here to check in, build your card, and meet everyone in the room tonight.</div>
+  <div class="codepill"><span class="lbl">or enter code</span><span class="val" id="code">SODA-7F3K</span></div>
+  <div class="foot">Powered by SODA · a product of Equalpoint</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js" crossorigin="anonymous"></script>
+<script>
+  const p = new URLSearchParams(location.search);
+  const host  = p.get('host')  || 'Futureland';
+  const event = p.get('event') || 'Creative Meetup';
+  const code  = p.get('code')  || 'SODA-7F3K';
+  const url   = p.get('url')   || ('https://soda.live/e/' + encodeURIComponent(host.toLowerCase().replace(/\s+/g,'-')) + '-' + code.toLowerCase());
+  document.getElementById('host').textContent = host;
+  document.getElementById('event').textContent = event;
+  document.getElementById('brandHost').textContent = host.toUpperCase();
+  document.getElementById('code').textContent = code;
+  document.title = 'SODA · ' + host + ' — scan to join';
+  function draw(){
+    if(!window.QRCode){ setTimeout(draw, 120); return; }
+    QRCode.toCanvas(document.getElementById('qr'), url, {
+      width: 600, margin: 1, errorCorrectionLevel: 'M',
+      color: { dark: '#111111', light: '#ffffff' }
+    }, function(err){ if(err) console.error(err); else { const c=document.getElementById('qr'); c.style.width=''; c.style.height=''; } });
+  }
+  draw();
+</script>
+</body>
+</html>

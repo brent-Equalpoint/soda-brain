@@ -1,0 +1,32 @@
+<!-- @dsCard group="Spacing" viewport="700x200" name="8px grid" subtitle="The whole app is built on 8px steps, 16px screen margins, 44px touch targets" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; background: var(--bg-canvas); padding: 24px; font-family: var(--font-mono); }
+  .row { display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap; }
+  .item { text-align: center; }
+  .bar { background: var(--accent); border-radius: 3px; width: 28px; }
+  .tok { font-size: 10px; color: var(--text-muted); margin-top: 8px; }
+  .px { font-size: 11px; color: var(--text-primary); }
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="item"><div class="bar" style="height:4px"></div><div class="px">4</div><div class="tok">space-1</div></div>
+  <div class="item"><div class="bar" style="height:8px"></div><div class="px">8</div><div class="tok">space-2</div></div>
+  <div class="item"><div class="bar" style="height:12px"></div><div class="px">12</div><div class="tok">space-3</div></div>
+  <div class="item"><div class="bar" style="height:16px"></div><div class="px">16</div><div class="tok">space-4 · margin</div></div>
+  <div class="item"><div class="bar" style="height:20px"></div><div class="px">20</div><div class="tok">space-5</div></div>
+  <div class="item"><div class="bar" style="height:24px"></div><div class="px">24</div><div class="tok">space-6</div></div>
+  <div class="item"><div class="bar" style="height:28px"></div><div class="px">28</div><div class="tok">space-7</div></div>
+  <div class="item"><div class="bar" style="height:32px"></div><div class="px">32</div><div class="tok">space-8</div></div>
+  <div class="item"><div class="bar" style="height:40px"></div><div class="px">40</div><div class="tok">space-10</div></div>
+  <div class="item"><div class="bar" style="height:48px"></div><div class="px">48</div><div class="tok">space-12</div></div>
+  <div class="item"><div class="bar" style="height:60px"></div><div class="px">60</div><div class="tok">space-15</div></div>
+  <div class="item"><div class="bar" style="height:44px;background:var(--private)"></div><div class="px">44</div><div class="tok">touch-min</div></div>
+</div>
+</body>
+</html>
