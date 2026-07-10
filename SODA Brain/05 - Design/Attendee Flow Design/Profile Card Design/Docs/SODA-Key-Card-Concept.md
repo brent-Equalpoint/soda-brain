@@ -71,6 +71,26 @@ codes, shown `XXX-XXX`). Two jobs:
 extra protection on demand. (This also softens the raw-vCard permanence problem: the contact
 details in an old photo remain, but the VERIFIED status dies with the old code.)
 
+## Wallet passes (Brent's follow-up, same day)
+
+The key card should be addable to Apple Wallet and Google Wallet:
+
+- **Apple:** PassKit "generic" pass — needs the Apple Developer account ($99/yr), a Pass Type
+  ID + signing certificate, and a server endpoint that generates the signed .pkpass. One-tap
+  "Add to Apple Wallet." Passes update REMOTELY via the PassKit web service — key-code
+  rotation propagates to every issued pass.
+- **Google:** Google Wallet API generic pass — register SODA as an issuer (free, approval
+  review takes days), passes issued as signed JWT links ("Add to Google Wallet" button).
+  Also remotely updatable.
+- **Pass contents:** name, business, SODA branding, and the QR + key code. The pass QR should
+  be the VERIFY LINK (gated, revocable), never the raw vCard — wallet passes get screenshotted
+  freely. The save-to-contacts vCard stays in-app where giving is deliberate.
+- **Free bonus:** the same plumbing gives every EVENT a wallet pass (event name + entry QR —
+  check-in from the lock screen).
+- **Effort:** ~2-3 focused days of server work once the accounts exist; the accounts/approvals
+  are the long pole. Apple enrollment is needed for the future iOS app anyway
+  (native-ready-architecture) — worth starting early.
+
 ## Open questions
 
 1. Raw vCard vs gated link QR (or both: in-person scan = raw; in-app give = gated)?
