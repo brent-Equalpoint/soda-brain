@@ -1,5 +1,25 @@
 # SODA Soft Depth — Neumorphism Exploration Plan
 
+> **DIRECTION CHOSEN (2026-07-10), three rounds in:**
+> **Glass Only + expressive CTAs.** Lab 01 (Soft Depth): "a little heavy." Lab 02 (Glass &
+> Metal): "clean," but drop the metal. Lab 03 (Glass Only) + button round: **"C springy shine
+> is a nice touch especially for big CTAs."**
+>
+> The locked recipe:
+> - **Skin:** the shipped minimal base untouched; ONE material — frosted glass — only on
+>   things that float over the room (headers, sheets, toasts, selected-state pills, the home
+>   hero's code card), over restrained green ambient auras.
+> - **Motion, tiered by size and frequency** (the hub's frequent-action rule): big hero CTAs
+>   get **C** (instant press, springy overshoot release, shine sweep + green bloom on hover);
+>   standard buttons get **B** (springy, no shine); high-frequency controls (chips during
+>   onboarding, list rows) stay subtle — a thing pressed fifty times a night must never
+>   perform.
+>
+> **Next: Phase 1 on real screens, behind the branch preview, pending Brent's go** — the
+> attendee /home hero (glass code card + C-grade CTA) and the room header going frosted.
+> Phase 2: room chrome (toasts, sheets, selected chips). Phase 3: the Admin question (crisp
+> vs glass) stays open.
+
 > **ROUND 2 (2026-07-10):** Brent's read on Lab 01: "a little heavy." New brief:
 > "skeuomorphism minimal with glass/metal morphism infused in accents." Built as
 > **Lab 02 — Glass & Metal** at `/design/glass` on the same branch (labs cross-link):
