@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SODA Onboarding Flow: Map</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root{
+    --canvas:#0a0a0a;
+    --card:#1a1a1a;
+    --card2:#161616;
+    --border:#2a2a2a;
+    --green:#3bd75c;
+    --green-dim:rgba(59,215,92,0.12);
+    --purple:#a47bff;
+    --purple-dim:rgba(164,123,255,0.12);
+    --ink:#f5f5f5;
+    --muted:#8a8a8a;
+    --hint:#5a5a5a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--canvas);
+    color:var(--ink);
+    font-family:'DM Sans',sans-serif;
+    padding:48px 24px 80px;
+    min-height:100vh;
+  }
+  .mono{
+    font-family:'DM Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  header{
+    max-width:1180px;
+    margin:0 auto 40px;
+  }
+  header .eyebrow{color:var(--green);margin-bottom:10px;}
+  header h1{
+    font-family:'Archivo Black',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:-0.02em;
+    font-size:clamp(28px,4vw,44px);
+    line-height:1.05;
+    margin-bottom:14px;
+  }
+  header p{
+    color:var(--muted);
+    font-size:15px;
+    max-width:680px;
+    line-height:1.6;
+  }
+
+  .legend{
+    max-width:1180px;
+    margin:0 auto 36px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:18px;
+    padding:14px 18px;
+    background:var(--card2);
+    border:1px solid var(--border);
+    border-radius:12px;
+  }
+  .legend-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .swatch{width:14px;height:14px;border-radius:4px;flex-shrink:0;}
+  .swatch.required{background:var(--green);}
+  .swatch.optional{background:var(--purple);}
+  .swatch.system{background:var(--border);border:1px solid #3a3a3a;}
+  .line-sample{width:22px;height:0;border-top:2px solid var(--muted);}
+  .line-sample.dashed{border-top:2px dashed var(--muted);}
+
+  .map-wrap{
+    max-width:1180px;
+    margin:0 auto;
+    overflow-x:auto;
+    padding-bottom:8px;
+  }
+
+  svg{display:block;}
+
+  /* node card styling done via foreignObject divs */
+  .node{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px 16px;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    font-family:'DM Sans',sans-serif;
+  }
+  .node.required{border-color:var(--green);box-shadow:0 0 0 1px rgba(59,215,92,0.25);}
+  .node.optional{border-color:var(--purple);box-shadow:0 0 0 1px rgba(164,123,255,0.25);}
+  .node.system{border-style:dashed;}
+
+  .node-kicker{
+    font-family:'DM Mono',monospace;
+    font-size:9px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+  }
+  .node.required .node-kicker{color:var(--green);}
+  .node.optional .node-kicker{color:var(--purple);}
+  .node.system .node-kicker{color:var(--hint);}
+
+  .node-title{
+    font-family:'Archivo Black',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:-0.01em;
+    font-size:15px;
+    line-height:1.15;
+  }
+  .node-body{
+    font-size:11.5px;
+    color:var(--muted);
+    line-height:1.45;
+  }
+  .node-body b{color:var(--ink);font-weight:600;}
+  .node-state{
+    margin-top:auto;
+    font-family:'DM Mono',monospace;
+    font-size:9.5px;
+    color:var(--hint);
+    border-top:1px solid var(--border);
+    padding-top:6px;
+    line-height:1.5;
+  }
+  .node-state .set{color:var(--green);}
+
+  .swimlane-label{
+    font-family:'DM Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    fill:var(--hint);
+  }
+
+  .footnote{
+    max-width:1180px;
+    margin:40px auto 0;
+    padding:16px 18px;
+    background:var(--card2);
+    border:1px solid var(--border);
+    border-radius:12px;
+    font-size:12.5px;
+    color:var(--muted);
+    line-height:1.6;
+  }
+  .footnote b{color:var(--ink);}
+
+  .chips-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px;
+    margin-top:2px;
+  }
+  .mini-chip{
+    font-size:9.5px;
+    padding:2px 7px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid var(--border);
+    color:var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="mono eyebrow">SODA · onboarding-flow-multifocus.jsx</div>
+  <h1>Onboarding Flowmap</h1>
+  <p>One question gets someone in the room. Everything after that is how the room learns what they offer and who they trust, so context builds instead of getting lost between meetings. One required gate, two optional sheets, and three moments where the system quietly offers help instead of asking for it.</p>
+</header>
+
+<div class="legend">
+  <div class="legend-item"><span class="swatch required"></span> Required step (the only gate)</div>
+  <div class="legend-item"><span class="swatch optional"></span> Optional sheet / action</div>
+  <div class="legend-item"><span class="swatch system"></span> System-triggered surface (auto-appears)</div>
+  <div class="legend-item"><span class="line-sample"></span> Primary path</div>
+  <div class="legend-item"><span class="line-sample dashed"></span> Conditional / triggers</div>
+</div>
+
+<div class="map-wrap">
+<svg id="flowSvg" width="1180" height="1180" viewBox="0 0 1180 1180" xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#3bd75c"/>
+    </marker>
+    <marker id="arrowMuted" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#8a8a8a"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#a47bff"/>
+    </marker>
+  </defs>
+
+  <!-- swimlane labels -->
+  <text x="20" y="40" class="swimlane-label">Step 1 · Entry</text>
+  <text x="20" y="260" class="swimlane-label">Step 2 · The Room (persistent)</text>
+  <text x="20" y="520" class="swimlane-label">Sheet · Offer (optional)</text>
+  <text x="20" y="760" class="swimlane-label">System-triggered surfaces</text>
+  <text x="20" y="1000" class="swimlane-label">Sheet · Enrich / Focus (optional, multi-tag)</text>
+
+  <!-- swimlane separators -->
+  <line x1="0" y1="60" x2="1180" y2="60" stroke="#1e1e1e" stroke-width="1"/>
+  <line x1="0" y1="280" x2="1180" y2="280" stroke="#1e1e1e" stroke-width="1"/>
+  <line x1="0" y1="540" x2="1180" y2="540" stroke="#1e1e1e" stroke-width="1"/>
+  <line x1="0" y1="780" x2="1180" y2="780" stroke="#1e1e1e" stroke-width="1"/>
+
+  <!-- ===================== EDGES (drawn first, under nodes) ===================== -->
+
+  <!-- Entry -> Room -->
+  <path d="M 230,160 L 230,260 L 230,310" fill="none" stroke="#3bd75c" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- Room -> Offer sheet (banner click "Add" or "+ edit offers") -->
+  <path d="M 460,360 L 700,360 L 700,330" fill="none" stroke="#8a8a8a" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrowMuted)"/>
+
+  <!-- Offer sheet -> back to Room (Done / select chips, offers.size updates) -->
+  <path d="M 940,420 C 1050,420 1080,300 1080,300 C 1080,260 700,150 460,200" fill="none" stroke="#3bd75c" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- Room (has offers, no focus) -> Match moment banner (after 900ms timeout) -->
+  <path d="M 230,470 L 230,560 L 230,610" fill="none" stroke="#a47bff" stroke-width="2" stroke-dasharray="2,5" marker-end="url(#arrowPurple)"/>
+
+  <!-- No-offers banner -> Offer sheet (alt entry point into offer sheet) -->
+  <path d="M 700,640 L 700,540 L 700,470" fill="none" stroke="#8a8a8a" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrowMuted)"/>
+
+  <!-- Match moment banner -> Enrich sheet ("Sharpen my matches") -->
+  <path d="M 230,690 L 230,860 L 230,960" fill="none" stroke="#a47bff" stroke-width="2" marker-end="url(#arrowPurple)"/>
+
+  <!-- Enrich sheet -> Toast (Save to my card) -->
+  <path d="M 460,1060 C 600,1060 600,700 600,700 L 700,700" fill="none" stroke="#3bd75c" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- Enrich sheet -> back to Room (Skip for now) -->
+  <path d="M 460,1140 C 900,1140 1100,800 1100,400 C 1100,260 700,150 460,210" fill="none" stroke="#8a8a8a" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrowMuted)"/>
+
+  <!-- Toast -> dissolves back into Room -->
+  <path d="M 700,650 L 460,420" fill="none" stroke="#3bd75c" stroke-width="1.5" stroke-dasharray="2,5" marker-end="url(#arrowGreen)"/>
+
+  <!-- Restart loop: bottom of everything back to Entry -->
+  <path d="M 970,990 C 1130,990 1130,90 460,90" fill="none" stroke="#8a8a8a" stroke-width="1.5" stroke-dasharray="2,5" marker-end="url(#arrowMuted)"/>
+
+  <!-- ===================== NODES (foreignObject cards) ===================== -->
+
+  <!-- ENTRY -->
+  <foreignObject x="20" y="70" width="440" height="120">
+    <div class="node required" xmlns="http://www.w3.org/1999/xhtml">
+      <div class="node-kicker">1 · Required gate</div>
+      <div class="node-title">Entry: "Why are you here tonight?"</div>
+      <div class="node-body">Full-screen, single question. <b>Pick one</b> of six chips (Looking for work, Hiring, Raising money, Finding collaborators, Offering help, Just exploring). The product asks one human question before anything else: what brought you here.</div>
+      <div class="node-state">on click → <span class="set">entryChip = picked</span> · <span class="set">entered = true</span></div>
+    </div>
+  </foreignObject>
+
+  <!-- ROOM -->
+  <foreignObject x="20" y="310" width="440" height="160">
+    <div class="node required" xmlns="http://www.w3.org/1999/xhtml">
+      <div class="node-kicker">2 · Persistent home screen</div>
+      <div class="node-title">The Room: "19 people"</div>
+      <div class="node-body">Shows the reason someone's here ("You are here for <b>{entryChip}</b>"), their card preview, and who else is present (Maya, Devin, Ife, Tomás). This screen never closes; sheets slide up on top of it. Bottom nav: Room / People / You.</div>
+      <div class="node-state">reads → hasOffers = offers.size&gt;0 · hasFocus = any focuses[chip].length</div>
+    </div>
+  </foreignObject>
+
+  <!-- RESTART (system) -->
+  <foreignObject x="490" y="70" width="280" height="90">
+    <div class="node system" xmlns="http://www.w3.org/1999/xhtml">
+      <div class="node-kicker">Utility</div>
+      <div class="node-title">↻ Restart Flow</div>
+      <div class="node-body">Resets everything: back to Entry, clears offers, clears focus tags.</div>
+    </div>
+  </foreignObject>
+
+  <!-- OFFER SHEET -->
+  <foreignObject x="560" y="330" width="380" height="190">
+    <div class="node optional" xmlns="http://www.w3.org/1999/xhtml">
+      <div class="node-kicker">Sheet · optional</div>
+      <div class="node-title">"What can you offer?"</div>
+      <div class="node-body">Slides up over the Room. Tap any of seven chips to add them to your card. This is what lets the room see what you bring, not just what you're looking for. No required minimum.</div>
+      <div class="chips-row">
+        <span class="mini-chip">Introductions</span><span class="mini-chip">Advice</span><span class="mini-chip">Mentorship</span><span class="mini-chip">Feedback</span><span class="mini-chip">Hiring</span><span class="mini-chip">Investment</span><span class="mini-chip">Partnerships</span>
+      </div>
+      <div class="node-state">on close → <span class="set">offers = Set(selected chips)</span></div>
+    </div>
+  </foreignObject>
+
+  <!-- NO OFFERS BANNER (system) -->
+  <foreignObject x="560" y="640" width="280" height="140">
+    <div class="node system" xmlns="http://www.w3.org/1999/xhtml">
+      <div class="node-kicker">Auto-surface · dismissible</div>
+      <div class="node-title">"Tell the room what you offer"</div>
+      <div class="node-body">Shows whenever <b>offers.size === 0</b> and hasn't been dismissed. "About 20 seconds. Optional." A gentle reminder, not a gate: the product invites, it doesn't block.</div>
+      <div class="node-state">condition: !hasOffers && !bannerGone && !sheet</div>
+    </div>
+  </foreignObject>
+
+  <!-- MATCH MOMENT BANNER (system) -->
+  <foreignObject x="20" y="610" width="440" height="170">
+    <div class="node system" xmlns="http://www.w3.org/1999/xhtml">
+      <div class="node-kicker">Auto-surface · 900ms after offers added</div>
+      <div class="node-title">✦ "A match in the room"</div>
+      <div class="node-body">Purple-bordered card: "You and <b>Maya</b> both offer <b>Mentorship</b>. Add a focus or two so the room knows where." This is the system surfacing context the moment it has enough trust signal to act on it. Button: "Sharpen my matches."</div>
+      <div class="node-state">condition: momentReady && hasOffers && !hasFocus && !sheet<br/>trigger: setTimeout(900ms) once hasOffers true</div>
+    </div>
+  </foreignObject>
+
+  <!-- ENRICH / FOCUS SHEET -->
+  <foreignObject x="20" y="960" width="440" height="200">
+    <div class="node optional" xmlns="http://www.w3.org/1999/xhtml">
+      <div class="node-kicker">Sheet · optional, multi-focus</div>
+      <div class="node-title">"Add your focus"</div>
+      <div class="node-body">One <b>FocusRow</b> per offered chip. Type and press Enter (or comma) to commit a tag, or tap a suggestion to auto-populate. Live preview reads "<b>Mentorship</b> in design, early-stage." This is where a general offer becomes specific enough to act on. Backspace on empty input removes the last tag.</div>
+      <div class="node-state">"Save to my card" → <span class="set">toast = true</span> (2.2s) · "Skip for now" → closes sheet, no save</div>
+    </div>
+  </foreignObject>
+
+  <!-- TOAST (system) -->
+  <foreignObject x="560" y="650" width="380" height="100">
+    <div class="node system" xmlns="http://www.w3.org/1999/xhtml">
+      <div class="node-kicker">Confirmation · auto-dismiss 2.2s</div>
+      <div class="node-title">✓ "Card updated"</div>
+      <div class="node-body">"Your matches just got sharper." A floating pill that confirms the moment, then dissolves back into the Room after 2.2 seconds. Care with control: the system acted because the person told it to, nothing more.</div>
+    </div>
+  </foreignObject>
+
+</svg>
+</div>
+
+<div class="footnote">
+  <b>How to read this:</b> the only hard requirement in the whole flow is picking one Entry chip. Everything after that is optional and reversible. The two banners and the toast aren't destinations someone navigates to on purpose; they're the room noticing what's changed and offering the next thoughtful step, the same plain-before-powerful logic that should run through every Equalpoint surface. The match-moment banner in particular fires once, 900ms after an offer is added, as long as no focus has been added yet: the system's one quiet attempt to turn a general offer into something specific before the moment passes.
+</div>
+
+</body>
+</html>
