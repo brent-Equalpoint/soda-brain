@@ -1,5 +1,18 @@
 # SODA Soft Depth — Neumorphism Exploration Plan
 
+> **ROUND 2 (2026-07-10):** Brent's read on Lab 01: "a little heavy." New brief:
+> "skeuomorphism minimal with glass/metal morphism infused in accents." Built as
+> **Lab 02 — Glass & Metal** at `/design/glass` on the same branch (labs cross-link):
+> the base stays EXACTLY the shipped flat system; GLASS only on floating chrome (frosted
+> room header with content scrolling beneath, green-tinted selected chips, frosted toast,
+> the home hero's glass code card); METAL only in machined accents (brushed 1px rims,
+> watch-bezel avatar rings, steel-thumb toggle, a gloss on the green primary). Jewelry,
+> not wallpaper. Note: glass panels need SOMETHING behind them to blur, so restrained
+> green ambient auras enter the vocabulary — the one real token addition this direction
+> asks for. If Lab 02 lands, the phased path in §6 applies the same way (Phase 0 becomes
+> "where may auras live" instead of the canvas lift). Everything below is the Lab 01
+> (Soft Depth) analysis, kept for the record.
+
 **Status:** EXPLORATION. Nothing here is decided or shipped. A living demo exists on the
 `neumorphism-exploration` branch at `/design/soft` (open the branch's Vercel preview and add
 `/design/soft` to the address). Sources: classic neumorphism, adapted dark; the design ideas
