@@ -55,6 +55,22 @@ phone to another guest, and only by explicit gift.
 - The give model: another person's key card renders SEALED (blurred, "given, not found" copy)
   until they hand it over — springy unseal reveal.
 
+## The key code (added same day, from Brent's follow-up)
+
+Every key card also carries a short typeable **key code** (same unambiguous alphabet as event
+codes, shown `XXX-XXX`). Two jobs:
+
+1. **Camera-down fallback** — read it out; the other person types it at grabsoda.app and
+   receives the key card. No scan needed.
+2. **Verification** — the code resolves THROUGH SODA to the verified account, so what you
+   receive is provably that person, not a hand-crafted vCard claiming to be them. The vCard
+   itself embeds the verify link (grabsoda.app/k/CODE) in its NOTE field, so even a scanned
+   contact can be checked later.
+
+**Rotation = revocation:** generating a new key code takes back anything shared before —
+extra protection on demand. (This also softens the raw-vCard permanence problem: the contact
+details in an old photo remain, but the VERIFIED status dies with the old code.)
+
 ## Open questions
 
 1. Raw vCard vs gated link QR (or both: in-person scan = raw; in-app give = gated)?
