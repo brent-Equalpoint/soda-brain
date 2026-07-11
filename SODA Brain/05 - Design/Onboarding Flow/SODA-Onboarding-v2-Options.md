@@ -103,9 +103,10 @@ code sits in their inbox; full participation on code entry.
 7. **The funnel view gets better.** `you_state` gives the admin funnel real steps (landed →
    floor → visible → card → verified → connected) — a free win for the analytics the ADMIN
    prototype designed.
-8. **Timing.** BTW is July 14–16. Do not swap the front door days before an event. Build on
-   the branch, preview it, ship after BTW — with LNT-style smaller events as the first live
-   test.
+8. **Timing.** BTW is not happening, so there is no event freeze and no deadline pressure —
+   the door can change on its own schedule. The flip side of an empty calendar: the new door
+   won't meet a real crowd by accident. Schedule a deliberately small pilot night (an
+   LNT-style room) as the new flow's first live test BEFORE any partner event runs on it.
 9. **Two doors, one truth.** A returning verified user scanning a room QR must be recognized
    (session resolve → straight to room), not pushed through the Floor as a stranger. The
    spec's server-decides posture handles this; it just needs to be in the acceptance tests.
@@ -130,8 +131,10 @@ code sits in their inbox; full participation on code entry.
   collapse, patterns) — already spec'd by this week's sessions; the spec's §9 handoff seam
   is exactly our "tap your own tile → card flow."
 
-Everything behind the branch preview; nothing touches prod until after BTW and a green
-walk-through.
+Everything builds behind the branch preview and ships to prod when the walk-through is
+green — with no event on the calendar, an early quiet deploy is LOW risk (few live users
+affected) and buys real-world soak time. The sequence: preview → Brent walk-through → prod →
+a small deliberate pilot night to shake the door down → then the next real event runs on it.
 
 ## 6. Decisions Brent owns
 
@@ -140,4 +143,6 @@ walk-through.
    the Clerk plan/toggle either way since the hang-up is worth resolving on its own.)
 3. Can unverified people **accept** requests? (Recommendation: yes.)
 4. Purple as the gate color — bless the widened job? (Recommendation: yes.)
-5. Timing: build now on the branch, ship after BTW? (Recommendation: yes.)
+5. Timing: build now, ship quietly when green, and schedule a small pilot night as the new
+   door's first live test? (Recommendation: yes — with BTW off, speed is cheap and the pilot
+   night is the only thing that needs planning.)
