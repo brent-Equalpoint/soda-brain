@@ -177,3 +177,12 @@ browser flow** (sign-up → room → leave, Playwright, mobile-Chromium). Open:
 - `[SHIPPED 2026-07-15]` **Health check deepened** — `/api/health` now probes the database
   (timeout-raced) and returns 503 when it's down; `[you]` point an uptime monitor (UptimeRobot
   or similar, 1-min interval) at `https://grabsoda.app/api/health`.
+- `[SHIPPED 2026-07-15 late]` **The room scale pass** (commit 51e74d0) — H1-H4 from the audit all
+  closed: coalesced roster/wall refetches (lib/coalesce, room+cockpit+projector), room-chat poll
+  10s visible-only + one-row-per-thread room_chat_lasts, recap match engine computes ONCE per
+  closed event (events.recap_cache; never cached for ephemeral rooms). Audit LOW-1 (atomic
+  remove_operator) + LOW-2 (sim 404 from recaps) closed; connections(origin_event_id) +
+  survey_responses(profile_id) indexes; /terms+/privacy static; QR scanner + card editor lazy;
+  idle read-cursor writes skipped; structured logger adopted on new failure paths;
+  scripts/ship.sh = the one-command gate→ship. **Migration 20260716030000 STAGED — needs
+  Brent's `pnpm dlx supabase db push`** (all reads fail soft until then).
