@@ -1,18 +1,16 @@
 # SODA Event Report — Creative Meetups: Power of Proximity
 
-**Date:** July 13, 2026 · **Host:** Futureland × S&P Labs · **Attendees:** ~48 *(confirm from
-Admin → Recap)* · **Status:** Live event complete. *(Engineering detail:
+**Date:** July 13, 2026 · **Host:** Futureland × S&P Labs · **Attendees:** 48 · **Status:** Live event complete. *(Engineering detail:
 [[SODA-Pilot-Report-Creative-Meetups]] and the repo worklog `docs/worklog-2026-07-14.md`.)*
 
-> ⚠️ **Working draft.** The qualitative story is complete — ten field notes from the night, every
-> one fixed and live in production **the next day**. The metrics marked **_[need]_** come from
-> your Admin → Recap and the CSV exports for this event.
+*(Findings: Brent's ten field notes. Metrics: Admin → Recap, filled 2026-07-15. Engineering
+detail lives in the pilot brief and the repo worklog.)*
 
 ---
 
 ## TL;DR
 
-Power of Proximity was SODA's fourth and largest live run (~48 people). The core held: check-in,
+Power of Proximity was SODA's fourth and largest live run (48 people). The core held: check-in,
 the live room, cards, matching, connections, and the survey all ran on real people all night. The
 night surfaced **ten field notes** — none of them failures of the core, all of them friction —
 and **every single one was fixed and deployed to production within 24 hours**. The biggest
@@ -21,8 +19,7 @@ a glance) each became full features, not patches.
 
 ## The night in numbers *(from Admin → Recap)*
 
-- Checked in: **~48** · Connections made: **_[need]_** · Matches surfaced: **_[need]_**
-- Drops fired / answers: **_[need]_** · Survey responses: **_[need]_**
+- Checked in: **48** · Connections made: **24** · Drop answers: **24** · Survey responses: **10**
 
 ## What we heard → what changed (all live since July 14)
 

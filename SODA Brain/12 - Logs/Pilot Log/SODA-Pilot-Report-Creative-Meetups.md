@@ -2,7 +2,7 @@
 
 **Date:** July 13, 2026
 **Host:** Futureland × S&P Labs
-**Attendees:** ~48 *(confirm from Admin → Recap)*
+**Attendees:** 48
 **URL:** grabsoda.app
 **Status:** Fourth live run, the largest yet. All ten field notes fixed and shipped to production
 2026-07-14 (same-day batch). The partner-facing version is [[SODA-Report-Creative-Meetups]].

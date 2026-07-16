@@ -1,10 +1,9 @@
 # SODA Event Report — Chase Bank: Windows of Opportunity (Lunch & Learn)
 
 **Date:** July 9, 2026 · **Host:** Chase Bank × Futureland ·
-**Attendees:** _[need]_ · **Status:** Live event complete.
+**Attendees:** 14 · **Status:** Live event complete.
 
-> ⚠️ **Working draft.** The findings are complete (Brent's field notes, 2026-07-15). The
-> headcount and the Admin → Recap metrics fill the **_[need]_** slots.
+*(Findings: Brent's field notes. Metrics: Admin → Recap, filled 2026-07-15.)*
 
 ---
 
@@ -21,8 +20,10 @@ they pointed to has become the product's active direction.
 
 ## The night in numbers *(from Admin → Recap)*
 
-- Checked in: **_[need]_** · Connections made: **_[need]_** · Matches surfaced: **_[need]_**
-- Survey responses: **_[need]_**
+- Checked in: **14** · Connections made: **9** · Drop answers: **0** · Survey responses: **6**
+- Worth noting: **9 connections from 14 people** is the highest per-person rate of any run so far,
+  and **6 of 14 answered the survey** even as the third survey of the day — the fatigue point
+  stands, and the room still delivered.
 
 ## What we heard → what changed
 
