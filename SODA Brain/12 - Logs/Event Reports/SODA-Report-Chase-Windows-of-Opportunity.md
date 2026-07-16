@@ -1,23 +1,23 @@
 # SODA Event Report — Chase Bank: Windows of Opportunity (Lunch & Learn)
 
-**Date:** _[need — early July 2026]_ · **Host:** Chase Bank × Futureland ·
+**Date:** July 9, 2026 · **Host:** Chase Bank × Futureland ·
 **Attendees:** _[need]_ · **Status:** Live event complete.
 
-> ⚠️ **Working draft.** One finding from this night is fully documented below (with its fix now
-> live). Everything marked **_[need]_** — the date, headcount, metrics from Admin → Recap, and
-> any other field observations from the room — comes from Brent to complete the report.
+> ⚠️ **Working draft.** The findings are complete (Brent's field notes, 2026-07-15). The
+> headcount and the Admin → Recap metrics fill the **_[need]_** slots.
 
 ---
 
 ## TL;DR
 
-Windows of Opportunity ran SODA live with Chase Bank. The night's clearest finding was **friction
-at the front door**: phone-number sign-up wasn't available, so every guest had to sign up by
-email — which meant leaving the app to hunt for a code in their inbox, and some got stuck
-re-requesting codes on a cooldown timer. That finding was traced to its root (a configuration
-split between two environments of our sign-in provider) and is now **fully fixed in production**:
-guests sign up with their phone number and a text code that autofills from the keyboard — no
-inbox, no waiting, no leaving the app.
+Windows of Opportunity ran SODA live with Chase Bank. The night's story was **the door**: the
+event stack asked guests to scan **three separate QR codes** plus a separate Eventbrite check-in
+before they ever reached the room, SODA's own sign-up leaned on email codes, and the combination
+produced long onboarding times — with **older attendees giving up fastest**. One guest was
+blocked outright by a Cloudflare challenge at login. And by the time SODA's closing survey
+appeared, the crowd had already been asked to complete two other surveys that day. Every one of
+these findings has a concrete answer — two are already live in production, and the door redesign
+they pointed to has become the product's active direction.
 
 ## The night in numbers *(from Admin → Recap)*
 
@@ -26,15 +26,33 @@ inbox, no waiting, no leaving the app.
 
 ## What we heard → what changed
 
-1. **"Signing up at the door was slow — where's the phone option?"** Phone sign-up existed in
-   the product but wasn't enabled on the production sign-in configuration, so the door fell back
-   to email codes: guests left the app for their inbox, the screen sometimes reset on return,
-   and the resend timer stranded the unlucky ones. **✅ Fixed and verified live (July 15):**
-   phone sign-up is now a first-class door — type your number, the code arrives by text and
-   autofills, and email became optional instead of required. The whole leave-the-app failure
-   mode is gone.
-2. _[need — any other field notes from the night: room energy, host-side observations, guest
-   quotes, anything that didn't work]_
+1. **The door took too long — three QR codes plus a separate Eventbrite entry.** SODA was one
+   stop in a stack of scans and sign-ins, and the cumulative time is what guests actually feel.
+   **What's changed:** SODA's own step is now dramatically shorter (see #2), and the operational
+   fix is consolidation — **one QR at the door** for SODA, with Eventbrite check-in handled by
+   staff off the guest's phone. For future co-hosted events we treat "how many scans does a
+   guest perform" as a number to design, not an accident.
+2. **Sign-up was slow, and older guests gave up quickest.** The root cause: phone sign-up wasn't
+   enabled on the production sign-in configuration, so everyone fell back to email codes —
+   leaving the app to hunt an inbox, sometimes returning to a reset screen, waiting out a resend
+   timer. **✅ Fixed and verified live (July 15):** phone-number sign-up is now a first-class
+   door — the code arrives by text and autofills from the keyboard; email is optional. For the
+   least-patient guest, sign-up is now: phone number → tap the code → in.
+3. **One guest blocked by a Cloudflare issue at login (possible third-party QR scanner).** Our
+   sign-in provider's bot protection runs on Cloudflare, and QR-scanner apps that open links in
+   their own built-in browsers can fail that check. **What's changed:** bot protection has been
+   re-tuned to its adaptive mode (challenges only suspicious traffic), and door guidance is to
+   scan with the phone's native camera, not a scanner app. We watch for recurrence.
+4. **Survey fatigue — SODA's survey landed after two others that day.** People detest surveys;
+   the data still matters. **What's changed:** SODA's survey is host-editable per event, so
+   co-hosted nights should run ONE short survey (2–3 questions) agreed between partners, inside
+   SODA, replacing the pile. The 48-hour reconnect window (shipped July 14) also means the recap
+   link can carry the survey *after* the room, when guests aren't burned.
+5. **"We planned how to open the door for easier onboarding."** That plan is now the product's
+   active direction, and the first piece already exists: SODA can now run **account-less entry**
+   (built July 15 for showcase/education rooms — scan one QR, type a name, you're in, no
+   account at all). Bringing that "express lane" posture to general events is the onboarding
+   redesign currently in decision.
 
 ## Since this event
 
