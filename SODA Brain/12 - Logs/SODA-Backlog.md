@@ -186,3 +186,10 @@ browser flow** (sign-up → room → leave, Playwright, mobile-Chromium). Open:
   idle read-cursor writes skipped; structured logger adopted on new failure paths;
   scripts/ship.sh = the one-command gate→ship. **Migration 20260716030000 STAGED — needs
   Brent's `pnpm dlx supabase db push`** (all reads fail soft until then).
+- `[DECIDED 2026-07-15]` **Doppler vs Vercel → STAY ON VERCEL** (Brent). The P0 closes; the
+  rotation runbook now exists at repo `docs/secret-rotation-runbook.md` (90-day cadence,
+  key-card keys flagged never-rotate-naively). Branch cleanup DONE same day: soda-card-release
+  deleted, neumorphism-exploration parked, ship.sh ships main only.
+- `[me — NEXT after school event]` **Build order (Brent, 2026-07-15): Tier-1 scale (load test
+  first) → Chip Bank v2 → then PLAN the flows UX pass.** Onboarding-v2 deliberately deferred
+  ("we've rebuilt a lot") — revisit after the above.
