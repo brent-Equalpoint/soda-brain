@@ -1,7 +1,32 @@
-# SODA Classroom Rooms — ephemeral, minor-safe events
+# SODA Showcase Rooms — ephemeral, customizable, minor-safe events
 
-**Status: DESIGN LOCKED 2026-07-15 (Brent's calls in AskUserQuestion) · BUILD IN PROGRESS —
-priority: an event with students is within a week.**
+**Status: DESIGN LOCKED 2026-07-15, AMENDED same day (Brent: "make it a customizable room") ·
+BUILD IN PROGRESS — priority: an event with students is within a week.**
+
+## The amendment (2026-07-15, supersedes "classroom-only")
+
+Not one hardcoded classroom mode — TWO independent room settings that compose:
+
+1. **Ephemeral** (`events.ephemeral`): the no-data machinery below (anonymous door, auto-wipe
+   at close+1h, aggregates-only report). Usable for ANY audience where Brent wants to showcase
+   SODA without collecting data — demos, pilots, minors.
+2. **Card template** (`events.card_labels` jsonb, null = classic): what the card's two prompt
+   slots ASK. The ProfileCard component is untouched — only entry prompts change. Presets:
+   - **Classic** — "Your role" / "Your business" (today's app, the entrepreneurial room)
+   - **Education** — "Your school" / "College I'm aiming for · optional"
+   - **Workforce** — "What you do (or are training for)" / "Company or program · optional"
+   - **Custom** — host types both labels + whether the second is optional
+   Shape: `{ preset: 'classic'|'education'|'workforce'|'custom', roleLabel: string,
+   businessLabel: string, businessOptional: boolean }`.
+
+Configured together in Admin's event settings (draft events only, v1): a "Room type" picker +
+the Ephemeral toggle. The kids' event = Ephemeral ON + Education template. A workforce demo =
+Ephemeral ON + Workforce. A normal night = both off, nothing changes.
+
+`get_event_classroom(join_code)` from the original plan generalizes to
+**`get_event_room_config(join_code)`** (anon-callable, returns `{ephemeral, cardLabels}` only)
+so the join flow can pick the door (anonymous vs normal) and the prompts before any sign-in.
+Chip banks: hosts already tailor per-event chip menus — presets seeding chip banks is v2.
 
 ## Why
 
@@ -63,9 +88,10 @@ guest data self-deletes an hour after close; faculty gets an aggregates-only rep
 
 ## Build checklist
 
-- [ ] Migration `20260716020000_classroom_rooms.sql`: column + toggle RPC +
-      get_event_classroom + classroom_reports + wipe fn + sweep + cron (validate locally,
-      then TEST THE WIPE against a seeded local classroom event)
+- [ ] Migration `20260716020000_showcase_rooms.sql`: `events.ephemeral` + `events.card_labels`
+      + `set_event_room_config` RPC (owner gate, draft-only) + `get_event_room_config` (anon) +
+      `classroom_reports`→`ephemeral_reports` + wipe fn + sweep + cron (validate locally,
+      then TEST THE WIPE against a seeded local ephemeral event)
 - [ ] classroom-wipe-check script (prove zero guest rows + zero anon users remain)
 - [ ] Join flow: classroom detection + anonymous sign-in + relabeled profile step
 - [ ] Skips: recap email screen-out (already skips .invalid-style? anon has NO email — verify
