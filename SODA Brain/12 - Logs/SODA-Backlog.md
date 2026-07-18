@@ -193,3 +193,11 @@ browser flow** (sign-up → room → leave, Playwright, mobile-Chromium). Open:
 - `[me — NEXT after school event]` **Build order (Brent, 2026-07-15): Tier-1 scale (load test
   first) → Chip Bank v2 → then PLAN the flows UX pass.** Onboarding-v2 deliberately deferred
   ("we've rebuilt a lot") — revisit after the above.
+- `[SHIPPED 2026-07-15 night]` **Matching Engine Upgrade Phase 1** (spec: [[SODA-Matching-Engine-Upgrade]],
+  commit 0f0e679) — composite scoring layer OVER the untouched category gate: reciprocity +1.5,
+  scarcity (Most Wanted in the rank), room-state (standing-alone boost, 15-min warmup), hub
+  penalty (from the event's own nudge log, reset per event). Intel = full ranking no cutoff;
+  nudge queue = NUDGE_MIN_SCORE 2.5. Spec 2.5 backtests: synthetic CC-hub + LNT-scarcity
+  fixtures always-run green; real-data replay opt-in (backtest.live.test.ts, BACKTEST_* envs —
+  Brent runs against prod read-only). `[you]` review the three [chosen] constants after the next
+  event. Phase 2 (embeddings/pgvector) + Phase 3 (convene clusters) not started, per build order.
