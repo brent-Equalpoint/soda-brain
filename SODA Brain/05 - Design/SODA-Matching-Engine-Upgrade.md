@@ -71,8 +71,11 @@ function scarcityBonus(A, B, roomGapStats):
     gapRatio = stats.needCount / max(stats.offerCount, 1)
     if gapRatio > SCARCITY_THRESHOLD:         # starting value: 2.0
       bonus += SCARCITY_BONUS * min(gapRatio / SCARCITY_THRESHOLD, MAX_SCARCITY_MULTIPLIER)
-  return bonus
+  return min(bonus, MAX_TOTAL_SCARCITY_BONUS)  # starting value: 4.0, caps the sum across
+                                                 # every shared category, not just one
 ```
+
+`MAX_SCARCITY_MULTIPLIER` bounds what a single category can contribute. `MAX_TOTAL_SCARCITY_BONUS` bounds what all of them can contribute together, a pair sharing several scarce categories at once should rank well, not dominate the whole score by accumulating an uncapped sum.
 
 `roomGapStats` is the same data already powering the Most Wanted section. Nothing new to compute, only a new place it gets used.
 
@@ -99,7 +102,7 @@ function roomStateBonus(A, B, roomStats):
 
 The failure mode worth naming plainly: a pure similarity ranking recommends the person with the most generically complete profile to everyone, and that person absorbs all the connection density in the room while someone with a sparser but genuinely well-matched profile never surfaces. Coffee Connect's top connector had 18 matches in a 19-person room. Worth watching before it becomes the pattern rather than the outlier.
 
-**A precise definition, since this term decides everything downstream: a surface is any time a person appears in another person's displayed top-N list**, in the Intel tab or as an actual nudge. Computing a match does not count, every candidate pair gets computed for everyone regardless. Only being shown counts. Computation is free and universal; being shown is the actual mechanism that creates the hub effect in the first place, so the penalty has to track that, not the underlying computation.
+**A precise definition, since this term decides everything downstream: a surface is any time a person appears in another person's displayed top-N list**, in the Intel tab or as an actual nudge, where N is `SURFACE_TOP_N`, starting value: 5. Computing a match does not count, every candidate pair gets computed for everyone regardless. Only being shown counts. Computation is free and universal; being shown is the actual mechanism that creates the hub effect in the first place, so the penalty has to track that, not the underlying computation.
 
 ```
 function hubPenalty(person, event):
@@ -193,8 +196,10 @@ Worth naming explicitly rather than leaving it as a silent gap. SODA has somethi
 8. Embedding generation never blocks the live room. It runs asynchronously on chip save, with normalized-string caching to avoid generating the same context twice.
 9. Cluster detection only ever surfaces a suggested convene to a host. It never fires a convene automatically.
 10. All scoring constants, bonuses, thresholds, the penalty rate, the nudge minimum, the warmup period, are configurable values, not hardcoded numbers, and get reviewed against real considered-ratio and warmth-decay data after each event before being adjusted.
-11. Before Phase 1 ships to a live room, the scoring constants are backtested against the four existing events' historical data, specifically checked against two known outcomes: whether the hub penalty would have spread density away from Coffee Connect's top connector, and whether the scarcity bonus would have correctly ranked the room's real Most Wanted gaps above its most generic, most common chip.
-12. Outcome-based automatic weight learning is explicitly out of scope for this build and requires a separate proposal, real event volume, and active bias review before any future implementation.
+11. `SURFACE_TOP_N` defines exactly what counts as a surface for the hub-spreading penalty. Appearing in a computed candidate list never counts, only appearing within the top N of a person's displayed list does.
+12. Scarcity bonus is bounded twice, once per category by `MAX_SCARCITY_MULTIPLIER`, and once in total by `MAX_TOTAL_SCARCITY_BONUS`. A pair sharing many scarce categories cannot accumulate an unbounded sum.
+13. Before Phase 1 ships to a live room, the scoring constants are backtested against the four existing events' historical data, specifically checked against two known outcomes: whether the hub penalty would have spread density away from Coffee Connect's top connector, and whether the scarcity bonus would have correctly ranked the room's real Most Wanted gaps above its most generic, most common chip.
+14. Outcome-based automatic weight learning is explicitly out of scope for this build and requires a separate proposal, real event volume, and active bias review before any future implementation.
 
 ---
 

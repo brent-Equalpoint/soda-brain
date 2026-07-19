@@ -88,6 +88,133 @@ OUTPUT (structured, nothing else):
 
 **This call is asynchronous and occasional, never on the room's critical path.** Same discipline already locked for embeddings and chip extraction elsewhere in this build. It fires when a person connects a source or taps "suggest chips," not on any interval, not as a background job re-scanning anyone.
 
+### 3.1 Grounding suggestions in real accepted chips
+
+Everything above drafts from the raw content alone, the model's own judgment, nothing else. This section adds retrieval in front of generation, the same idea already half-built for a different purpose: the `context_embedding` column and cosine similarity lookup already specified in the matching engine upgrade. That infrastructure was wired up to feed a score. This wires the same infrastructure into a prompt instead. No new embedding system, the same one, a second job.
+
+```
+function retrieveGroundingExamples(sourceEmbedding, allowedCategories):
+  candidates = query chips where
+    status = 'accepted'                        # only real, person-confirmed chips
+    and category in allowedCategories
+    order by cosine_similarity(context_embedding, sourceEmbedding) desc
+    limit RETRIEVAL_K                            # starting value: 5
+
+  if candidates.length < MIN_GROUNDING_EXAMPLES:  # starting value: 3
+    return []                                     # not enough real data yet
+
+  return candidates.map(c => ({ category: c.category, context: c.context }))
+  # category and context text only. Never a passport_id, never a name,
+  # never anything that traces a grounding example back to who accepted it.
+```
+
+**Why anonymized text only, never identity:** chips are already semi-public by design, shown in the room, in the Intel tab, in matches. Using their wording as an anonymous style reference for the model is a reasonable extension of data that is already shared, not a new exposure. But the model should learn "here is what a well-formed chip in this category looks like," never "this specific person said this." The retrieval query strips that link before the text ever reaches the prompt.
+
+**Why only accepted chips are eligible, and nothing pending or dismissed:** a dismissed AI draft was rejected for a reason, maybe it was generic, maybe it was wrong. Retrieving it as a grounding example for someone else would let one bad draft quietly compound into more bad drafts. Only a chip a real person actually confirmed counts as evidence of what good looks like.
+
+**Why this gracefully falls back instead of blocking:** the first person from a new vertical, legal, health sciences, whatever comes next, has no prior accepted chips in that space to retrieve. `MIN_GROUNDING_EXAMPLES` catches that and returns nothing rather than forcing thin or irrelevant matches into the prompt. Same design property already locked in the matching engine spec, every new term defaults to zero contribution when its data is not available yet. This system gets better at a vertical the more real people from that vertical have used it, and does not need to be seeded by hand to work honestly on day one.
+
+**This is the base case, before a seed pool or cohort weighting exist.** Section 3.2 replaces this function with a three-argument version that queries a broader pool and ranks by more than similarity alone. Once 3.2 and 3.3 are in place, that version is the one to implement, this one exists only to introduce the idea in isolation before the full picture arrives.
+
+The prompt contract updates to carry this as optional context:
+
+```
+Prompt contract:
+
+INPUT:
+  raw_content: string, capped at a fixed length before it ever reaches the model
+  allowed_categories: [professional, interest, location, goal, identity]
+  grounding_examples: array of { category, context }, possibly empty
+    # real, previously accepted chips, anonymized, shown as a style and
+    # vocabulary reference only, never as content to copy verbatim
+
+OUTPUT: unchanged, same structured {category, context, confidence} format
+```
+
+### 3.2 Seeding the pool before real data exists
+
+**Every accepted chip is already tomorrow's seed, this section just gives that a running start instead of waiting on it.** The first person from a new vertical drafts ungrounded, since nothing exists yet to retrieve. Once they accept a suggestion, the second person from that vertical has one real example. The system already self-seeds, one person at a time, purely organically. What follows are two deliberate ways to shortcut that wait, plus the moderation step that keeps either one honest.
+
+**A separate pool, not a disguised version of real data.** Seeded and contributed vocabulary never lives in the same table as real accepted chips, on purpose, the same architectural instinct already governing the rest of this build, keep a boundary structural rather than trust a flag to enforce it everywhere downstream.
+
+```sql
+create table chip_vocabulary_seeds (
+  id                        uuid primary key default gen_random_uuid(),
+  category                  text not null,
+  context                   text not null,
+  context_embedding         vector(1536),
+  chip_source                text not null,       -- 'host_seed' | 'contributed'
+  contributor_passport_id   uuid references passports(id),  -- set only for 'contributed'
+  event_id                  uuid references events(id),      -- nullable, set when seeded for one event
+  moderation_status         text not null default 'pending', -- 'pending' | 'approved' | 'rejected'
+  created_at                timestamptz not null default now()
+);
+```
+
+**Host seeding, an extension of tooling that already exists.** Chip menu tailoring is already part of host setup. A host preparing a legal or health sciences event can add a small handful of exemplar chips, "Pro bono contract review," "IRB protocol design," the same place they already tailor the chip menu for that event. These insert as `chip_source = 'host_seed'`.
+
+**Contribution, for someone who wants to help without it being their own card.** A separate, clearly labeled action, "help build [vertical] vocabulary," not part of building a personal card and never presented as one. This is exactly the shape of person from the Creative Meetups conversation, AI-forward, genuinely wants to be useful. These insert as `chip_source = 'contributed'`, with `contributor_passport_id` set for accountability, never for display.
+
+**Both route through the moderation queue that already exists, not a new one.** Host chip moderation already resolves chip menu entries. Seeded and contributed rows enter as `moderation_status = 'pending'` and only become retrieval-eligible once approved through that same queue. Nothing enters the grounding pool unreviewed.
+
+**Moderation catches what shouldn't be there. It was never built to catch what's merely useless, and that gap matters here specifically.** A contribution can be entirely appropriate and still be the Coffee Connect problem in miniature, "Networking," submitted in good faith, adds nothing a hundred other Networking chips don't already say. Worth a second, lighter check ahead of the human queue, specificity rather than appropriateness, the same kind of judgment already trusted to the chip suggestion prompt itself, does this context say something the category alone doesn't already say. A contribution that fails it is not rejected outright, it goes back to the contributor with a nudge toward specificity, same spirit as the card builder's own coaching on hand-typed chips, before it ever reaches a human moderator.
+
+**Retrieval draws from both pools, real data preferred when there's a choice, and it needs to know which vertical the person asking is actually in. This function replaces the one in 3.1, not a sibling to it, the same name, the real version.**
+
+```
+function retrieveGroundingExamples(sourceEmbedding, allowedCategories, sourceEventId):
+  pool = union of:
+    - chips where status = 'accepted' and category in allowedCategories
+    - chip_vocabulary_seeds where moderation_status = 'approved'
+                            and category in allowedCategories
+
+  candidates = pool, ranked by:
+    1. cosine_similarity(context_embedding, sourceEmbedding) desc
+    2. same or related vertical as sourceEventId ranked above unrelated ones
+    3. cohortWeight(candidate) applied as a ranking multiplier, see 3.3
+    4. real accepted chips ranked above seeded/contributed ones at near-equal similarity
+  limit RETRIEVAL_K
+
+  if candidates.length < MIN_GROUNDING_EXAMPLES:
+    return []
+
+  return candidates.map(c => ({ category: c.category, context: c.context }))
+  # chip_source and contributor_passport_id never travel into the prompt,
+  # real or seeded, same anonymity rule as before
+```
+
+**Without the event affinity term, a legal bio could retrieve grounding from an unrelated creator-economy event purely because two unrelated chips happened to use superficially similar words.** `sourceEventId` is what keeps retrieval from bleeding across verticals that shouldn't mix.
+
+### 3.3 Weighting by cohort, not by calendar
+
+The natural instinct is to reach for the decay already locked for warmth, older means less trusted. That is the wrong analogy for this job, worth being precise about why rather than quietly reusing it. Warmth decay measures a relationship going quiet, and quiet genuinely means something there, less contact really is less connection. A chip's vocabulary does not go stale just because SODA has not run another event in that vertical yet, it has simply not had a chance to be reinforced. Decaying it on a calendar would punish exactly the verticals with the least volume so far, the ones section 3.2 exists to help grow.
+
+**The corrected rule: weight relative to competing evidence inside the same cohort, never relative to raw time.** A cohort is the same category, narrowed by the event affinity from the retrieval function above, category plus vertical, not category alone.
+
+Two rules only.
+
+**No competing evidence, no decay, regardless of age.** If a chip is still the newest, or one of very few, in its cohort, it keeps full weight indefinitely.
+
+**Weight only fades once genuinely superseded by real newer volume in that same cohort**, not by the passage of time in isolation.
+
+```
+function cohortWeight(chip, cohort):
+  if cohort.size < MIN_COHORT_FOR_WEIGHTING:   # starting value: 5
+    return 1.0                                  # not enough volume yet to judge anything stale
+
+  newerInCohort = count of chips in cohort accepted after this one
+  if newerInCohort / cohort.size < SUPERSEDED_THRESHOLD:  # starting value: 0.5
+    return 1.0                                   # still holds up against what has come since
+
+  return a modest reduction, proportional to how far superseded, never a hard cutoff
+```
+
+**Concretely:** a legal chip from the one legal event run so far sits in a cohort of two or three. That is well under `MIN_COHORT_FOR_WEIGHTING`, so it never decays, stays exactly as trusted as day one, until SODA has run enough more legal events to build a cohort that could actually supersede it. Quiet is not evidence of anything. Only real new volume is.
+
+**This composes with the event affinity term, it does not sit next to it as a separate system.** Cohort membership is what event affinity already defines. Weighting operates inside that same cohort.
+
+**And the boundary that matters most: neither pool ever touches the live room.** Seeded and contributed chips never appear in the Intel tab, never factor into matching, never show up as anyone's offer or need. Their only job is grounding future AI drafts. They do not exist to any attendee at any point.
+
 ---
 
 ## 4. Approval, the two-call gate made concrete
@@ -106,6 +233,10 @@ Suggestions render as tap targets, accept, edit, or dismiss, one per suggested c
 - Never suggests a category outside the fixed five-value enum.
 - Never runs repeatedly or automatically. One call per connect action, or one call when the person explicitly asks for more suggestions, never a poller re-reading anyone's channel on a schedule.
 - Never blocks card creation. A person can finish their card with zero connected sources, this is additive, never a required step.
+- Never retrieves a pending, edited, or dismissed suggestion as a grounding example. Only accepted chips and approved seed or contributed rows are eligible, everything else is excluded.
+- Never exposes which person a grounding example came from, to the model or to anyone. Retrieval carries category and context text only.
+- Never lets seeded or contributed vocabulary reach an attendee. It exists only to ground future AI drafts, never shown in the room, the Intel tab, or anywhere matching happens.
+- Never adds seeded or contributed vocabulary to the retrieval pool without moderation approval first.
 
 ---
 
@@ -125,6 +256,18 @@ One short Claude call per person, per connect action, structured output, capped 
 6. The call never runs on the live room's critical path and never runs on a recurring schedule.
 7. Instagram and LinkedIn are supported only through pasted text. No API integration is built against either platform in this phase.
 8. A card can be completed and used with zero connected sources. Nothing about this feature is required.
+9. Grounding examples are drawn only from chips with `status = accepted`, or from `chip_vocabulary_seeds` rows with `moderation_status = approved`. A pending, edited-but-unaccepted, or dismissed suggestion is never eligible from either pool.
+10. Grounding examples passed to the model contain only category and context text. No passport ID, name, or other identifying link travels with them.
+11. When fewer than `MIN_GROUNDING_EXAMPLES` similar accepted chips exist, the system falls back to ungrounded drafting rather than blocking the suggestion or forcing in weak matches.
+12. Retrieval reuses the `context_embedding` infrastructure already specified in the matching engine upgrade. No second, parallel embedding system is introduced for this purpose.
+13. Host-seeded and contributed vocabulary lives only in `chip_vocabulary_seeds`, never in the same table as real accepted chips.
+14. A seed or contributed row is retrieval-eligible only after `moderation_status = 'approved'`, set through the existing chip moderation queue, never on insert.
+15. Seeded and contributed vocabulary is never surfaced to any attendee, in the room, the Intel tab, or matching. Its only function is grounding future AI drafts.
+16. When both a real accepted chip and a seeded chip are near-equally similar to a retrieval query, the real accepted chip is preferred.
+17. Retrieval considers the source event's vertical. A chip from an unrelated vertical is never preferred over one from the same or a related vertical at similar textual similarity.
+18. A chip's weight in retrieval never decays purely from elapsed time. It only reduces when a cohort of the same category and vertical has accumulated enough newer accepted chips to genuinely supersede it, per `cohortWeight`.
+19. Below `MIN_COHORT_FOR_WEIGHTING`, every chip in that cohort holds full weight regardless of age. Low volume in a vertical is never treated as evidence of staleness.
+20. A contributed vocabulary submission is checked for specificity before it reaches the human moderation queue. A submission that is appropriate but too generic to add signal is returned to the contributor rather than silently entering the pool.
 
 ---
 
@@ -135,6 +278,8 @@ One short Claude call per person, per connect action, structured output, capped 
 **Phase 2.** YouTube channel connect. Requires a server-side API key and a fetch step before the same suggestion prompt runs, otherwise identical to Phase 1 once the raw content is in hand.
 
 **Phase 3.** The self-awareness surface mentioned as a later idea, occasionally showing a person a pattern across their own accepted chips, "you keep offering early-stage fundraising help," rather than only suggesting once at connect time. Product question first, whether this feels helpful or repetitive, before it becomes a standing feature.
+
+**Phase 4.** Retrieval-grounded suggestions, sections 3.1 through 3.3 together, the retrieval function, the seed pool, and cohort weighting. Not 3.1 and 3.2 alone, the retrieval function in 3.2 calls `cohortWeight` directly, so 3.3 is a dependency of Phase 4's own code, not a later refinement of it. Building these together rather than sequentially matters for a second reason too: a Phase 4 that only reads organic accepted chips would sit nearly empty through a new vertical's first several events, exactly the gap host seeding and contribution exist to close. Ship retrieval, its seed pool, and its weighting as one phase, not staggered.
 
 ---
 
