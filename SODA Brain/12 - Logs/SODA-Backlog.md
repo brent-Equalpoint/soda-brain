@@ -214,3 +214,6 @@ browser flow** (sign-up → room → leave, Playwright, mobile-Chromium). Open:
 
 ## 2026-07-19 — Scarcity total cap shipped (078f120)
 - Spec revision applied to the live scorer: scarcity is now bounded twice (per category AND 4.0 total across shared categories, criterion 12). OPEN from the same revision: the hub-penalty "surface" definition (SURFACE_TOP_N — count Intel top-5 appearances, needs a small migration) awaits Brent's call; Chip Assist Phase 4 (grounding/seeds/cohorts) queues behind Matching Phase 2 embeddings.
+
+## 2026-07-19 — Data Dictionary shipped (798d6fe)
+- docs/DATA-DICTIONARY.md: all 34 tables, per-column plain-English meaning + privacy class (PII / card-content / contentless-telemetry / operational), writers, RLS posture, and the ephemeral wipe + account deletion walked end to end. Manifest corrected 33→34 tables and now points at it. Maintenance rule: update the dictionary in the same ship as any migration.
