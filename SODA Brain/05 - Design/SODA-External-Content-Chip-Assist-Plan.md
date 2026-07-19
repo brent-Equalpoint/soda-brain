@@ -1,7 +1,20 @@
 # External Content Chip Assist — Build Plan (reconciled to the real SODA)
 
-**Status: PLANNED 2026-07-19 · spec = [[SODA-External-Content-Chip-Assist]] (Brent, v1.0) ·
-awaiting Brent's four calls below, then buildable in ~a day (Phase 1).**
+**Status: Phase 1 SHIPPED 2026-07-19 (commit ca70f81, same day as the decisions).
+Spec = [[SODA-External-Content-Chip-Assist]] (Brent, v1.0). Phase 2 (YouTube) not started.**
+
+**As built:** contract in `packages/contracts/src/chip-assist.ts` (suggestion type =
+`ChipAssistSuggestion` — NOT `ChipSuggestion`, which host.ts already owns for the menu
+moderation queue); `lib/chips/assist.ts` (bank-constrained prompt + `sanitizeSuggestions`
+server revalidation + keyless mock, 10 unit tests); `POST /api/me/chip-assist` (401 signed-out,
+403 anonymous = the ephemeral posture enforced server-side, 6-per-5-min brake, writes nothing);
+`components/chip-assist.tsx` disclosure rendered by CardEditor's new `assist` prop, which ONLY
+`/card` turns on (the in-room quick editor and ephemeral rooms never see it). Edit = rewrite
+the focus in your own words, category stays from the bank (spec §4).
+
+**Brent's calls (2026-07-19):** 1) Phase 1 STATELESS (no table, paste discarded).
+2) Entry point: card editor only. 3) Assist HIDDEN in ephemeral/classroom rooms.
+4) Queue: **Chip Assist FIRST**, the Tier-1 load test slides one slot.
 
 ## What the spec asks, in one line
 

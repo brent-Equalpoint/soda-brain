@@ -207,3 +207,7 @@ browser flow** (sign-up → room → leave, Playwright, mobile-Chromium). Open:
   variant · the wrap), mock at the note-family artifact. Ship = one note-shell component
   replacing CelebrationModal faces + the Chance overlay. DO NOT build until Brent returns with
   his tweaks; when he does, update the mock first, then convert.
+
+## 2026-07-19 — Chip Assist Phase 1 SHIPPED (ca70f81)
+- Pasted-bio → suggested chips, live behind the /card editor's "Let your work fill your card" disclosure. Stateless (bio read once, never stored), categories locked to the chip bank, accept/edit/dismiss per chip, saves through the normal card path. Anonymous (ephemeral-room) sessions refused server-side. Plan: 05 - Design/SODA-External-Content-Chip-Assist-Plan.md.
+- Queue per Brent: Chip Assist jumped the line; Tier-1 load test is NEXT UP again. Phase 2 (YouTube connect + external_content_sources table) not started.
