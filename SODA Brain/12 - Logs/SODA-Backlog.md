@@ -201,3 +201,9 @@ browser flow** (sign-up → room → leave, Playwright, mobile-Chromium). Open:
   fixtures always-run green; real-data replay opt-in (backtest.live.test.ts, BACKTEST_* envs —
   Brent runs against prod read-only). `[you]` review the three [chosen] constants after the next
   event. Phase 2 (embeddings/pgvector) + Phase 3 (convene clusters) not started, per build order.
+- `[you → me]` **The note family (moment states)** — HELD at Brent's call (2026-07-15, "forefront
+  of my mind, I might want to tweak them"). The passed-note treatment extended to six moment
+  states (nudge SHIPPED · milestone · night-so-far · the Chance w/ countdown · host-moment stat
+  variant · the wrap), mock at the note-family artifact. Ship = one note-shell component
+  replacing CelebrationModal faces + the Chance overlay. DO NOT build until Brent returns with
+  his tweaks; when he does, update the mock first, then convert.
