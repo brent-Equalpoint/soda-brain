@@ -211,3 +211,6 @@ browser flow** (sign-up → room → leave, Playwright, mobile-Chromium). Open:
 ## 2026-07-19 — Chip Assist Phase 1 SHIPPED (ca70f81)
 - Pasted-bio → suggested chips, live behind the /card editor's "Let your work fill your card" disclosure. Stateless (bio read once, never stored), categories locked to the chip bank, accept/edit/dismiss per chip, saves through the normal card path. Anonymous (ephemeral-room) sessions refused server-side. Plan: 05 - Design/SODA-External-Content-Chip-Assist-Plan.md.
 - Queue per Brent: Chip Assist jumped the line; Tier-1 load test is NEXT UP again. Phase 2 (YouTube connect + external_content_sources table) not started.
+
+## 2026-07-19 — Scarcity total cap shipped (078f120)
+- Spec revision applied to the live scorer: scarcity is now bounded twice (per category AND 4.0 total across shared categories, criterion 12). OPEN from the same revision: the hub-penalty "surface" definition (SURFACE_TOP_N — count Intel top-5 appearances, needs a small migration) awaits Brent's call; Chip Assist Phase 4 (grounding/seeds/cohorts) queues behind Matching Phase 2 embeddings.
