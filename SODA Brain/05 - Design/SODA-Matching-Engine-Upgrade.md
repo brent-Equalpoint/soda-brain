@@ -43,6 +43,8 @@ This score feeds two different surfaces, and they should not be treated identica
 
 **A second nudge guard, spacing rather than a score threshold.** A pairing that is simultaneously reciprocal, scarce, and room-state boosted clears every bar at once, and several such pairings landing on the same person within minutes of each other stops feeling like the room noticing something and starts feeling like the app running a campaign, cutting directly against the room, not the app posture the rest of this product protects. `NUDGE_MIN_SPACING_MINUTES`, starting value 8, sets a minimum gap between two nudges the same recipient receives, regardless of how many matches clear `NUDGE_MIN_SCORE` at once. Extra qualifying matches queue and wait their turn rather than firing together.
 
+**Scoped to the current event only, never a person's history across events.** Someone attending two same-day events, Coffee Connect and the Black Tech Week meetup both landing August 19th is a real case already on the calendar, should never have a nudge in the second room suppressed because the clock hadn't cleared eight minutes since a nudge in the first, unrelated room. The spacing check only ever looks at nudges logged for the event currently live.
+
 **The score itself is never shown to an attendee, only what it produces.** Celebrations already lock this posture elsewhere in the product, signals in good fun, never scores, and this is the same rule applied here. What an attendee sees is the ordering the score produces, and the qualitative, first-name, color-coded match reasons the app manifest already describes, "you both offer what the other needs," not the 1.5 that produced that sentence. The hub penalty in particular must never surface as language of any kind, being told a version of "you have already been shown to ten people tonight" would read as a punishment, not a ranking detail, so it stays entirely invisible, a quiet effect on order, nothing a person is ever told about themselves.
 
 ---
@@ -180,6 +182,8 @@ function nudgeAllowed(candidate, event):
 
 **Hitting the cap does not mean the room's real gap disappears, it means the individual-nudge channel stops being the right tool for it.** Once `soleSourceLoad` crosses the cap, that person and their scarce category become a direct input to `detectConveneClusters` in section 4, the exact mechanism already built for "several people want the same thing, this is a group moment, not four separate one-to-one pushes." A host seeing that suggestion can run one session instead of the room continuing to individually target one person all night. The guard does not silently drop the remaining people's real need, it redirects it to the tool built for exactly this shape of problem.
 
+**Resets per event, same as the hub penalty, for the same reason.** Being the room's only offer for something scarce at one event says nothing about the next one, a different room could have three people offering the same thing, or nobody who needs it at all. `soleSourceLoad` is computed fresh per event, never carried forward, and never accumulates into anything resembling a standing flag on a person.
+
 ## 3. Tier 2, embeddings, natural pairing with the existing roadmap
 
 This is the same `pgvector` initiative already sitting in the backlog under Tier 2 scale. The matching upgrade gives it a concrete first job: widening what counts as similar within a category, so "UX design" and "product design" can be recognized as close even though a hand-curated synonym list will never scale to cover every real phrasing.
@@ -259,6 +263,8 @@ Worth naming explicitly rather than leaving it as a silent gap. SODA has somethi
 17. A scarce category earns no scarcity bonus unless the underlying chip carries real context text. A bare category claim never qualifies, regardless of how scarce that category currently is.
 18. No recipient receives two nudges closer together than `NUDGE_MIN_SPACING_MINUTES`, even when multiple pairings clear `NUDGE_MIN_SCORE` at the same moment. Extra qualifying matches queue rather than fire together.
 19. Once a sole source's `soleSourceLoad` reaches `SOLE_SOURCE_NUDGE_CAP`, no further individual nudge points at them for that category. That load and category are passed directly to `detectConveneClusters` instead of being silently dropped.
+19a. `soleSourceLoad` resets per event and never carries forward. A person capped at one event starts the next event with no memory of it, the same discipline already locked for the hub penalty.
+19b. `NUDGE_MIN_SPACING_MINUTES` only ever considers nudges logged for the currently live event. A nudge from a different event, including one earlier the same day, never counts toward another event's spacing check.
 20. Any future outcome-based learning proposal must include sole-source load as a control variable alongside match category and considered-ratio, so a category is never blamed for a retention problem that was actually caused by one person being overloaded on one specific night.
 21. Outcome-based automatic weight learning is explicitly out of scope for this build and requires a separate proposal, real event volume, and active bias review before any future implementation.
 
