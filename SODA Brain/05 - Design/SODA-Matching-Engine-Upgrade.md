@@ -41,6 +41,8 @@ This score feeds two different surfaces, and they should not be treated identica
 
 **Nudge selection.** A nudge is not passive browsing, it is a push, and it is already rate-limited to one per connection per seven days by locked decision. Firing an unprompted push for a marginal match spends that scarce, once-a-week slot on something the recipient did not ask to see. Nudge selection applies a separate minimum score threshold, `NUDGE_MIN_SCORE`, on top of the same ranking, so only pairings with real confidence behind them consume that interruption. A pairing can rank respectably in the Intel tab without ever clearing the bar to justify a push.
 
+**A second nudge guard, spacing rather than a score threshold.** A pairing that is simultaneously reciprocal, scarce, and room-state boosted clears every bar at once, and several such pairings landing on the same person within minutes of each other stops feeling like the room noticing something and starts feeling like the app running a campaign, cutting directly against the room, not the app posture the rest of this product protects. `NUDGE_MIN_SPACING_MINUTES`, starting value 8, sets a minimum gap between two nudges the same recipient receives, regardless of how many matches clear `NUDGE_MIN_SCORE` at once. Extra qualifying matches queue and wait their turn rather than firing together.
+
 **The score itself is never shown to an attendee, only what it produces.** Celebrations already lock this posture elsewhere in the product, signals in good fun, never scores, and this is the same rule applied here. What an attendee sees is the ordering the score produces, and the qualitative, first-name, color-coded match reasons the app manifest already describes, "you both offer what the other needs," not the 1.5 that produced that sentence. The hub penalty in particular must never surface as language of any kind, being told a version of "you have already been shown to ten people tonight" would read as a punishment, not a ranking detail, so it stays entirely invisible, a quiet effect on order, nothing a person is ever told about themselves.
 
 ---
@@ -77,11 +79,15 @@ function scarcityBonus(A, B, roomGapStats):
   for category in categories:
     stats = roomGapStats[category]           # existing gap computation
     gapRatio = stats.needCount / max(stats.offerCount, 1)
+    if gapRatio > SCARCITY_THRESHOLD and not hasRealContext(A, category):
+      continue                                # a bare category claim earns no scarcity boost
     if gapRatio > SCARCITY_THRESHOLD:         # starting value: 2.0
       bonus += SCARCITY_BONUS * min(gapRatio / SCARCITY_THRESHOLD, MAX_SCARCITY_MULTIPLIER)
   return min(bonus, MAX_TOTAL_SCARCITY_BONUS)  # starting value: 4.0, caps the sum across
                                                  # every shared category, not just one
 ```
+
+**The moment scarcity affects who gets surfaced, claiming a scarce category becomes worth gaming, so claiming one should cost more than tapping a chip.** `hasRealContext` checks that the chip carries real context text, not just the bare category name, before that category's scarcity bonus applies at all. This is the identical lesson Coffee Connect already taught the hard way, a category alone is nearly meaningless, specificity is where the real signal lives, just applied defensively here instead of descriptively. "Funding" earns nothing extra. "Funding, mostly pre-seed SAFE notes" does.
 
 Same narrowing as reciprocity, same open question about the real field name.
 
@@ -157,6 +163,23 @@ function focusBonus(viewer, candidate):
 
 **The honest unknown here, flagged rather than guessed past:** this document never speced the base category score, and the existing engine may already do some version of focus narrowing at that layer. Confirm what the current focus-aware ranking actually does before implementing `focusBonus` and the narrowing added to 2.1 and 2.2, it is entirely possible less new work is needed than this section assumes, or that the field name and matching logic already exist under a different shape than `currentFocus` and `candidateOffersTopic` as written here.
 
+### 2.7 Sole-source load, a welfare guard, not a fairness one
+
+The hub penalty and this guard solve different problems, worth being precise about the difference. Hub-spreading corrects a *ranking* distortion, an accidentally generic profile absorbing attention that would have been better spread around. This guard protects a *person*, someone who is genuinely the only offer for something several people need at once, from being individually pushed at by every single one of them in the same night. Section 4 already establishes that hub-spreading cannot and should not fix a true sole source. This is the other half of that honesty, the model does not get to just let a sole source absorb unlimited simultaneous attention because the ranking was technically correct.
+
+```
+function soleSourceLoad(candidate, event):
+  return count of distinct people who currently have candidate as their #1 ranked
+         match and have not yet connected with them
+
+function nudgeAllowed(candidate, event):
+  if soleSourceLoad(candidate, event) >= SOLE_SOURCE_NUDGE_CAP:   # starting value: 3
+    return false
+  return true
+```
+
+**Hitting the cap does not mean the room's real gap disappears, it means the individual-nudge channel stops being the right tool for it.** Once `soleSourceLoad` crosses the cap, that person and their scarce category become a direct input to `detectConveneClusters` in section 4, the exact mechanism already built for "several people want the same thing, this is a group moment, not four separate one-to-one pushes." A host seeing that suggestion can run one session instead of the room continuing to individually target one person all night. The guard does not silently drop the remaining people's real need, it redirects it to the tool built for exactly this shape of problem.
+
 ## 3. Tier 2, embeddings, natural pairing with the existing roadmap
 
 This is the same `pgvector` initiative already sitting in the backlog under Tier 2 scale. The matching upgrade gives it a concrete first job: widening what counts as similar within a category, so "UX design" and "product design" can be recognized as close even though a hand-curated synonym list will never scale to cover every real phrasing.
@@ -195,6 +218,8 @@ function detectConveneClusters(event, roomGapStats):
   return clusters
 ```
 
+**A second, more targeted trigger feeds this same function.** Section 2.7's sole-source load cap is not just a nudge guard, once a sole source hits `SOLE_SOURCE_NUDGE_CAP`, that specific person and category should be passed into `detectConveneClusters` directly, not wait for the general room-wide gap scan to notice the same thing later. The two paths land in the same place, a host-facing suggestion, but the sole-source trigger is faster and more specific, it already knows exactly who is overloaded, not just that a category is thin.
+
 **This never auto-fires a convene.** Same two-call-gate posture as drafts and nudges everywhere else in the product: the system detects a cluster and surfaces it to the host as a suggestion, the host decides whether to fire it, exactly the same shape as the existing Moment Creator. A detected cluster that never becomes a convene is not a bug, it means the host judged the moment wasn't right.
 
 **Why this is Tier 3 and not Tier 1:** the algorithm is the easy part. Whether an automatically surfaced "four people want this" suggestion feels helpful to a host mid-event, or feels like the product telling them how to run their own room, is a product question that needs a real event to answer, not something to resolve at a whiteboard. Build the detection function, but validate the host-facing surface with a small test before it becomes a standing feature.
@@ -206,6 +231,8 @@ function detectConveneClusters(event, roomGapStats):
 Worth naming explicitly rather than leaving it as a silent gap. SODA has something most matching systems never get: real signal on whether a match actually survived, the considered ratio, warmth at 7, 21, and 60 days. In principle, category pairings that reliably produce connections people write a real why for, and keep warm, could earn a small automatic weight increase over time. Pairings that produce a lot of collected-but-abandoned adds could quietly lose weight.
 
 **This is explicitly out of scope for this build.** The honest risk: outcome-based learning on social data can encode bias that was never intended. If certain pairings show lower follow-through for reasons that have nothing to do with match quality, room composition, timing, who happened to be tired that night, an automated system should not learn to quietly suppress them. This needs real volume across many more events, and it needs a human actively watching what it learns, not a background job adjusting weights unsupervised.
+
+**A concrete version of that exact risk, worth naming now even though the learning itself is deferred:** if a sole source's night produces several shallow, distracted connections because they were the only offer for something six people needed at once, section 2.7's cap should keep that from happening going forward, but any future outcome analysis run on the events before it existed would see a category that "doesn't retain," not a person who was overloaded. Load has to be a control variable in any future outcome-based work, not just match category and considered-ratio, or the system would learn to quietly deprioritize a scarce, valuable category for a reason that was never really about the category at all.
 
 **What to do instead, right now:** after each event, look at whether the new scoring system's top-ranked matches actually correlate with higher considered ratios and better warmth retention than the old flat ranking did. That's manual validation of the scoring constants, not automated learning, and it is the honest middle ground between shipping blind and shipping something that quietly teaches itself the wrong lesson.
 
@@ -229,7 +256,11 @@ Worth naming explicitly rather than leaving it as a silent gap. SODA has somethi
 14. Before Phase 1 ships to a live room, the scoring constants are backtested against the four existing events' historical data, specifically checked against two known outcomes: whether the hub penalty would have spread density away from Coffee Connect's top connector, and whether the scarcity bonus would have correctly ranked the room's real Most Wanted gaps above its most generic, most common chip.
 15. Focus bonus defaults to zero contribution when no focus is set, and never blocks scoring for anyone who never touches the feature.
 16. Before `focusBonus` and the narrowing in reciprocity and scarcity are implemented, the existing focus-aware ranking behavior already present in the base engine is confirmed, including the real field name behind `currentFocus`, so this addition does not duplicate logic that already exists at a different layer.
-17. Outcome-based automatic weight learning is explicitly out of scope for this build and requires a separate proposal, real event volume, and active bias review before any future implementation.
+17. A scarce category earns no scarcity bonus unless the underlying chip carries real context text. A bare category claim never qualifies, regardless of how scarce that category currently is.
+18. No recipient receives two nudges closer together than `NUDGE_MIN_SPACING_MINUTES`, even when multiple pairings clear `NUDGE_MIN_SCORE` at the same moment. Extra qualifying matches queue rather than fire together.
+19. Once a sole source's `soleSourceLoad` reaches `SOLE_SOURCE_NUDGE_CAP`, no further individual nudge points at them for that category. That load and category are passed directly to `detectConveneClusters` instead of being silently dropped.
+20. Any future outcome-based learning proposal must include sole-source load as a control variable alongside match category and considered-ratio, so a category is never blamed for a retention problem that was actually caused by one person being overloaded on one specific night.
+21. Outcome-based automatic weight learning is explicitly out of scope for this build and requires a separate proposal, real event volume, and active bias review before any future implementation.
 
 ---
 
