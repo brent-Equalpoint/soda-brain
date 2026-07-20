@@ -217,3 +217,14 @@ browser flow** (sign-up → room → leave, Playwright, mobile-Chromium). Open:
 
 ## 2026-07-19 — Data Dictionary shipped (798d6fe)
 - docs/DATA-DICTIONARY.md: all 34 tables, per-column plain-English meaning + privacy class (PII / card-content / contentless-telemetry / operational), writers, RLS posture, and the ephemeral wipe + account deletion walked end to end. Manifest corrected 33→34 tables and now points at it. Maintenance rule: update the dictionary in the same ship as any migration.
+
+## 2026-07-20 — THE MATCHING BUNDLE (defined, awaiting Brent's "Ship")
+One shippable batch, all in the scorer + queue + room/recap surfaces, no migrations:
+1. Side-aware hasRealContext scarcity guard (rev 6 §2.2; fixes the A-side-only bug from the audit; SOFT form recommended: half bonus for bare chips, full for context — Brent may override to hard-zero)
+2. Nudge spacing guard NUDGE_MIN_SPACING_MINUTES=8, event-scoped per 19b (queue suppression + send-route enforcement, stateless)
+3. Sole-source welfare cap SOLE_SOURCE_NUDGE_CAP=3, per-event per 19a (all-nudges reading of criterion 19; capped pairings stay visible in Intel)
+4. FOCUS_BONUS=1.5 for focus-aligned matches in the composite (the criterion-16-confirmed real-field form; narrowing stays moot, no currentFocus field exists)
+5. ADDED 2026-07-20 (Brent): guest-side composite — the room page ranks "who matches you" with the same scorer (scarcity+reciprocity+alignment client-side; server terms zero), so every surface names the same top match
+6. ADDED: scarcity-aware focus nudge — when the bare chip is in a scarce category, the sharpen sheet leads with it; copy stays about their specificity, NEVER "the room is short on X"
+7. ADDED: recap + reconnect ordering via the composite (post-event terms only)
+OUT of the bundle: Paths ranking (Brent's product call pending), Chance stays luck, SURFACE_TOP_N Intel logging (separate migration decision).
