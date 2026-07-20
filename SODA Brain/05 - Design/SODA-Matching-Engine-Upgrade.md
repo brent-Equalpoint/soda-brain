@@ -26,6 +26,7 @@ score(A, B) =
   + reciprocity_bonus(A, B)            [new, Tier 1]
   + scarcity_bonus(A, B)               [new, Tier 1]
   + room_state_bonus(A, B)             [new, Tier 1]
+  + focus_bonus(A, B)                  [new, Tier 1, defaults to 0, see 2.6]
   + context_similarity_bonus(A, B)     [new, Tier 2, defaults to 0]
   - hub_penalty(A) - hub_penalty(B)    [new, Tier 1]
 ```
@@ -40,6 +41,8 @@ This score feeds two different surfaces, and they should not be treated identica
 
 **Nudge selection.** A nudge is not passive browsing, it is a push, and it is already rate-limited to one per connection per seven days by locked decision. Firing an unprompted push for a marginal match spends that scarce, once-a-week slot on something the recipient did not ask to see. Nudge selection applies a separate minimum score threshold, `NUDGE_MIN_SCORE`, on top of the same ranking, so only pairings with real confidence behind them consume that interruption. A pairing can rank respectably in the Intel tab without ever clearing the bar to justify a push.
 
+**The score itself is never shown to an attendee, only what it produces.** Celebrations already lock this posture elsewhere in the product, signals in good fun, never scores, and this is the same rule applied here. What an attendee sees is the ordering the score produces, and the qualitative, first-name, color-coded match reasons the app manifest already describes, "you both offer what the other needs," not the 1.5 that produced that sentence. The hub penalty in particular must never surface as language of any kind, being told a version of "you have already been shown to ten people tonight" would read as a punishment, not a ranking detail, so it stays entirely invisible, a quiet effect on order, nothing a person is ever told about themselves.
+
 ---
 
 ## 2. Tier 1, build first, no new infrastructure
@@ -52,12 +55,16 @@ A match where both people offer something the other needs is structurally better
 
 ```
 function reciprocityBonus(A, B):
-  aGivesBNeeds = hasCategoryMatch(A.offers, B.needs)
-  bGivesANeeds = hasCategoryMatch(B.offers, A.needs)
+  aOffers = A.currentFocus ? [A.currentFocus] : A.offers   # narrow to focus if one is set
+  bOffers = B.currentFocus ? [B.currentFocus] : B.offers
+  aGivesBNeeds = hasCategoryMatch(aOffers, B.needs)
+  bGivesANeeds = hasCategoryMatch(bOffers, A.needs)
   if aGivesBNeeds and bGivesANeeds:
     return RECIPROCITY_BONUS      # starting value: 1.5
   return 0
 ```
+
+**The narrowing line is new, and it depends on a field this document does not own.** `currentFocus` is a placeholder, confirm the real name against whatever backs the app manifest's existing "focus-aware ranking" and "focus nudges" features before implementing this. If a person has flagged what they are focused on right now, reciprocity should check against that instead of diluting across every chip they have, otherwise a person actively focused on Funding could see their Mentorship chip quietly drag a genuinely strong Funding match down the list.
 
 ### 2.2 Scarcity bonus
 
@@ -66,7 +73,8 @@ This is the Most Wanted computation, already built and already proven useful, fo
 ```
 function scarcityBonus(A, B, roomGapStats):
   bonus = 0
-  for category in sharedMatchCategories(A, B):
+  categories = A.currentFocus ? [A.currentFocus] : sharedMatchCategories(A, B)
+  for category in categories:
     stats = roomGapStats[category]           # existing gap computation
     gapRatio = stats.needCount / max(stats.offerCount, 1)
     if gapRatio > SCARCITY_THRESHOLD:         # starting value: 2.0
@@ -74,6 +82,8 @@ function scarcityBonus(A, B, roomGapStats):
   return min(bonus, MAX_TOTAL_SCARCITY_BONUS)  # starting value: 4.0, caps the sum across
                                                  # every shared category, not just one
 ```
+
+Same narrowing as reciprocity, same open question about the real field name.
 
 `MAX_SCARCITY_MULTIPLIER` bounds what a single category can contribute. `MAX_TOTAL_SCARCITY_BONUS` bounds what all of them can contribute together, a pair sharing several scarce categories at once should rank well, not dominate the whole score by accumulating an uncapped sum.
 
@@ -129,6 +139,23 @@ Prefer counting from whatever already logs a nudge or match surface. Add this ta
 Four real events already produced chip, connection, and warmth data, Coffee Connect, Latinos N Tech, Chase, Creative Meetups. **Before Phase 1 scoring runs in a live room for the first time, run it against that historical data first.** Two checks specifically: would the hub-spreading penalty have actually pulled Lorena Medina's 18-match concentration at Coffee Connect toward a more even spread, and would the scarcity bonus have correctly ranked Looking for Work and Funding, the two real Most Wanted gaps that night, above the room's most common and most generic chip. If the backtest doesn't show both clearly, the starting constants are wrong before a single live room ever sees them, and that is a far cheaper place to find out than during an actual event.
 
 ---
+
+### 2.6 Focus bonus, and the open dependency it has on the existing engine
+
+Everything above treats a person's offers and needs as one flat set. That is wrong the moment someone has actively flagged what they are focused on right now, the app manifest already lists focus-aware ranking and focus nudges as live features, sitting next to open-to-talk status, which means focus is a real, in-the-moment signal this scoring model has been ignoring.
+
+```
+function focusBonus(viewer, candidate):
+  if not viewer.currentFocus:
+    return 0                                   # graceful default, nobody has to set one
+  if candidateOffersTopic(candidate, viewer.currentFocus):
+    return FOCUS_BONUS                          # starting value: 1.5, same weight class as reciprocity
+  return 0
+```
+
+**This is written from one person's point of view on purpose.** A person's own focus should shape their own ranked list. Whether the candidate also happens to be focused on the same thing is a separate question, not folded into this term, keep it simple until there is a real reason not to.
+
+**The honest unknown here, flagged rather than guessed past:** this document never speced the base category score, and the existing engine may already do some version of focus narrowing at that layer. Confirm what the current focus-aware ranking actually does before implementing `focusBonus` and the narrowing added to 2.1 and 2.2, it is entirely possible less new work is needed than this section assumes, or that the field name and matching logic already exist under a different shape than `currentFocus` and `candidateOffersTopic` as written here.
 
 ## 3. Tier 2, embeddings, natural pairing with the existing roadmap
 
@@ -187,19 +214,22 @@ Worth naming explicitly rather than leaving it as a silent gap. SODA has somethi
 ## 6. Acceptance criteria
 
 1. The existing category-plus-synonym match remains the sole gate for whether two people are considered candidates at all. Nothing in this spec removes or bypasses it.
-2. Reciprocity, scarcity, and room-state bonuses are computed entirely from data already available in the room, existing gap stats, existing connection counts. No new external calls required for Tier 1.
-3. The hub-spreading penalty counts only pairs actually shown to a person, in the Intel tab or as a nudge, never every computed candidate. It resets per event and never carries into a person's next room.
-4. Intel tab ordering uses the full continuous score with no cutoff. Nudge selection applies a separate minimum score threshold on top of the same ranking, since a nudge is a rate-limited push, not passive browsing, and should not spend that limit on a marginal match.
-5. The room-state bonus does not activate until the room has passed a minimum warmup period. In the first minutes of a room, the room-wide average connection count is too close to zero to be a meaningful comparison.
-6. The scoring system always produces a ranking, never a hard cutoff. A low-scoring category match is still shown, only lower in the list, never hidden.
-7. Context-similarity scoring defaults to zero contribution when an embedding is unavailable or not yet generated. The system produces correct rankings without it.
-8. Embedding generation never blocks the live room. It runs asynchronously on chip save, with normalized-string caching to avoid generating the same context twice.
-9. Cluster detection only ever surfaces a suggested convene to a host. It never fires a convene automatically.
-10. All scoring constants, bonuses, thresholds, the penalty rate, the nudge minimum, the warmup period, are configurable values, not hardcoded numbers, and get reviewed against real considered-ratio and warmth-decay data after each event before being adjusted.
-11. `SURFACE_TOP_N` defines exactly what counts as a surface for the hub-spreading penalty. Appearing in a computed candidate list never counts, only appearing within the top N of a person's displayed list does.
-12. Scarcity bonus is bounded twice, once per category by `MAX_SCARCITY_MULTIPLIER`, and once in total by `MAX_TOTAL_SCARCITY_BONUS`. A pair sharing many scarce categories cannot accumulate an unbounded sum.
-13. Before Phase 1 ships to a live room, the scoring constants are backtested against the four existing events' historical data, specifically checked against two known outcomes: whether the hub penalty would have spread density away from Coffee Connect's top connector, and whether the scarcity bonus would have correctly ranked the room's real Most Wanted gaps above its most generic, most common chip.
-14. Outcome-based automatic weight learning is explicitly out of scope for this build and requires a separate proposal, real event volume, and active bias review before any future implementation.
+2. The composite score, and every individual term inside it, is never rendered to an attendee in any surface. Only its effects, ordering and qualitative match-reason language, are visible. The hub penalty specifically is never referenced in any copy shown to a person, about themselves or anyone else.
+3. Reciprocity, scarcity, and room-state bonuses are computed entirely from data already available in the room, existing gap stats, existing connection counts. No new external calls required for Tier 1.
+4. The hub-spreading penalty counts only pairs actually shown to a person, in the Intel tab or as a nudge, never every computed candidate. It resets per event and never carries into a person's next room.
+5. Intel tab ordering uses the full continuous score with no cutoff. Nudge selection applies a separate minimum score threshold on top of the same ranking, since a nudge is a rate-limited push, not passive browsing, and should not spend that limit on a marginal match.
+6. The room-state bonus does not activate until the room has passed a minimum warmup period. In the first minutes of a room, the room-wide average connection count is too close to zero to be a meaningful comparison.
+7. The scoring system always produces a ranking, never a hard cutoff. A low-scoring category match is still shown, only lower in the list, never hidden.
+8. Context-similarity scoring defaults to zero contribution when an embedding is unavailable or not yet generated. The system produces correct rankings without it.
+9. Embedding generation never blocks the live room. It runs asynchronously on chip save, with normalized-string caching to avoid generating the same context twice.
+10. Cluster detection only ever surfaces a suggested convene to a host. It never fires a convene automatically.
+11. All scoring constants, bonuses, thresholds, the penalty rate, the nudge minimum, the warmup period, are configurable values, not hardcoded numbers, and get reviewed against real considered-ratio and warmth-decay data after each event before being adjusted.
+12. `SURFACE_TOP_N` defines exactly what counts as a surface for the hub-spreading penalty. Appearing in a computed candidate list never counts, only appearing within the top N of a person's displayed list does.
+13. Scarcity bonus is bounded twice, once per category by `MAX_SCARCITY_MULTIPLIER`, and once in total by `MAX_TOTAL_SCARCITY_BONUS`. A pair sharing many scarce categories cannot accumulate an unbounded sum.
+14. Before Phase 1 ships to a live room, the scoring constants are backtested against the four existing events' historical data, specifically checked against two known outcomes: whether the hub penalty would have spread density away from Coffee Connect's top connector, and whether the scarcity bonus would have correctly ranked the room's real Most Wanted gaps above its most generic, most common chip.
+15. Focus bonus defaults to zero contribution when no focus is set, and never blocks scoring for anyone who never touches the feature.
+16. Before `focusBonus` and the narrowing in reciprocity and scarcity are implemented, the existing focus-aware ranking behavior already present in the base engine is confirmed, including the real field name behind `currentFocus`, so this addition does not duplicate logic that already exists at a different layer.
+17. Outcome-based automatic weight learning is explicitly out of scope for this build and requires a separate proposal, real event volume, and active bias review before any future implementation.
 
 ---
 
