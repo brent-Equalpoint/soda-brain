@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>SODA, The Room</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Caveat:wght@600&display=swap');
+  :root{
+    --canvas:#111;--card:#1a1a1a;--surface:#202220;--border:#2a2a2a;
+    --green:#3bd75c;--ink:#f5f5f5;--muted:#8a8a8a;--hint:#5a5a5a;--purple:#a47bff;
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:#000;color:var(--ink);font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:20px;overflow:hidden}
+  .mono{font-family:'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase}
+  .display{font-family:'Archivo Black',sans-serif;text-transform:uppercase;letter-spacing:-.02em;line-height:1.04}
+  .device{width:392px;height:820px;max-height:calc(100dvh - 40px);background:var(--canvas);border-radius:30px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px var(--border),0 40px 80px rgba(0,0,0,.65)}
+  @media (max-width:430px){body{padding:0}.device{width:100vw;height:100dvh;max-height:none;border-radius:0}}
+
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:15px 20px 11px;border-bottom:1px solid var(--border);flex-shrink:0}
+  .live{display:flex;align-items:center;gap:7px;color:var(--green);font-size:10px}
+  .live i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(59,215,92,.5)}70%{box-shadow:0 0 0 6px rgba(59,215,92,0)}100%{box-shadow:0 0 0 0 rgba(59,215,92,0)}}
+
+  .head{padding:16px 20px 8px;flex-shrink:0;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .head .eyebrow{color:var(--green);font-size:11px;font-family:'DM Mono';letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}
+  .head h2{font-size:28px}
+  .head p{color:var(--muted);font-size:12.5px;margin-top:4px;max-width:230px}
+  .layout-toggle{display:flex;gap:5px;flex-shrink:0;margin-top:4px}
+  .layout-toggle button{width:34px;height:34px;border:1px solid var(--border);background:var(--card);border-radius:9px;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .layout-toggle button.on{border-color:var(--green);color:var(--green)}
+  .layout-toggle svg{width:16px;height:16px}
+
+  /* density control: the star of this screen */
+  .seg{display:flex;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:4px;margin:4px 20px 0;flex-shrink:0}
+  .seg button{flex:1;height:38px;border:none;background:transparent;color:var(--muted);font-family:'DM Mono';font-size:11px;letter-spacing:.05em;text-transform:uppercase;border-radius:9px;cursor:pointer;transition:all .15s}
+  .seg button.on{background:var(--green);color:#06140a;font-weight:500}
+  .seg-cap{text-align:center;color:var(--hint);font-size:10.5px;font-family:'DM Mono';letter-spacing:.04em;margin:8px 20px 0;flex-shrink:0}
+
+  .grid{flex:1;overflow-y:auto;padding:14px 20px calc(var(--safe-bottom) + 16px);display:grid;grid-template-columns:1fr 1fr;gap:11px;align-content:start}
+  .grid.list{grid-template-columns:1fr}
+  .grid::-webkit-scrollbar{display:none}
+
+  /* MICRO CARD, the name tag */
+  .micro{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:13px;cursor:pointer;transition:transform .12s,border-color .15s;display:flex;flex-direction:column;gap:9px;position:relative;overflow:hidden}
+  .micro:active{transform:scale(.97)}
+  .micro.match{border-color:rgba(164,123,255,.45)}
+  .micro .who{display:flex;align-items:center;gap:10px}
+  .micro .avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#06140a;font-weight:700;font-size:14px;flex-shrink:0}
+  .micro .nm{font-weight:700;font-size:14.5px;line-height:1.1;display:flex;align-items:center;gap:6px}
+  .micro .role{color:var(--muted);font-size:11.5px;margin-top:1px}
+  .micro .you-badge{font-size:8px;background:var(--green);color:#06140a;border-radius:9999px;padding:2px 6px;font-weight:700;font-family:'DM Mono';letter-spacing:.05em}
+
+  /* match signal, the one thing every card may carry */
+  .sig-match{display:flex;align-items:center;gap:6px;color:var(--purple);font-size:11px;font-weight:600}
+  .sig-match .d{width:7px;height:7px;border-radius:50%;background:var(--purple);box-shadow:0 0 7px var(--purple);flex-shrink:0}
+  .match-corner{position:absolute;top:12px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--purple);box-shadow:0 0 8px var(--purple)}
+
+
+  /* mini tabs (Tabs density) */
+  .minitabs{display:flex;gap:6px}
+  .minitab{flex:1;border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:6px 0;text-align:center;font-size:10px;font-weight:600;font-family:'DM Mono';letter-spacing:.04em;text-transform:uppercase;color:var(--muted);transition:all .12s}
+  .minitab:active{transform:scale(.95)}
+  .minitab .n{color:var(--green);font-weight:700}
+  .minitab.need .n{color:var(--green)}
+
+  /* list layout tweaks */
+  .grid.list .micro{flex-direction:row;align-items:center;gap:12px;padding:12px 14px}
+  .grid.list .micro .who{flex:1}
+  .grid.list .micro .right{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+  /* Tabs density in list rows: pills get a fixed comfortable width on the right */
+  .grid.list .micro .minitabs{flex:0 0 auto;width:152px}
+  .grid.list .micro .sig-match{margin-left:auto}
+
+  .tap-cue{position:absolute;bottom:11px;right:13px;color:var(--hint);font-size:9px;font-family:'DM Mono'}
+
+  /* FULL CARD modal */
+  .scrim{position:absolute;inset:0;z-index:60;background:rgba(0,0,0,.72);opacity:0;pointer-events:none;transition:opacity .26s}
+  .scrim.open{opacity:1;pointer-events:auto}
+  .full{position:absolute;left:14px;right:14px;top:50%;transform:translateY(-50%) scale(.94);opacity:0;pointer-events:none;z-index:70;transition:transform .3s cubic-bezier(.22,1,.36,1),opacity .26s}
+  .full.open{transform:translateY(-50%) scale(1);opacity:1;pointer-events:auto}
+  .biz{background:var(--card);border:1px solid var(--border);border-radius:24px;height:520px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.6)}
+  .biz.match{border-color:rgba(164,123,255,.4)}
+  .biz-head{display:flex;justify-content:space-between;align-items:flex-start;padding:20px 22px 0}
+  .soda-mark{position:relative;width:32px;height:32px;flex-shrink:0}
+  .soda-mark i{position:absolute;border-radius:50%;background:var(--green)}
+  .soda-mark .d1{width:10px;height:10px;top:0;left:2px}.soda-mark .d2{width:12px;height:12px;top:3px;right:0}.soda-mark .d3{width:16px;height:16px;bottom:0;left:5px}
+  .agency{text-align:right;line-height:1}
+  .agency .nm{color:var(--green);font-size:22px;font-weight:600}
+  .agency .ty{color:var(--muted);font-size:11px;font-style:italic;letter-spacing:.1em;margin-top:3px}
+  .biz-body{flex:1;padding:8px 22px;overflow-y:auto;display:flex;flex-direction:column}
+  .me-face{flex:1;display:flex;flex-direction:column;justify-content:center}
+  .me-name{color:var(--green);font-family:'Archivo Black';font-size:44px;letter-spacing:-.02em;line-height:.9}
+  .me-role{color:var(--muted);font-size:16px;font-style:italic;margin-top:6px}
+  .sig{margin-top:auto;padding-bottom:6px}
+  .sig .nm{color:var(--green);font-family:'Caveat',cursive;font-size:30px;line-height:1;border-bottom:2px solid var(--green);padding-bottom:2px;display:inline-block}
+  .sig .lbl{color:var(--green);font-size:10px;margin-top:4px}
+  .face-name{color:var(--green);font-family:'Archivo Black';font-size:23px;margin:4px 0 14px}
+  .face-section{color:var(--muted);font-size:13px;font-style:italic;margin:6px 0 10px}
+  .biz-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+  .biz-chip{border-radius:9999px;padding:8px 14px;font-size:12.5px;font-weight:600}
+  .biz-chip.offer{background:var(--green);color:#06140a}
+  .biz-chip.need{background:transparent;border:1px solid rgba(59,215,92,.4);color:var(--green)}
+  .biz-chip .foc{font-weight:500;opacity:.8}
+  /* tappable chips: hover lifts, tap opens the detail sheet */
+  .biz-chip.tappable{cursor:pointer;transition:transform .12s,box-shadow .15s,filter .15s;position:relative}
+  .biz-chip.tappable:hover{transform:translateY(-2px)}
+  .biz-chip.offer.tappable:hover{box-shadow:0 6px 16px rgba(59,215,92,.3)}
+  .biz-chip.need.tappable:hover{box-shadow:0 6px 16px rgba(59,215,92,.15);border-color:var(--green)}
+  .biz-chip.tappable:active{transform:scale(.95)}
+  .chip-hint{color:var(--hint);font-size:10px;font-family:'DM Mono';letter-spacing:.06em;text-transform:uppercase;margin-top:12px;display:flex;align-items:center;gap:6px}
+  .chip-hint .dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+
+  /* chip detail sheet, slides up over the open card */
+  .chip-scrim{position:absolute;inset:0;z-index:80;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .24s}
+  .chip-scrim.open{opacity:1;pointer-events:auto}
+  .chip-sheet{position:absolute;left:0;right:0;bottom:0;z-index:85;background:var(--card);border-top:1px solid var(--border);border-radius:24px 24px 0 0;transform:translateY(100%);transition:transform .34s cubic-bezier(.22,1,.36,1);box-shadow:0 -18px 44px rgba(0,0,0,.6);padding:12px 22px calc(var(--safe-bottom) + 22px)}
+  .chip-sheet.open{transform:translateY(0)}
+  .chip-sheet .handle{width:38px;height:5px;border-radius:3px;background:var(--border);margin:0 auto 16px}
+  .cd-kind{font-family:'DM Mono';font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
+  .cd-kind.offer{color:var(--green)}
+  .cd-kind.need{color:var(--green)}
+  .cd-cat{font-family:'Archivo Black';font-size:30px;line-height:1;margin-bottom:4px}
+  .cd-owner{color:var(--muted);font-size:13px;margin-bottom:18px}
+  .cd-owner b{color:var(--ink);font-weight:600}
+  .cd-foc-lbl{font-family:'DM Mono';font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+  .cd-focs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+  .cd-foc{display:inline-flex;align-items:center;gap:5px;background:rgba(59,215,92,.1);border:1px solid rgba(59,215,92,.3);color:var(--green);border-radius:9999px;padding:8px 14px;font-size:13px;font-weight:600}
+  .cd-foc .p{font-weight:700}
+  .cd-none{color:var(--hint);font-size:13px;font-style:italic}
+  .cd-actions{display:flex;gap:10px;margin-top:22px}
+  .cd-btn{flex:1;min-height:50px;border:none;border-radius:13px;font-weight:700;font-size:14.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
+  .cd-btn.primary{background:var(--purple);color:#0c0814;flex:2}
+  .cd-btn.ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border)}
+  .biz-toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 22px 18px;flex-shrink:0;gap:8px}
+  .biz-toggle button{background:none;border:none;cursor:pointer;font-family:'Archivo Black';font-size:24px;color:var(--green);padding:6px 4px;transition:all .15s}
+  .biz-toggle button.active{background:var(--green);color:#06140a;border-radius:12px;padding:6px 15px}
+  .full-close{position:absolute;top:-44px;right:0;background:var(--card);border:1px solid var(--border);color:var(--ink);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .match-strip{background:rgba(164,123,255,.12);border-top:1px solid rgba(164,123,255,.3);padding:14px 22px 16px;margin-top:4px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+  .match-strip .mono{color:var(--purple);font-size:10px}
+  .match-strip .why{color:var(--ink);font-size:12px;flex:1}
+  .card-actions{display:flex;gap:10px;padding:16px 22px 20px;flex-shrink:0}
+  .ca{flex:1;min-height:46px;border-radius:12px;font-weight:700;font-size:13.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;border:none}
+  .ca.primary{background:var(--purple);color:#0c0814}
+  .ca.ghost{background:transparent;color:var(--green);border:1.5px solid rgba(59,215,92,.4)}
+
+  /* bottom nav, reused from the nav flow */
+  .nav{flex-shrink:0;display:flex;border-top:1px solid var(--border);background:rgba(17,17,17,.96);backdrop-filter:blur(10px);padding-bottom:var(--safe-bottom)}
+  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 8px;cursor:pointer;color:var(--muted);transition:color .15s}
+  .nav-item.on{color:var(--green)}
+  .nav-item svg{width:22px;height:22px}
+  .nav-item span{font-size:10px;font-weight:600}
+  .nav-item:active{transform:scale(.92)}
+
+  .toast{position:absolute;left:50%;bottom:84px;transform:translateX(-50%) translateY(14px);z-index:90;background:#1d2a1f;border:1px solid rgba(59,215,92,.4);border-radius:9999px;padding:11px 18px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.purple{background:#1c1730;border-color:rgba(164,123,255,.4)}
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="topbar">
+    <span class="mono" style="font-size:10px;color:var(--muted)">FUTURELAND</span>
+    <span class="live mono"><i></i> 8 here</span>
+  </div>
+  <div class="head">
+    <div>
+      <div class="eyebrow">In the room</div>
+      <h2 class="display">The room</h2>
+      <p>A card is a name tag. Tap any card for the full thing.</p>
+    </div>
+    <div class="layout-toggle">
+      <button id="lay-grid" class="on" onclick="setLayout('grid')" title="Grid">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      </button>
+      <button id="lay-list" onclick="setLayout('list')" title="List">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="seg">
+    <button onclick="setDensity('clean',this)">Clean</button>
+    <button class="on" onclick="setDensity('tabs',this)">Tabs</button>
+  </div>
+  <div class="seg-cap" id="density-cap">Tabs: two shortcuts that open the card straight to that face.</div>
+
+  <div class="grid" id="grid"></div>
+
+  <!-- full card -->
+  <div class="scrim" id="scrim" onclick="closeCard()"></div>
+  <div class="full" id="full">
+    <button class="full-close" onclick="closeCard()">x</button>
+    <div class="biz" id="biz">
+      <div class="biz-head">
+        <div class="soda-mark"><i class="d1"></i><i class="d2"></i><i class="d3"></i></div>
+        <div class="agency"><div class="nm" id="f-agency">GILCHRIST</div><div class="ty" id="f-agency-ty">Creative Agency</div></div>
+      </div>
+      <div class="biz-body" id="f-body"></div>
+      <div class="biz-toggle">
+        <button id="f-offers" onclick="flip('offers')">Offers</button>
+        <button id="f-me" class="active" onclick="flip('me')">Me</button>
+        <button id="f-needs" onclick="flip('needs')">Needs</button>
+      </div>
+      <div class="match-strip" id="f-match" style="display:none">
+        <span class="mono">Match</span>
+        <span class="why" id="f-why"></span>
+      </div>
+      <div class="card-actions" id="f-actions" style="display:none">
+        <button class="ca ghost" onclick="cardAdd()">Add connection</button>
+        <button class="ca primary" onclick="cardIntro()">Start an intro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- chip detail sheet, slides up over the open card -->
+  <div class="chip-scrim" id="chip-scrim" onclick="closeChipDetail()"></div>
+  <div class="chip-sheet" id="chip-sheet">
+    <div class="handle"></div>
+    <div class="cd-kind" id="cd-kind">Offers</div>
+    <div class="cd-cat" id="cd-cat">Mentorship</div>
+    <div class="cd-owner" id="cd-owner"></div>
+    <div class="cd-foc-lbl" id="cd-foc-lbl">Focused on</div>
+    <div class="cd-focs" id="cd-focs"></div>
+    <div class="cd-actions" id="cd-actions">
+      <button class="cd-btn ghost" onclick="closeChipDetail()">Close</button>
+      <button class="cd-btn primary" onclick="introFromChip()">Start an intro about this</button>
+    </div>
+  </div>
+
+  <!-- bottom nav -->
+  <div class="nav">
+    <div class="nav-item" data-tab="home" onclick="go('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Home</span>
+    </div>
+    <div class="nav-item on" data-tab="rooms" onclick="go('rooms')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18" stroke-linecap="round"/></svg><span>Rooms</span>
+    </div>
+    <div class="nav-item" data-tab="card" onclick="go('card')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h6M7 14h4" stroke-linecap="round"/></svg><span>Card</span>
+    </div>
+    <div class="nav-item" data-tab="people" onclick="go('people')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke-linecap="round"/><circle cx="17" cy="9" r="2.2"/><path d="M16 14.5c2.6.4 5 2.5 5 5.5" stroke-linecap="round"/></svg><span>People</span>
+    </div>
+    <div class="nav-item" data-tab="you" onclick="go('you')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke-linecap="round"/></svg><span>You</span>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+const PEOPLE = [
+  {nm:"Brent", role:"Founder", agency:"GILCHRIST", ty:"Creative Agency", col:"#a47bff", you:true,
+   offers:[["Advice",["fundraising"]],["Mentorship",["design"]]],
+   needs:[["Collaboration",["product design"]],["Work",[]]]},
+  {nm:"Maya Okafor", role:"Founder", agency:"NORTHBOUND", ty:"Studio", col:"#3bd75c",
+   offers:[["Mentorship",["design"]],["Introductions",["investors"]]],
+   needs:[["Collaboration",["product design"]],["Funding",["pre-seed"]]], match:"You both work in product design"},
+  {nm:"Devin Park", role:"Fractional CFO", agency:"LEDGERLINE", ty:"Advisory", col:"#f59e0b",
+   offers:[["Advice",["fundraising"]],["Investment",["pre-seed"]]],
+   needs:[["Introductions",["founders"]]], match:"He funds what you are raising for"},
+  {nm:"Ife Adeyemi", role:"Design lead", agency:"FORM AND CO", ty:"Product Studio", col:"#3bd75c",
+   offers:[["Feedback",["product"]],["Mentorship",["design"]]],
+   needs:[["Collaboration",["gaming"]]], match:"You both want to collaborate on gaming"},
+  {nm:"Tomas Rivera", role:"Just exited", agency:"", ty:"", col:"#a47bff",
+   offers:[["Investment",["seed"]],["Advice",["go-to-market"]]],
+   needs:[["Introductions",["operators"]]]},
+  {nm:"Nikki Cho", role:"Engineer", agency:"", ty:"", col:"#60a5fa",
+   offers:[["Collaboration",["web","3D"]]],
+   needs:[["Work",["design"]],["Mentorship",["engineering"]]]},
+  {nm:"Lorena Medina", role:"Founder, creative", agency:"MEDINA", ty:"Creative", col:"#f472b6",
+   offers:[["Mentorship",["brand"]],["Introductions",["press"]],["Collaboration",["brand"]]],
+   needs:[["Advice",["fundraising"]]]},
+  {nm:"Toast", role:"Engineer", agency:"", ty:"", col:"#3bd75c",
+   offers:[["Collaboration",["web"]],["Feedback",["product"]]],
+   needs:[["Mentorship",["engineering"]],["Work",[]]]},
+];
+
+let layout='grid', density='tabs', face='me', current=0;
+const grid=document.getElementById('grid');
+
+const DENSITY_CAP={
+  clean:"Clean: identity and match only. The least cluttered.",
+  tabs:"Tabs: two shortcuts that open the card straight to that face."
+};
+
+function initials(nm){ return nm.split(' ').map(w=>w[0]).slice(0,2).join(''); }
+
+function microCard(p,i){
+  const card=document.createElement('div');
+  card.className='micro'+(p.match?' match':'');
+  const offersN=p.offers.length, needsN=p.needs.length;
+
+  const who=
+    '<div class="who">'+
+      '<div class="avatar" style="background:'+p.col+'">'+initials(p.nm)+'</div>'+
+      '<div><div class="nm">'+p.nm.split(' ')[0]+(p.you?' <span class="you-badge">YOU</span>':'')+'</div>'+
+      '<div class="role">'+p.role+'</div></div>'+
+    '</div>';
+
+  let body='';
+  if(density==='clean'){
+    body = p.match ? '<div class="sig-match"><span class="d"></span> Matches you</div>' : '';
+  } else { // tabs
+    body =
+      '<div class="minitabs">'+
+        '<div class="minitab" onclick="event.stopPropagation();openCard('+i+',\'offers\')"><span class="n">'+offersN+'</span> Offers</div>'+
+        '<div class="minitab need" onclick="event.stopPropagation();openCard('+i+',\'needs\')"><span class="n">'+needsN+'</span> Needs</div>'+
+      '</div>';
+  }
+
+  // match corner dot (tabs mode relies on it since there is no text line)
+  const corner = (p.match && density==='tabs') ? '<div class="match-corner"></div>' : '';
+
+  card.innerHTML = corner + who + body;
+  card.onclick=function(){ openCard(i,'me'); };
+  return card;
+}
+
+function render(){
+  grid.className='grid'+(layout==='list'?' list':'');
+  grid.innerHTML='';
+  PEOPLE.forEach((p,i)=>grid.appendChild(microCard(p,i)));
+}
+
+function setLayout(m){
+  layout=m;
+  document.getElementById('lay-grid').classList.toggle('on',m==='grid');
+  document.getElementById('lay-list').classList.toggle('on',m==='list');
+  // each layout has its own default look: grid shows the Tabs pills, list stays Clean
+  applyDensity(m==='grid' ? 'tabs' : 'clean');
+  render();
+}
+function applyDensity(d){
+  density=d;
+  document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on', b.textContent.trim().toLowerCase()===d));
+  document.getElementById('density-cap').textContent=DENSITY_CAP[d];
+}
+function setDensity(d,btn){
+  applyDensity(d);
+  render();
+}
+
+function openCard(i,startFace){
+  current=i; face=startFace||'me';
+  const p=PEOPLE[i];
+  document.getElementById('biz').className='biz'+(p.match?' match':'');
+  document.getElementById('f-agency').textContent=p.agency||p.nm.split(' ')[0].toUpperCase();
+  document.getElementById('f-agency-ty').textContent=p.ty||p.role;
+  const ms=document.getElementById('f-match');
+  const ac=document.getElementById('f-actions');
+  if(p.match){ ms.style.display='flex'; document.getElementById('f-why').textContent=p.match; }
+  else ms.style.display='none';
+  // no actions on your own card
+  ac.style.display = p.you ? 'none' : 'flex';
+  flip(face);
+  document.getElementById('scrim').classList.add('open');
+  document.getElementById('full').classList.add('open');
+}
+function closeCard(){ document.getElementById('scrim').classList.remove('open'); document.getElementById('full').classList.remove('open'); }
+
+function flip(f){
+  face=f;
+  const p=PEOPLE[current];
+  ['offers','me','needs'].forEach(x=>document.getElementById('f-'+x).className=(x===f?'active':''));
+  const body=document.getElementById('f-body');
+  if(f==='me'){
+    body.innerHTML=
+      '<div class="me-face"><div><div class="me-name">'+p.nm.split(' ')[0].toUpperCase()+'</div>'+
+      '<div class="me-role">'+p.role+'</div></div>'+
+      '<div class="sig"><div class="nm">'+p.nm+'</div><div class="lbl">Signature</div></div></div>';
+    return;
+  }
+  const isOffer=f==='offers';
+  const list=isOffer?p.offers:p.needs;
+  const kind=isOffer?'offer':'need';
+  const chips = list.length
+    ? list.map((c,idx)=>{
+        const cat=c[0], focus=c[1];
+        const foc = focus&&focus.length ? ' <span class="foc">in '+focus[0]+'</span>' : '';
+        return '<span class="biz-chip '+kind+' tappable" onclick="openChipDetail('+current+',\''+kind+'\','+idx+')">'+cat+foc+'</span>';
+      }).join('')
+    : '<span style="color:var(--hint);font-size:13px">nothing added</span>';
+  body.innerHTML=
+    '<div class="face-name">'+p.nm.split(' ')[0].toUpperCase()+'</div>'+
+    '<div class="face-section">'+(isOffer?'Offers:':'Needs:')+'</div>'+
+    '<div class="biz-chips">'+chips+'</div>'+
+    (list.length?'<div class="chip-hint"><span class="dot"></span> Tap a chip to see the detail</div>':'');
+}
+
+function cardAdd(){ toast('Added to your connections',false); }
+function cardIntro(){ closeCard(); toast('Opening intro starter',true); }
+
+/* chip detail sheet */
+let chipCtx=null; // {kind, cat, focus, owner}
+function openChipDetail(personIdx, kind, chipIdx){
+  const p=PEOPLE[personIdx];
+  const list = kind==='offer' ? p.offers : p.needs;
+  const c = list[chipIdx];
+  if(!c) return;
+  const cat=c[0], focus=c[1]||[];
+  chipCtx={ kind, cat, focus, owner:p.nm.split(' ')[0] };
+  const isOffer = kind==='offer';
+  const kEl=document.getElementById('cd-kind');
+  kEl.textContent = isOffer ? 'They offer' : 'They need';
+  kEl.className = 'cd-kind '+kind;
+  document.getElementById('cd-cat').textContent = cat;
+  document.getElementById('cd-owner').innerHTML =
+    '<b>'+chipCtx.owner+'</b> '+(isOffer?'offers this to the room':'is looking for this');
+  const focLbl=document.getElementById('cd-foc-lbl');
+  const focWrap=document.getElementById('cd-focs');
+  if(focus.length){
+    focLbl.style.display='block';
+    focWrap.innerHTML = focus.map(fo=>'<span class="cd-foc"><span class="p">+</span> '+fo+'</span>').join('');
+  } else {
+    focLbl.style.display='none';
+    focWrap.innerHTML='<span class="cd-none">No focus added. Just '+cat.toLowerCase()+', broadly.</span>';
+  }
+  // your own card has no intro action
+  document.getElementById('cd-actions').querySelector('.primary').style.display = p.you ? 'none' : 'flex';
+  document.getElementById('chip-scrim').classList.add('open');
+  document.getElementById('chip-sheet').classList.add('open');
+}
+function closeChipDetail(){
+  document.getElementById('chip-scrim').classList.remove('open');
+  document.getElementById('chip-sheet').classList.remove('open');
+}
+function introFromChip(){
+  closeChipDetail();
+  closeCard();
+  const label = chipCtx ? ('Intro about '+chipCtx.cat) : 'Opening intro starter';
+  toast(label, true);
+}
+
+let toastTimer;
+function toast(text,purple){
+  const t=document.getElementById('toast');
+  t.textContent=text;
+  t.classList.toggle('purple',!!purple);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+function go(tab){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('on',n.dataset.tab===tab));
+  const label={home:'Home',rooms:'The room',card:'Your card',people:'People',you:'You'}[tab];
+  if(tab!=='rooms') toast(label,false);
+}
+
+render();
+</script>
+</body>
+</html>

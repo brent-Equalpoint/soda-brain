@@ -39,6 +39,14 @@ door button in the middle of the pill. The door in the center reads as "this is 
 SODA is." Alternative if the raised button feels too loud: a plain four-tab bar
 Home / Rooms / People / Inbox with no center emphasis.
 
+**Evolved 2026-07-23 (Brent, after walking the lab):** the center button is not the Rooms
+list first, it is **THE LIVE ROOM**. Whenever a room is open, one tap from anywhere puts
+you back in it (the real app routes to /room; with no live room it opens Rooms). The door
+stays the one symbol; what changes is how it ANNOUNCES a live room. Four icon treatments
+are built as a dial in the lab (/design/home-nav-lab): glow halo (recommended, a soft slow
+breathing ring per the ambient-motion law), pulse dot (the "live now" dot riding the door),
+headcount badge (the live number on the button), and on-air waves (the icon itself swaps).
+
 Notes:
 - The door icon already exists in the tab bar (hand-drawn, iOS grammar). The center
   treatment reuses it larger, filled when active.
@@ -124,6 +132,9 @@ display change. Which is why this move is planned separately and last.
 
 1. **Nav shape:** raised center door button, or plain four-tab bar? (Recommend: raised
    door. If it feels loud on the phone we flatten it, five-minute change.)
+   **PARTLY ANSWERED 2026-07-23:** Brent wants the center button, as the live-room door
+   (one tap back in, any time). Remaining: pick the live icon treatment from the lab dial
+   (glow halo / pulse dot / headcount / on-air).
 2. **Key card berth:** a row on Home under the micro card, or tucked inside the expanded
    card view? (Recommend: row on Home. The key card is a different object, deserves its
    own line.)

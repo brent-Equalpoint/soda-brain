@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>SODA, Live Fire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#111111; --card:#1a1a1a; --surface:#202220; --border:#2a2a2a;
+  --ink:#f5f5f5; --muted:#8a8a8a; --hint:#5a5a5a;
+  --green:#3bd75c; --green-deep:#203229; --amber:#f59e0b;
+  --purple:#a47bff; --red:#ef4444; --gold:#e8c468;
+  --display:'Archivo Black', system-ui, sans-serif;
+  --ui:'DM Sans', system-ui, sans-serif;
+  --mono:'DM Mono', ui-monospace, monospace;
+  --sig:'Caveat', cursive;
+
+  /* base unit + 4px spacing grid */
+  --u:4px;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px; --s10:40px; --s12:48px;
+
+  /* layout responsiveness (does not break the baseline) */
+  --tap-min:44px; --grid-min:150px; --gutter:clamp(16px, 5vw, 24px);
+
+  /* type scale: base 16, minor third 1.2, sizes in rem so Dynamic Type scales the whole grid */
+  --fs-eyebrow:0.6875rem;  /* 11 */
+  --fs-caption:0.8125rem;  /* 13 */
+  --fs-body:1rem;          /* 16 */
+  --fs-title-sm:1.25rem;   /* 20 */
+  --fs-title:1.5rem;       /* 24 */
+  --fs-hero:1.75rem;       /* 28 */
+  --fs-display:2.0625rem;  /* 33 */
+  --fs-numeral:4.5rem;     /* 72 */
+
+  /* leading locked to the 4px baseline: size x ratio resolves to a multiple of 4 */
+  --lh-eyebrow:1.4545;  --lh-caption:1.2308; --lh-body:1.5;
+  --lh-title-sm:1.2;    --lh-title:1.1667;   --lh-hero:1.1429;
+  --lh-display:1.0909;  --lh-solid:1;
+
+  /* tracking in em so it scales with the type */
+  --tr-tight:-0.01em; --tr-normal:0; --tr-wide:0.02em; --tr-eyebrow:0.1em;
+
+  /* radius on the 4px grid */
+  --r1:8px; --r2:12px; --r3:16px; --r4:20px; --r5:24px; --r-bezel:36px; --r-pill:999px;
+}
+*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:var(--canvas); color:var(--ink); font-family:var(--ui);
+  height:100dvh; overflow:hidden; line-height:1.5;
+}
+button{font:inherit; color:inherit; cursor:pointer; border:none; background:none}
+::selection{background:var(--green); color:#06210d}
+
+/* phone frame */
+.phone{
+  position:relative; width:100%; max-width:440px; height:100dvh; margin:0 auto;
+  background:var(--canvas); overflow:hidden;
+  display:flex; flex-direction:column;
+}
+@media (min-width:520px) and (min-height:760px){
+  body{background:#0a0a0a; display:flex; align-items:center; justify-content:center; padding:20px}
+  .phone{height:min(880px, calc(100dvh - 40px)); border:1px solid var(--border); border-radius:36px;
+    box-shadow:0 40px 120px rgba(0,0,0,.55), inset 0 0 0 8px #050505}
+}
+.statusbar{
+  height:30px; display:flex; align-items:center; justify-content:space-between;
+  padding:max(8px, env(safe-area-inset-top)) 24px 0; font-family:var(--mono); font-size:var(--fs-eyebrow); color:var(--muted); flex:none;
+}
+.statusbar .dots{display:flex; gap:4px; align-items:center}
+.statusbar .sig{width:5px; height:5px; border-radius:50%; background:var(--muted)}
+.statusbar .sig.full{background:var(--ink)}
+
+.view{flex:1; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; padding-bottom:84px}
+.view::-webkit-scrollbar{width:0}
+
+/* top brand bar */
+.brandbar{display:flex; align-items:center; justify-content:space-between; padding:14px var(--gutter) 6px}
+.mark{display:flex; align-items:center; gap:9px}
+.dotgrid{display:grid; grid-template-columns:repeat(2,7px); grid-template-rows:repeat(2,7px); gap:3px}
+.dotgrid i{width:7px; height:7px; border-radius:50%; background:var(--green); display:block}
+.dotgrid i.off{background:#333}
+.wordmark{font-family:var(--display); font-size:var(--fs-body); letter-spacing:var(--tr-wide)}
+.live-chip{display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:var(--fs-eyebrow); letter-spacing:var(--tr-eyebrow); color:var(--green); text-transform:uppercase}
+.live-chip .pulse{width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(59,215,92,.6); animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(59,215,92,.55)}70%{box-shadow:0 0 0 9px rgba(59,215,92,0)}100%{box-shadow:0 0 0 0 rgba(59,215,92,0)}}
+
+.eyebrow{font-family:var(--mono); font-size:var(--fs-eyebrow); line-height:var(--lh-eyebrow); letter-spacing:var(--tr-eyebrow); text-transform:uppercase; color:var(--muted)}
+.eyebrow.green{color:var(--green)}
+
+/* hero */
+.hero{padding:24px var(--gutter) 8px}
+.hero h1{font-family:var(--display); font-size:var(--fs-hero); line-height:var(--lh-hero); margin:16px 0 12px; letter-spacing:var(--tr-tight)}
+.hero p{color:var(--muted); font-size:var(--fs-body); line-height:var(--lh-body); max-width:30ch}
+.cta{
+  display:block; width:100%; margin-top:24px; padding:16px; border-radius:var(--r3);
+  background:var(--green); color:#06210d; font-weight:700; font-size:var(--fs-body); text-align:center;
+  transition:transform .12s ease, filter .12s ease;
+}
+.cta:active{transform:scale(.985); filter:brightness(.95)}
+.cta.ghost{background:transparent; border:1px solid var(--border); color:var(--ink); font-weight:600}
+
+/* section */
+.section{padding:24px var(--gutter) 4px}
+.section-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px}
+.section-head .meta{font-family:var(--mono); font-size:var(--fs-eyebrow); color:var(--hint)}
+
+/* card deck */
+.deck{display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; padding:4px var(--gutter) 8px; margin:0 calc(var(--gutter) * -1)}
+.deck::-webkit-scrollbar{height:0}
+.mini-card{
+  flex:0 0 78%; scroll-snap-align:center; background:var(--card); border:1px solid var(--border);
+  border-radius:var(--r4); padding:20px 20px 16px; transition:border-color .18s, transform .18s, box-shadow .18s;
+}
+.mini-card.active{border-color:var(--green); box-shadow:0 0 0 1px var(--green-deep), 0 14px 40px rgba(0,0,0,.4)}
+.mini-card .role{font-family:var(--mono); font-size:var(--fs-eyebrow); letter-spacing:var(--tr-eyebrow); text-transform:uppercase; color:var(--muted)}
+.mini-card .nm{font-family:var(--display); font-size:var(--fs-title-sm); line-height:var(--lh-title-sm); margin-top:8px; letter-spacing:var(--tr-wide)}
+.mini-card .ag{font-size:var(--fs-caption); color:var(--muted); margin-top:4px}
+.mini-card .show{font-size:var(--fs-body); line-height:var(--lh-body); color:var(--ink); margin-top:16px; min-height:3em}
+.mini-card .sig{font-family:var(--sig); font-size:22px; color:var(--green); margin-top:12px}
+.mini-card .editable{display:inline-flex; align-items:center; gap:8px; margin-top:16px; font-family:var(--mono); font-size:var(--fs-eyebrow); letter-spacing:var(--tr-eyebrow); text-transform:uppercase; color:var(--green)}
+.mini-card .editable::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--green)}
+.mini-card.dim .editable{visibility:hidden}
+
+/* room list rows */
+.row{display:flex; align-items:center; gap:12px; padding:16px var(--gutter); border-top:1px solid var(--border)}
+.row:first-child{border-top:none}
+.avatar{flex:none; width:40px; height:40px; border-radius:var(--r2); display:grid; place-items:center; font-weight:700; font-size:var(--fs-body); color:#0c0c0c}
+.avatar.sm{width:32px; height:32px; border-radius:var(--r1); font-size:var(--fs-caption)}
+.row .who{flex:1; min-width:0}
+.row .who .nm{font-weight:600; font-size:var(--fs-body); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.row .who .sub{font-size:var(--fs-caption); color:var(--muted); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.tag{font-family:var(--mono); font-size:var(--fs-eyebrow); letter-spacing:var(--tr-eyebrow); text-transform:uppercase; padding:4px 8px; border-radius:var(--r-pill); white-space:nowrap}
+.tag.match{color:var(--purple); background:rgba(164,123,255,.12)}
+.warmth{display:inline-flex; align-items:center; gap:8px; font-size:var(--fs-caption)}
+.warmth .d{width:8px; height:8px; border-radius:50%}
+
+/* live room header */
+.roomhead{padding:16px var(--gutter) 12px; display:flex; align-items:flex-end; justify-content:space-between; gap:12px; position:sticky; top:0; background:linear-gradient(var(--canvas) 70%, transparent); z-index:5}
+.roomhead h2{font-family:var(--display); font-size:var(--fs-title-sm); line-height:var(--lh-title-sm); letter-spacing:var(--tr-tight)}
+.roomhead .count{font-size:var(--fs-caption); color:var(--muted); margin-top:4px}
+.toggle{display:flex; background:var(--card); border:1px solid var(--border); border-radius:var(--r2); padding:4px}
+.toggle button{position:relative; padding:8px 12px; border-radius:var(--r1); font-size:var(--fs-caption); color:var(--muted); font-weight:600}
+.toggle button.on{background:var(--surface); color:var(--ink)}
+
+/* grid */
+.grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(var(--grid-min),1fr)); gap:12px; padding:8px var(--gutter) 20px}
+.gcard{position:relative; min-width:0; background:var(--card); border:1px solid var(--border); border-radius:var(--r4); padding:16px; text-align:left; transition:transform .12s, border-color .18s}
+.gcard:active{transform:scale(.98)}
+.gcard .corner{position:absolute; top:12px; right:12px; width:8px; height:8px; border-radius:50%; background:var(--purple); box-shadow:0 0 0 4px rgba(164,123,255,.18)}
+.gcard .nm{font-weight:600; font-size:var(--fs-body); margin-top:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.gcard .sub{font-size:var(--fs-caption); color:var(--muted); margin-top:4px; min-height:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.gpills{display:flex; gap:8px; margin-top:12px}
+.gpill{position:relative; flex:1; border:1px solid var(--border); border-radius:var(--r2); padding:8px 4px; text-align:center; transition:border-color .15s, background .15s}
+.gpill:active{background:var(--surface)}
+.gpill .n{font-family:var(--display); font-size:var(--fs-body); line-height:var(--lh-solid)}
+.gpill .l{font-family:var(--mono); font-size:var(--fs-eyebrow); letter-spacing:var(--tr-eyebrow); text-transform:uppercase; color:var(--muted); margin-top:4px; display:block}
+
+/* sheets + modal */
+.scrim{position:absolute; inset:0; background:rgba(0,0,0,.55); opacity:0; pointer-events:none; transition:opacity .25s; z-index:20}
+.scrim.open{opacity:1; pointer-events:auto}
+.sheet{
+  position:absolute; left:0; right:0; bottom:0; z-index:30;
+  background:var(--card); border-top:1px solid var(--border);
+  border-radius:var(--r5) var(--r5) 0 0; transform:translateY(100%); transition:transform .32s cubic-bezier(.22,1,.36,1);
+  max-height:92%; display:flex; flex-direction:column; box-shadow:0 -20px 60px rgba(0,0,0,.5);
+}
+.sheet.open{transform:translateY(0)}
+.sheet.tall{height:88%}
+.grab{width:40px; height:4px; border-radius:var(--r-pill); background:#3a3a3a; margin:12px auto 4px; flex:none}
+.sheet-body{overflow-y:auto; padding:8px 24px 24px}
+.sheet-body::-webkit-scrollbar{width:0}
+
+/* expanded card faces */
+.facetabs{display:flex; gap:8px; padding:8px 24px 4px; flex:none}
+.facetabs button{flex:1; min-height:var(--tap-min); padding:9px; border-radius:var(--r2); font-family:var(--mono); font-size:var(--fs-eyebrow); letter-spacing:var(--tr-eyebrow); text-transform:uppercase; color:var(--hint); background:var(--surface)}
+.facetabs button.on{color:var(--ink); background:#2c2f2c; box-shadow:inset 0 0 0 1px var(--border)}
+.face{padding:6px 0 4px}
+.face .meface .nm{font-family:var(--display); font-size:var(--fs-display); line-height:var(--lh-display); letter-spacing:var(--tr-tight); margin-top:12px}
+.face .meface .role{font-family:var(--mono); font-size:var(--fs-eyebrow); letter-spacing:var(--tr-eyebrow); text-transform:uppercase; color:var(--muted); margin-top:12px}
+.face .meface .ag{font-size:var(--fs-caption); color:var(--muted); margin-top:4px}
+.face .meface .show{font-size:var(--fs-body); margin-top:20px; line-height:var(--lh-body)}
+.face .meface .sig{font-family:var(--sig); font-size:26px; color:var(--green); margin-top:16px}
+.face .meface .hereline{display:inline-flex; align-items:center; gap:8px; margin-top:20px; font-size:var(--fs-caption); color:var(--green)}
+.face .meface .hereline::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--green)}
+.face-eyebrow{font-family:var(--mono); font-size:var(--fs-eyebrow); letter-spacing:var(--tr-eyebrow); text-transform:uppercase; color:var(--muted); margin:8px 0 16px}
+.chips{display:flex; flex-direction:column; gap:12px}
+.chip{display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; text-align:left; background:var(--surface); border:1px solid var(--border); border-radius:var(--r3); padding:16px; transition:transform .12s, border-color .15s}
+.chip:active{transform:scale(.985)}
+.chip:hover{border-color:#3a3d3a; box-shadow:0 6px 22px rgba(0,0,0,.3)}
+.chip .lab{display:block; font-weight:600; font-size:var(--fs-body)}
+.chip .foc{display:block; font-size:var(--fs-caption); color:var(--muted); margin-top:4px}
+.chip .go{font-family:var(--mono); font-size:var(--fs-eyebrow); letter-spacing:var(--tr-eyebrow); text-transform:uppercase; color:var(--hint)}
+
+.matchstrip{display:flex; gap:12px; align-items:flex-start; background:rgba(164,123,255,.10); border:1px solid rgba(164,123,255,.22); border-radius:var(--r3); padding:16px; margin:20px 0}
+.matchstrip .ico{flex:none; width:24px; height:24px; border-radius:var(--r1); background:rgba(164,123,255,.18); display:grid; place-items:center; color:var(--purple); font-size:var(--fs-caption); font-weight:700}
+.matchstrip .t{font-size:var(--fs-body); line-height:var(--lh-body)}
+.matchstrip .t b{color:var(--purple)}
+
+.actions{display:flex; flex-direction:column; gap:12px; padding-top:8px}
+.btn{min-height:var(--tap-min); padding:16px; border-radius:var(--r3); font-weight:700; font-size:var(--fs-body); text-align:center; transition:transform .12s, filter .12s}
+.btn:active{transform:scale(.985)}
+.btn.primary{background:var(--green); color:#06210d}
+.btn.secondary{background:transparent; border:1px solid var(--border); color:var(--ink); font-weight:600}
+.btn.secondary.added{border-color:var(--green-deep); color:var(--green); background:rgba(59,215,92,.07)}
+.btn.secondary.added::before{content:"✓  "; }
+
+/* chip detail */
+.chipdetail .kind{font-family:var(--mono); font-size:var(--fs-eyebrow); letter-spacing:var(--tr-eyebrow); text-transform:uppercase; color:var(--muted)}
+.chipdetail .big{font-family:var(--display); font-size:var(--fs-display); line-height:var(--lh-display); margin:12px 0 16px; letter-spacing:var(--tr-tight)}
+.focus-row{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px}
+.focus-tag{font-size:var(--fs-caption); padding:8px 12px; border-radius:var(--r-pill); background:var(--surface); border:1px solid var(--border); color:var(--ink)}
+.nofocus{font-size:var(--fs-body); line-height:var(--lh-body); color:var(--muted); margin-bottom:20px}
+.ownerline{display:flex; align-items:center; gap:12px; padding:16px 0 24px; border-top:1px solid var(--border)}
+.ownerline .t{font-size:var(--fs-body); color:var(--muted)}
+.ownerline .t b{color:var(--ink)}
+
+/* intro starter */
+.introhead .to{font-size:var(--fs-body); margin:8px 0 4px}
+.introhead .to b{font-weight:700}
+.introhead .basis{font-size:var(--fs-caption); color:var(--muted)}
+.tones{display:flex; gap:8px; margin:20px 0 12px}
+.tones button{flex:1; min-height:var(--tap-min); padding:10px; border-radius:var(--r2); font-size:var(--fs-caption); font-weight:600; color:var(--muted); background:var(--surface); border:1px solid var(--border)}
+.tones button.on{color:var(--green); border-color:var(--green-deep); background:rgba(59,215,92,.07)}
+textarea.draft{width:100%; min-height:120px; resize:vertical; background:var(--surface); border:1px solid var(--border); border-radius:var(--r3); padding:16px; color:var(--ink); font:inherit; font-size:var(--fs-body); line-height:var(--lh-body)}
+textarea.draft:focus{outline:none; border-color:#3a3d3a}
+.addtoggle{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 0 8px; margin-top:8px}
+.addtoggle .t{font-size:var(--fs-body)}
+.addtoggle .t small{display:block; color:var(--muted); font-size:var(--fs-caption); margin-top:4px}
+.switch{flex:none; width:46px; height:28px; border-radius:999px; background:#333; position:relative; transition:background .18s}
+/* keep compact controls small visually, expand the tap area to 44px */
+.gpill::after, .toggle button::after{content:""; position:absolute; left:0; right:0; top:50%; transform:translateY(-50%); height:var(--tap-min)}
+.switch::after{content:""; position:absolute; inset:-8px -6px}
+.switch.on{background:var(--green)}
+.switch.locked{opacity:.7}
+.switch .knob{position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#fff; transition:transform .18s}
+.switch.on .knob{transform:translateX(18px)}
+.trust{font-size:var(--fs-caption); color:var(--hint); text-align:center; margin:20px 0 16px}
+
+/* moment */
+.moment{text-align:center; padding:16px 8px 8px}
+.moment .eyebrow{margin-bottom:24px}
+.moment .num{font-family:var(--display); font-size:var(--fs-numeral); line-height:var(--lh-solid); letter-spacing:var(--tr-tight); color:var(--green)}
+.moment .numlabel{font-size:var(--fs-body); color:var(--muted); margin-top:8px}
+.moment .strip{display:flex; justify-content:center; margin:24px 0; padding-left:8px}
+.moment .strip .avatar{margin-left:-8px; border:2px solid var(--card)}
+.moment .strip .more{margin-left:-8px; width:40px; height:40px; border-radius:var(--r2); background:var(--surface); border:2px solid var(--card); display:grid; place-items:center; font-size:var(--fs-caption); font-weight:600; color:var(--muted)}
+.moment .body{font-size:var(--fs-body); color:var(--ink); max-width:30ch; margin:0 auto 24px; line-height:var(--lh-body)}
+.moment .body b{color:var(--green)}
+
+/* people / you */
+.screenhead{padding:20px var(--gutter) 8px}
+.screenhead h2{font-family:var(--display); font-size:var(--fs-title); line-height:var(--lh-title); letter-spacing:var(--tr-tight)}
+.screenhead p{color:var(--muted); font-size:var(--fs-caption); margin-top:4px}
+.stats{display:flex; gap:12px; padding:16px var(--gutter) 8px}
+.stat{flex:1; background:var(--card); border:1px solid var(--border); border-radius:var(--r4); padding:20px 16px; text-align:center}
+.stat .n{font-family:var(--display); font-size:var(--fs-display); line-height:var(--lh-solid)}
+.stat .l{font-family:var(--mono); font-size:var(--fs-eyebrow); letter-spacing:var(--tr-eyebrow); text-transform:uppercase; color:var(--muted); margin-top:8px}
+
+/* nav */
+.nav{position:absolute; left:0; right:0; bottom:0; z-index:15; display:flex; background:rgba(17,17,17,.92); backdrop-filter:blur(14px); border-top:1px solid var(--border); padding:9px 8px calc(9px + env(safe-area-inset-bottom))}
+.nav button{flex:1; min-height:var(--tap-min); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--hint); padding:6px 0}
+.nav button svg{width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.7}
+.nav button .nl{font-size:var(--fs-eyebrow); letter-spacing:var(--tr-normal)}
+.nav button.on{color:var(--ink)}
+.nav button.on .nl{color:var(--green)}
+
+/* toast */
+.toast{position:absolute; left:20px; right:20px; bottom:96px; z-index:60; background:#06210d; border:1px solid var(--green-deep); color:var(--green); padding:16px; border-radius:var(--r3); font-size:var(--fs-body); font-weight:600; text-align:center; transform:translateY(20px); opacity:0; pointer-events:none; transition:transform .25s, opacity .25s}
+.toast.show{transform:translateY(0); opacity:1}
+
+.empty{padding:64px 32px; text-align:center; color:var(--muted)}
+.empty .eh{font-weight:600; color:var(--ink); font-size:var(--fs-body); margin-bottom:8px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="dots"><i class="sig"></i><i class="sig"></i><i class="sig full"></i></span>
+  </div>
+  <div class="view" id="view"></div>
+
+  <!-- nav -->
+  <nav class="nav" id="nav"></nav>
+
+  <!-- sheets -->
+  <div class="scrim" id="scrim"></div>
+  <section class="sheet tall" id="sheet-card"><div class="grab"></div><div class="facetabs" id="cardFaces"></div><div class="sheet-body" id="cardBody"></div></section>
+  <section class="sheet" id="sheet-chip"><div class="grab"></div><div class="sheet-body" id="chipBody"></div></section>
+  <section class="sheet" id="sheet-intro"><div class="grab"></div><div class="sheet-body" id="introBody"></div></section>
+  <section class="sheet tall" id="sheet-moment"><div class="grab"></div><div class="sheet-body" id="momentBody"></div></section>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ============================================================
+   SODA, Live Fire  -  single-file interactive prototype
+   Server writes JSON, client renders. Tokens + contracts from
+   the SODA Live-Fire handoff. Dark only.
+   ============================================================ */
+
+/* ---------- data model (from handoff) ---------- */
+const ME = {
+  initials:"BM", activeCardId:"founder",
+  cards:[
+    {id:"founder", role:"Founder", name:"BRENT", agency:"GILCHRIST", agency_type:"Creative Agency", show_up:"Building the room you walk into",
+      offers:[{label:"Advice",focus:["fundraising"]},{label:"Mentorship",focus:["design"]}],
+      needs:[{label:"Collaboration",focus:["product design"]},{label:"Work",focus:[]}], signature:"Brent Montgomery"},
+    {id:"designer", role:"Designer", name:"BRENT", agency:"GILCHRIST", agency_type:"Creative Agency", show_up:"I make the thing feel like something",
+      offers:[{label:"Design",focus:["product"]},{label:"Branding",focus:["identity"]}],
+      needs:[{label:"Collaboration",focus:["founders"]},{label:"Clients",focus:["startups"]}], signature:"Brent Montgomery"},
+    {id:"engineer", role:"Engineer", name:"BRENT", agency:"GILCHRIST", agency_type:"Creative Agency", show_up:"I build what the design promises",
+      offers:[{label:"Expertise",focus:["full-stack"]},{label:"Code review",focus:["mentorship"]}],
+      needs:[{label:"Co-founder",focus:["technical"]},{label:"Projects",focus:["contract"]}], signature:"Brent Montgomery"}
+  ]
+};
+
+const ROOM = {
+  event_id:"evt_lnt_live", event_name:"Latinos-N-Tech", live:true,
+  people:[
+    {id:"maya",name:"Maya Okafor",role:"Founder",agency:"NORTHBOUND",agency_type:"Studio",color:"#3bd75c",offers:[{label:"Mentorship",focus:["design"]},{label:"Introductions",focus:["investors"]}],needs:[{label:"Collaboration",focus:["product design"]},{label:"Funding",focus:["pre-seed"]}],match:{is_match:true,reason:"You both work in product design"}},
+    {id:"devin",name:"Devin Park",role:"Fractional CFO",agency:"LEDGERLINE",agency_type:"Advisory",color:"#f59e0b",offers:[{label:"Advice",focus:["fundraising"]},{label:"Investment",focus:["pre-seed"]}],needs:[{label:"Introductions",focus:["founders"]}],match:{is_match:true,reason:"He funds what you are raising for"}},
+    {id:"ife",name:"Ife Adeyemi",role:"Design lead",agency:"FORM AND CO",agency_type:"Product Studio",color:"#3bd75c",offers:[{label:"Feedback",focus:["product"]},{label:"Mentorship",focus:["design"]}],needs:[{label:"Collaboration",focus:["gaming"]}],match:{is_match:true,reason:"You both want to collaborate on gaming"}},
+    {id:"tomas",name:"Tomas Rivera",role:"Just exited",agency:"",agency_type:"",color:"#a47bff",offers:[{label:"Investment",focus:["seed"]},{label:"Advice",focus:["go-to-market"]}],needs:[{label:"Introductions",focus:["operators"]}],match:{is_match:false}},
+    {id:"nikki",name:"Nikki Cho",role:"Engineer",agency:"",agency_type:"",color:"#60a5fa",offers:[{label:"Collaboration",focus:["web","3D"]}],needs:[{label:"Work",focus:["design"]},{label:"Mentorship",focus:["engineering"]}],match:{is_match:false}},
+    {id:"lorena",name:"Lorena Medina",role:"Founder, creative",agency:"MEDINA",agency_type:"Creative",color:"#f472b6",offers:[{label:"Mentorship",focus:["brand"]},{label:"Introductions",focus:["press"]},{label:"Collaboration",focus:["brand"]}],needs:[{label:"Advice",focus:["fundraising"]}],match:{is_match:false}},
+    {id:"toast",name:"Toast",role:"Engineer",agency:"",agency_type:"",color:"#3bd75c",offers:[{label:"Collaboration",focus:["web"]},{label:"Feedback",focus:["product"]}],needs:[{label:"Mentorship",focus:["engineering"]},{label:"Work",focus:[]}],match:{is_match:false}},
+    {id:"rosa",name:"Rosa Kim",role:"Founder",agency:"BRIGHTSEED",agency_type:"Startup",color:"#3bd75c",offers:[{label:"Partnerships",focus:["b2b"]}],needs:[{label:"Funding",focus:["seed"]},{label:"Talent",focus:["engineering"]}],match:{is_match:true,reason:"She needs the funding you can introduce"}},
+    {id:"amara",name:"Amara Obi",role:"Product manager",agency:"",agency_type:"",color:"#a47bff",offers:[{label:"Feedback",focus:["product"]}],needs:[{label:"Mentorship",focus:["leadership"]}],match:{is_match:false}},
+    {id:"jordan",name:"Jordan Tate",role:"Investor",agency:"TATE CAPITAL",agency_type:"Fund",color:"#f59e0b",offers:[{label:"Investment",focus:["pre-seed","seed"]},{label:"Introductions",focus:["LPs"]}],needs:[{label:"Dealflow",focus:["fintech"]}],match:{is_match:true,reason:"He invests at your stage"}},
+    {id:"kemi",name:"Kemi Bello",role:"Brand strategist",agency:"FOLD",agency_type:"Studio",color:"#f472b6",offers:[{label:"Branding",focus:["identity"]},{label:"Mentorship",focus:["brand"]}],needs:[{label:"Collaboration",focus:["product"]}],match:{is_match:false}},
+    {id:"leo",name:"Leo Park",role:"Engineer",agency:"",agency_type:"",color:"#60a5fa",offers:[{label:"Code review",focus:["frontend"]}],needs:[{label:"Co-founder",focus:["technical"]}],match:{is_match:true,reason:"You both want a technical co-founder"}},
+    {id:"sana",name:"Sana Idris",role:"Designer",agency:"",agency_type:"",color:"#3bd75c",offers:[{label:"Design",focus:["UX"]}],needs:[{label:"Work",focus:["product"]}],match:{is_match:false}},
+    {id:"marco",name:"Marco Diaz",role:"Growth lead",agency:"LIFTOFF",agency_type:"Agency",color:"#a47bff",offers:[{label:"Advice",focus:["go-to-market"]},{label:"Introductions",focus:["press"]}],needs:[{label:"Clients",focus:["b2b"]}],match:{is_match:false}},
+    {id:"priya",name:"Priya Nair",role:"Founder",agency:"NESTED",agency_type:"Startup",color:"#3bd75c",offers:[{label:"Mentorship",focus:["ops"]}],needs:[{label:"Funding",focus:["pre-seed"]},{label:"Advice",focus:["hiring"]}],match:{is_match:true,reason:"She is raising at the stage you advise"}},
+    {id:"deon",name:"Deon Carter",role:"Just exited",agency:"",agency_type:"",color:"#f59e0b",offers:[{label:"Investment",focus:["seed"]},{label:"Advice",focus:["scaling"]}],needs:[{label:"Introductions",focus:["operators"]}],match:{is_match:false}},
+    {id:"yuki",name:"Yuki Sato",role:"Engineer",agency:"",agency_type:"",color:"#60a5fa",offers:[{label:"Collaboration",focus:["3D","web"]}],needs:[{label:"Mentorship",focus:["engineering"]}],match:{is_match:false}},
+    {id:"bria",name:"Bria Wells",role:"Founder, creative",agency:"WELLS AND CO",agency_type:"Creative",color:"#f472b6",offers:[{label:"Introductions",focus:["press"]},{label:"Branding",focus:["identity"]}],needs:[{label:"Advice",focus:["fundraising"]}],match:{is_match:true,reason:"You both build creative brands"}},
+    {id:"omar",name:"Omar Haddad",role:"Product designer",agency:"",agency_type:"",color:"#3bd75c",offers:[{label:"Feedback",focus:["UX"]},{label:"Mentorship",focus:["design"]}],needs:[{label:"Collaboration",focus:["gaming"]}],match:{is_match:false}}
+  ]
+};
+
+const WARMTH = {
+  in_rhythm:{label:"In rhythm", color:"#3bd75c"},
+  cooling:{label:"Cooling", color:"#f59e0b"},
+  been_a_while:{label:"Been a while", color:"#5a5a5a"}
+};
+
+const ROOMS_LIST = [
+  {id:"evt_lnt_live", name:"Latinos-N-Tech", sub:"Live now", live:true},
+  {id:"evt_coffee", name:"Coffee Connect", sub:"3 days ago", live:false},
+  {id:"evt_mixer", name:"Founder Mixer", sub:"2 weeks ago", live:false}
+];
+
+/* ---------- shared state (one object, persists across screens) ---------- */
+const state = {
+  screen:"home",
+  inRoom:false,
+  layout:"grid",            // grid | list
+  activeCardId:ME.activeCardId,
+  connectedIds:new Set(["maya","devin"]),  // already connected (seed)
+  connections:[
+    {id:"maya", initials:"MO", color:"#3bd75c", name:"Maya Okafor", role:"Founder, Coffee Connect", warmth:"in_rhythm"},
+    {id:"devin", initials:"DP", color:"#a47bff", name:"Devin Park", role:"Fractional CFO, Founder Mixer", warmth:"cooling"}
+  ],
+  sessionAdds:[],           // ids added during current room visit
+  pendingTab:null,
+  // sheet payloads
+  expanded:null,            // {person, isSelf, face}
+  intro:null                // {target, chip, tone, draft, add, locked}
+};
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const view = $("#view");
+const personById = id => ROOM.people.find(p=>p.id===id);
+const activeCard = () => ME.cards.find(c=>c.id===state.activeCardId);
+const initials = nm => nm.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+const esc = s => (s==null?"":String(s)).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+const focusStr = f => f && f.length ? " in " + f.join(" and ") : "";
+function avatar(color, txt, cls){ return `<div class="avatar ${cls||""}" style="background:${color}">${esc(txt)}</div>`; }
+
+/* ---------- intro openers (templates, no live AI in v1) ---------- */
+function openers(target, chip){
+  const tn = target.name.split(" ")[0];
+  if(chip && chip.kind==="offer"){
+    const t = chip.label + focusStr(chip.focus);
+    return {
+      Warm:`Hi ${tn}, I noticed you offer ${t}. That is close to what I am working on right now. Could we trade a few minutes while the room is live?`,
+      Simple:`Hi ${tn}, you offer ${t}. I could use that. Free for a minute here?`,
+      Direct:`${tn}, you offer ${t}. I want to talk. Are you free now?`
+    };
+  }
+  if(chip && chip.kind==="need"){
+    const t = chip.label + focusStr(chip.focus);
+    return {
+      Warm:`Hi ${tn}, I saw you are looking for ${t}. I think I can help with that. Want to connect while we are both in the room?`,
+      Simple:`Hi ${tn}, you need ${t}. I can help. Got a minute?`,
+      Direct:`${tn}, you need ${t}. I can help. Let us talk.`
+    };
+  }
+  return {
+    Warm:`Hi ${tn}, we are in the same room and I would rather not let the moment pass. I think there is something here worth a few minutes.`,
+    Simple:`Hi ${tn}, good to share the room. Want to connect for a minute?`,
+    Direct:`${tn}, I want to connect before this wraps. Free now?`
+  };
+}
+
+/* ============================================================
+   RENDER: screens
+   ============================================================ */
+function render(){
+  if(state.inRoom){ view.innerHTML = roomScreen(); }
+  else {
+    if(state.screen==="home") view.innerHTML = homeScreen();
+    else if(state.screen==="rooms") view.innerHTML = roomsScreen();
+    else if(state.screen==="card") view.innerHTML = cardScreen();
+    else if(state.screen==="people") view.innerHTML = peopleScreen();
+    else if(state.screen==="you") view.innerHTML = youScreen();
+  }
+  renderNav();
+  view.scrollTop = 0;
+}
+
+function brandbar(rightLive){
+  return `<div class="brandbar">
+    <div class="mark">
+      <span class="dotgrid"><i></i><i></i><i></i><i class="off"></i></span>
+      <span class="wordmark">SODA</span>
+    </div>
+    ${rightLive ? `<span class="live-chip"><span class="pulse"></span> Live</span>` : `<span class="eyebrow">${esc(rightLive===false?"":"")}</span>`}
+  </div>`;
+}
+
+/* ---- HOME ---- */
+function homeScreen(){
+  const count = ROOM.people.length;
+  const c = activeCard();
+  const deck = ME.cards.map(card=>{
+    const on = card.id===state.activeCardId;
+    return `<div class="mini-card ${on?"active":"dim"}" data-action="set-card" data-card="${card.id}">
+      <div class="role">${esc(card.role)}</div>
+      <div class="nm">${esc(card.name)}</div>
+      <div class="ag">${esc(card.agency)} · ${esc(card.agency_type)}</div>
+      <div class="show">${esc(card.show_up)}</div>
+      <div class="editable">Tap to edit</div>
+    </div>`;
+  }).join("");
+  const warm = state.connections.slice(0,4).map(cn=>{
+    const w = WARMTH[cn.warmth];
+    return `<div class="row" data-action="nav" data-tab="people">
+      ${avatar(cn.color, cn.initials, "")}
+      <div class="who"><div class="nm">${esc(cn.name)}</div><div class="sub">${esc(cn.role)}</div></div>
+      <span class="warmth" style="color:${w.color}"><span class="d" style="background:${w.color}"></span>${esc(w.label)}</span>
+    </div>`;
+  }).join("");
+  const rooms = ROOMS_LIST.map(r=>`<div class="row" ${r.live?'data-action="enter-room"':''}>
+      <div class="avatar" style="background:${r.live?'var(--green)':'var(--surface)'};color:${r.live?'#06210d':'var(--muted)'}">${esc(r.name[0])}</div>
+      <div class="who"><div class="nm">${esc(r.name)}</div><div class="sub">${esc(r.sub)}</div></div>
+      ${r.live?'<span class="tag" style="color:var(--green);background:rgba(59,215,92,.12)">Open</span>':'<span class="eyebrow">Past</span>'}
+    </div>`).join("");
+
+  return `${brandbar(true)}
+  <div class="hero">
+    <div class="eyebrow green">Event live</div>
+    <h1>Latinos-N-Tech is live right now.</h1>
+    <p>The room is open and ${count} people are already in. Walk in as your card.</p>
+    <button class="cta" data-action="enter-room">Tap to enter</button>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><span class="eyebrow">Walking in as</span><span class="meta">swipe to switch</span></div>
+  </div>
+  <div class="deck">${deck}</div>
+
+  <div class="section">
+    <div class="section-head"><span class="eyebrow">Rooms</span></div>
+  </div>
+  ${rooms}
+
+  <div class="section">
+    <div class="section-head"><span class="eyebrow">Stay warm</span><span class="meta">${state.connections.length} kept</span></div>
+  </div>
+  ${warm}
+  <div style="height:10px"></div>`;
+}
+
+/* ---- ROOMS tab ---- */
+function roomsScreen(){
+  const rooms = ROOMS_LIST.map(r=>`<div class="row" ${r.live?'data-action="enter-room"':''}>
+      <div class="avatar" style="background:${r.live?'var(--green)':'var(--surface)'};color:${r.live?'#06210d':'var(--muted)'}">${esc(r.name[0])}</div>
+      <div class="who"><div class="nm">${esc(r.name)}</div><div class="sub">${esc(r.sub)}</div></div>
+      ${r.live?'<span class="tag" style="color:var(--green);background:rgba(59,215,92,.12)">Open</span>':'<span class="eyebrow">Past</span>'}
+    </div>`).join("");
+  return `${brandbar(false)}
+  <div class="screenhead"><h2>Rooms</h2><p>One room live. The rest are warm history.</p></div>
+  <div style="height:8px"></div>${rooms}`;
+}
+
+/* ---- CARD tab (your own card, faces, deck) ---- */
+function cardScreen(){
+  const c = activeCard();
+  const deck = ME.cards.map(card=>{
+    const on = card.id===state.activeCardId;
+    return `<div class="mini-card ${on?"active":"dim"}" data-action="set-card" data-card="${card.id}">
+      <div class="role">${esc(card.role)}</div>
+      <div class="nm">${esc(card.name)}</div>
+      <div class="ag">${esc(card.agency)} · ${esc(card.agency_type)}</div>
+      <div class="show">${esc(card.show_up)}</div>
+      <div class="editable">Tap to edit</div>
+    </div>`;
+  }).join("");
+  return `${brandbar(false)}
+  <div class="screenhead"><h2>Your card</h2><p>This is who the room meets. The highlighted card is editable.</p></div>
+  <div class="section"><div class="section-head"><span class="eyebrow">Active</span><span class="meta">swipe to switch</span></div></div>
+  <div class="deck">${deck}</div>
+  <div class="section"><div class="section-head"><span class="eyebrow">${esc(c.role)} face</span></div></div>
+  <div style="padding:0 20px">
+    <button class="chip" data-action="open-self">
+      <span><span class="lab">Open full card</span><span class="foc">Flip Offers, Me, Needs</span></span>
+      <span class="go">Open</span>
+    </button>
+  </div><div style="height:14px"></div>`;
+}
+
+/* ---- ROOM (in-room grid / list) ---- */
+function roomScreen(){
+  const ppl = ROOM.people;
+  let body;
+  if(state.layout==="grid"){
+    body = `<div class="grid">${ppl.map(p=>{
+      const sub = [p.role, p.agency].filter(Boolean).join(" · ");
+      return `<button class="gcard" data-action="open-card" data-person="${p.id}">
+        ${p.match.is_match?'<span class="corner" title="Matches you"></span>':''}
+        ${avatar(p.color, initials(p.name), "")}
+        <div class="nm">${esc(p.name)}</div>
+        <div class="sub">${esc(sub)}</div>
+        <div class="gpills">
+          <span class="gpill" data-action="open-face" data-person="${p.id}" data-face="offers"><span class="n">${p.offers.length}</span><span class="l">Offers</span></span>
+          <span class="gpill" data-action="open-face" data-person="${p.id}" data-face="needs"><span class="n">${p.needs.length}</span><span class="l">Needs</span></span>
+        </div>
+      </button>`;
+    }).join("")}</div>`;
+  } else {
+    body = ppl.map(p=>`<div class="row" data-action="open-card" data-person="${p.id}">
+      ${avatar(p.color, initials(p.name), "")}
+      <div class="who"><div class="nm">${esc(p.name)}</div><div class="sub">${esc([p.role,p.agency].filter(Boolean).join(" · "))}</div></div>
+      ${p.match.is_match?'<span class="tag match">Matches you</span>':''}
+    </div>`).join("");
+  }
+  return `${brandbar(false)}
+  <div class="roomhead">
+    <div><h2>${esc(ROOM.event_name)}</h2><div class="count"><span style="color:var(--green)">●</span> ${ppl.length} in the room</div></div>
+    <div class="toggle">
+      <button class="${state.layout==="grid"?"on":""}" data-action="set-layout" data-layout="grid">Grid</button>
+      <button class="${state.layout==="list"?"on":""}" data-action="set-layout" data-layout="list">List</button>
+    </div>
+  </div>
+  ${body}<div style="height:10px"></div>`;
+}
+
+/* ---- PEOPLE ---- */
+function peopleScreen(){
+  if(!state.connections.length){
+    return `${brandbar(false)}<div class="screenhead"><h2>People</h2><p>Kept warm in SODA</p></div>
+      <div class="empty"><div class="eh">No connections yet</div>Walk into a room and the people you meet land here, kept warm.</div>`;
+  }
+  const rows = state.connections.map(cn=>{
+    const w = WARMTH[cn.warmth];
+    return `<div class="row">
+      ${avatar(cn.color, cn.initials, "")}
+      <div class="who"><div class="nm">${esc(cn.name)}</div><div class="sub">${esc(cn.role)}</div></div>
+      <span class="warmth" style="color:${w.color}"><span class="d" style="background:${w.color}"></span>${esc(w.label)}</span>
+    </div>`;
+  }).join("");
+  return `${brandbar(false)}
+  <div class="screenhead"><h2>People</h2><p>Kept warm in SODA</p></div>
+  <div style="height:8px"></div>${rows}`;
+}
+
+/* ---- YOU ---- */
+function youScreen(){
+  const c = activeCard();
+  return `${brandbar(false)}
+  <div class="screenhead"><h2>You</h2><p>Walking in as ${esc(c.role)}</p></div>
+  <div class="stats">
+    <div class="stat"><div class="n">${state.connections.length}</div><div class="l">Connections</div></div>
+    <div class="stat"><div class="n">${ME.cards.length}</div><div class="l">Cards</div></div>
+    <div class="stat"><div class="n">${ROOMS_LIST.length}</div><div class="l">Rooms</div></div>
+  </div>
+  <div class="section"><div class="section-head"><span class="eyebrow">Walking in as</span></div></div>
+  <div style="padding:0 20px">
+    <div class="mini-card active" data-action="nav" data-tab="card">
+      <div class="role">${esc(c.role)}</div>
+      <div class="nm">${esc(c.name)}</div>
+      <div class="ag">${esc(c.agency)} · ${esc(c.agency_type)}</div>
+      <div class="show">${esc(c.show_up)}</div>
+      <div class="sig">${esc(c.signature)}</div>
+    </div>
+  </div><div style="height:14px"></div>`;
+}
+
+/* ============================================================
+   NAV
+   ============================================================ */
+const NAV = [
+  {tab:"home",  label:"Home",  icon:'<path d="M4 11.5 12 5l8 6.5"/><path d="M6 10v9h12v-9"/>'},
+  {tab:"rooms", label:"Rooms", icon:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.4"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4"/>'},
+  {tab:"card",  label:"Card",  icon:'<rect x="3.5" y="6" width="17" height="12" rx="2.2"/><path d="M7 14h5"/>'},
+  {tab:"people",label:"People",icon:'<circle cx="9" cy="9" r="3"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><circle cx="16.5" cy="8" r="2.4"/><path d="M14.5 14.2C18 14.4 20.5 16.4 20.5 19"/>'},
+  {tab:"you",   label:"You",   icon:'<circle cx="12" cy="8" r="3.4"/><path d="M5 19c0-3.3 3-6 7-6s7 2.7 7 6"/>'}
+];
+function renderNav(){
+  $("#nav").innerHTML = NAV.map(n=>{
+    const on = !state.inRoom && state.screen===n.tab;
+    return `<button data-action="nav" data-tab="${n.tab}" class="${on?"on":""}" aria-label="${n.label}">
+      <svg viewBox="0 0 24 24">${n.icon}</svg><span class="nl">${n.label}</span>
+    </button>`;
+  }).join("");
+}
+
+/* ============================================================
+   SHEETS
+   ============================================================ */
+function openScrim(){ $("#scrim").classList.add("open"); }
+function anySheetOpen(){ return document.querySelectorAll(".sheet.open").length>0; }
+function closeTopSheet(){
+  const order = ["sheet-intro","sheet-chip","sheet-moment","sheet-card"];
+  for(const id of order){ const el=document.getElementById(id); if(el.classList.contains("open")){ el.classList.remove("open"); break; } }
+  if(!anySheetOpen()) $("#scrim").classList.remove("open");
+}
+function closeAllSheets(){
+  document.querySelectorAll(".sheet.open").forEach(s=>s.classList.remove("open"));
+  $("#scrim").classList.remove("open");
+}
+
+/* ---- expanded card ---- */
+function openExpanded(personId, face){
+  const isSelf = personId==="self";
+  const person = isSelf ? null : personById(personId);
+  state.expanded = {personId, isSelf, face: face || "me"};
+  renderExpanded();
+  openScrim(); $("#sheet-card").classList.add("open");
+}
+function renderExpanded(){
+  const e = state.expanded; if(!e) return;
+  const faces = ["offers","me","needs"];
+  $("#cardFaces").innerHTML = faces.map(f=>`<button data-action="flip-face" data-face="${f}" class="${e.face===f?"on":""}">${f}</button>`).join("");
+
+  const src = e.isSelf ? activeCard() : personById(e.personId);
+  const name = e.isSelf ? src.name : src.name;
+  const role = src.role;
+  let html = "";
+
+  if(e.face==="me"){
+    const agLine = e.isSelf ? `${esc(src.agency)} · ${esc(src.agency_type)}` : [src.agency, src.agency_type].filter(Boolean).join(" · ");
+    html = `<div class="meface">
+      <div class="role">${esc(role)}</div>
+      <div class="nm">${esc(name)}</div>
+      ${agLine?`<div class="ag">${agLine}</div>`:""}
+      ${src.show_up?`<div class="show">${esc(src.show_up)}</div>`:`<div class="hereline">In the room now</div>`}
+      ${src.signature?`<div class="sig">${esc(src.signature)}</div>`:""}
+    </div>`;
+  } else {
+    const list = e.face==="offers" ? src.offers : src.needs;
+    const eyebrow = e.face==="offers" ? "Offers to the room" : "Looking for";
+    html = `<div class="face-eyebrow">${eyebrow}</div>
+      <div class="chips">${list.map((ch,i)=>`
+        <button class="chip" data-action="open-chip" data-person="${e.personId}" data-kind="${e.face==="offers"?"offer":"need"}" data-index="${i}">
+          <span><span class="lab">${esc(ch.label)}</span>${ch.focus&&ch.focus.length?`<span class="foc">${esc(ch.focus.join(", "))}</span>`:`<span class="foc">Broadly</span>`}</span>
+          <span class="go">Open</span>
+        </button>`).join("")}</div>`;
+  }
+
+  // match strip (others only)
+  let matchHtml = "";
+  if(!e.isSelf && src.match && src.match.is_match){
+    matchHtml = `<div class="matchstrip"><div class="ico">↔</div><div class="t"><b>Matches you.</b> ${esc(src.match.reason)}</div></div>`;
+  }
+
+  // actions
+  let actionsHtml = "";
+  if(!e.isSelf){
+    const connected = state.connectedIds.has(e.personId);
+    actionsHtml = `<div class="actions">
+      <button class="btn primary" data-action="open-intro" data-person="${e.personId}">Start an intro</button>
+      <button class="btn secondary ${connected?"added":""}" data-action="add-connection" data-person="${e.personId}" ${connected?"disabled":""}>${connected?"Added":"Add connection"}</button>
+    </div>`;
+  }
+
+  $("#cardBody").innerHTML = `<div class="face">${html}</div>${matchHtml}${actionsHtml}`;
+}
+
+/* ---- chip detail ---- */
+function openChip(personId, kind, index){
+  const p = personById(personId);
+  const ch = (kind==="offer"?p.offers:p.needs)[index];
+  const ownerLine = kind==="offer" ? `<b>${esc(p.name.split(" ")[0])}</b> offers this to the room` : `<b>${esc(p.name.split(" ")[0])}</b> is looking for this`;
+  const focusHtml = ch.focus && ch.focus.length
+    ? `<div class="focus-row">${ch.focus.map(f=>`<span class="focus-tag">${esc(f)}</span>`).join("")}</div>`
+    : `<div class="nofocus">No focus added. Just ${esc(ch.label)}, broadly.</div>`;
+  $("#chipBody").innerHTML = `<div class="chipdetail">
+    <div class="kind">${kind==="offer"?"They offer":"They need"}</div>
+    <div class="big">${esc(ch.label)}</div>
+    ${focusHtml}
+    <div class="ownerline">${avatar(p.color, initials(p.name), "sm")}<div class="t">${ownerLine}</div></div>
+    <div class="actions">
+      <button class="btn primary" data-action="open-intro" data-person="${personId}" data-kind="${kind}" data-index="${index}">Start an intro about this</button>
+      <button class="btn secondary" data-action="dismiss">Close</button>
+    </div>
+  </div>`;
+  openScrim(); $("#sheet-chip").classList.add("open");
+}
+
+/* ---- intro starter ---- */
+function openIntro(personId, kind, index){
+  const p = personById(personId);
+  let chip = null;
+  if(kind!=null && index!=null){
+    const src = kind==="offer"?p.offers:p.needs;
+    chip = Object.assign({kind}, src[index]);
+  }
+  const connected = state.connectedIds.has(personId);
+  const ops = openers(p, chip);
+  state.intro = {personId, chip, tone:"Warm", draft:ops.Warm, add:!connected, locked:connected};
+  renderIntro();
+  openScrim(); $("#sheet-intro").classList.add("open");
+}
+function renderIntro(){
+  const i = state.intro; const p = personById(i.personId);
+  const basis = i.chip ? `Based on ${i.chip.kind==="offer"?"their offer":"their need"}: ${esc(i.chip.label)}${esc(focusStr(i.chip.focus))}` : "A warm hello while the room is live";
+  const tones = ["Warm","Simple","Direct"];
+  $("#introBody").innerHTML = `<div class="introhead">
+    <div class="eyebrow">Start an intro</div>
+    <div class="to">To <b>${esc(p.name.split(" ")[0])}</b> · ${esc(p.role)}, in the room now</div>
+    <div class="basis">${basis}</div>
+  </div>
+  <div class="tones">${tones.map(t=>`<button data-action="set-tone" data-tone="${t}" class="${i.tone===t?"on":""}">${t}</button>`).join("")}</div>
+  <textarea class="draft" id="introDraft" aria-label="Intro message">${esc(i.draft)}</textarea>
+  <div class="addtoggle">
+    <div class="t">${i.locked?"Already in your connections":"Add to your connections"}<small>${i.locked?"They are kept warm in SODA":"Lands in People, kept warm"}</small></div>
+    <button class="switch ${i.add?"on":""} ${i.locked?"locked":""}" data-action="toggle-add" aria-label="Add to connections" ${i.locked?"disabled":""}><span class="knob"></span></button>
+  </div>
+  <div class="trust">SODA drafts it. You send it. Nothing goes out on its own.</div>
+  <div class="actions">
+    <button class="btn primary" data-action="send-intro">Send intro</button>
+    <button class="btn secondary" data-action="dismiss">Cancel</button>
+  </div>`;
+  const ta = $("#introDraft");
+  if(ta){ ta.addEventListener("input", ()=>{ state.intro.draft = ta.value; }); }
+}
+
+/* ---- moment: event left ---- */
+function openMoment(){
+  const made = state.sessionAdds.length;
+  const c = activeCard();
+  let body;
+  if(made===0){
+    body = `<div class="moment">
+      <div class="eyebrow">You left the room</div>
+      <div class="num" style="color:var(--muted)">0</div>
+      <div class="numlabel">connections made</div>
+      <div class="body">No connections this time. The room is still live. You can walk back in whenever you are ready.</div>
+      <div class="actions">
+        <button class="btn primary" data-action="enter-room">Back to the room</button>
+        <button class="btn secondary" data-action="moment-back">Back to ${esc(state.pendingTab||"home")}</button>
+      </div>
+    </div>`;
+  } else {
+    const adds = state.sessionAdds.map(id=>{ const cn=state.connections.find(x=>x.id===id); return cn; }).filter(Boolean);
+    const shown = adds.slice(0,4).map(cn=>avatar(cn.color, cn.initials, "")).join("");
+    const overflow = adds.length>4 ? `<div class="more">+${adds.length-4}</div>` : "";
+    body = `<div class="moment">
+      <div class="eyebrow">You left the room</div>
+      <div class="num">${made}</div>
+      <div class="numlabel">connection${made===1?"":"s"} made</div>
+      <div class="strip">${shown}${overflow}</div>
+      <div class="body">You walked in as <b>${esc(c.role)}</b> and left with ${made} ${made===1?"person":"people"} worth knowing. They are warm now. Keep them that way.</div>
+      <div class="actions">
+        <button class="btn primary" data-action="moment-people">See my connections</button>
+        <button class="btn secondary" data-action="moment-back">Back to ${esc(state.pendingTab||"home")}</button>
+      </div>
+    </div>`;
+  }
+  $("#momentBody").innerHTML = body;
+  openScrim(); $("#sheet-moment").classList.add("open");
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+function addConnection(personId){
+  if(state.connectedIds.has(personId)) return false;
+  const p = personById(personId);
+  state.connectedIds.add(personId);
+  state.connections.unshift({
+    id:personId, initials:initials(p.name), color:p.color,
+    name:p.name, role:[p.role, ROOM.event_name].filter(Boolean).join(", "), warmth:"in_rhythm"
+  });
+  if(state.inRoom && !state.sessionAdds.includes(personId)) state.sessionAdds.push(personId);
+  return true;
+}
+
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove("show"), 2600);
+}
+
+function enterRoom(){
+  closeAllSheets();
+  state.inRoom = true; state.sessionAdds = []; state.layout = "grid";
+  render();
+}
+
+document.addEventListener("click", (ev)=>{
+  const el = ev.target.closest("[data-action]");
+  if(!el) return;
+  const a = el.dataset.action;
+
+  switch(a){
+    case "enter-room": enterRoom(); break;
+
+    case "set-card": state.activeCardId = el.dataset.card; render(); break;
+
+    case "set-layout": state.layout = el.dataset.layout; render(); break;
+
+    case "open-card": openExpanded(el.dataset.person, "me"); break;
+    case "open-face": ev.stopPropagation(); openExpanded(el.dataset.person, el.dataset.face); break;
+    case "open-self": openExpanded("self", "me"); break;
+    case "flip-face": state.expanded.face = el.dataset.face; renderExpanded(); break;
+
+    case "open-chip":
+      openChip(el.dataset.person, el.dataset.kind, +el.dataset.index); break;
+
+    case "add-connection": {
+      const id = el.dataset.person;
+      if(addConnection(id)){ renderExpanded(); toast("Added to your connections"); }
+      break;
+    }
+
+    case "open-intro":
+      openIntro(el.dataset.person, el.dataset.kind ?? null, el.dataset.index!=null ? +el.dataset.index : null);
+      break;
+
+    case "set-tone": {
+      const i = state.intro; const p = personById(i.personId);
+      i.tone = el.dataset.tone; i.draft = openers(p, i.chip)[i.tone];
+      renderIntro(); break;
+    }
+    case "toggle-add": {
+      if(state.intro.locked) break;
+      state.intro.add = !state.intro.add; renderIntro(); break;
+    }
+    case "send-intro": {
+      const i = state.intro; const p = personById(i.personId);
+      const willAdd = i.add && !state.connectedIds.has(i.personId);
+      if(willAdd) addConnection(i.personId);
+      closeAllSheets();
+      if(state.expanded) renderExpanded();
+      toast(willAdd ? `Intro sent, ${p.name.split(" ")[0]} added to connections` : `Intro sent to ${p.name.split(" ")[0]}`);
+      break;
+    }
+
+    case "dismiss": closeTopSheet(); break;
+
+    case "nav": {
+      const tab = el.dataset.tab;
+      if(state.inRoom){ state.pendingTab = tab; closeAllSheets(); openMoment(); }
+      else { state.screen = tab; closeAllSheets(); render(); }
+      break;
+    }
+
+    case "moment-people":
+      state.inRoom = false; state.screen = "people"; closeAllSheets(); render(); break;
+    case "moment-back":
+      state.inRoom = false; state.screen = state.pendingTab || "home"; closeAllSheets(); render(); break;
+  }
+});
+
+/* scrim closes top sheet */
+$("#scrim").addEventListener("click", closeTopSheet);
+/* Escape closes top sheet */
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && anySheetOpen()) closeTopSheet(); });
+
+/* swipe between faces on the expanded card */
+(function(){
+  const sheet = $("#sheet-card"); let x0=null;
+  sheet.addEventListener("touchstart", e=>{ x0 = e.touches[0].clientX; }, {passive:true});
+  sheet.addEventListener("touchend", e=>{
+    if(x0==null || !state.expanded) return;
+    const dx = e.changedTouches[0].clientX - x0; x0=null;
+    if(Math.abs(dx)<50) return;
+    const order=["offers","me","needs"]; let i=order.indexOf(state.expanded.face);
+    i = dx<0 ? Math.min(order.length-1, i+1) : Math.max(0, i-1);
+    state.expanded.face = order[i]; renderExpanded();
+  }, {passive:true});
+})();
+
+/* boot */
+render();
+</script>
+</body>
+</html>

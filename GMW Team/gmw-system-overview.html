@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>God Made Weapon — System Overview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+
+    /* ── RESET ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── TOKENS ────────────────────────────────────── */
+    :root {
+      --black:   #080808;
+      --green:   #04E85A;
+      --white:   #EDEDEA;
+      --dim:     #888;
+      --muted:   #444;
+      --line:    #1A1A1A;
+      --ease:    cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* ── BASE ──────────────────────────────────────── */
+    html  { scroll-behavior: smooth; }
+    body  {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    .mono { font-family: 'Space Mono', monospace; }
+
+    /* ── NAV ───────────────────────────────────────── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 22px 48px;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      background: var(--black);
+      z-index: 100;
+    }
+    .nav-id {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--white);
+    }
+    .nav-id sup {
+      font-size: 0.65em;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      vertical-align: super;
+    }
+    .nav-links {
+      display: flex;
+      gap: 44px;
+      list-style: none;
+    }
+    .nav-links li {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── HERO ──────────────────────────────────────── */
+    .hero {
+      display: grid;
+      grid-template-columns: 54% 46%;
+      min-height: calc(100vh - 65px);
+      border-bottom: 1px solid var(--line);
+    }
+    .hero-left {
+      padding: 72px 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-right: 1px solid var(--line);
+    }
+    .hero-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+    .hero-display {
+      font-size: clamp(68px, 9vw, 144px);
+      font-weight: 700;
+      line-height: 0.87;
+      letter-spacing: -0.035em;
+    }
+    .hero-display .ver {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.22em;
+      font-weight: 400;
+      vertical-align: super;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+    .hero-body {
+      max-width: 400px;
+    }
+    .hero-body p {
+      font-size: 15px;
+      line-height: 1.7;
+      color: #777;
+    }
+    .hero-body p + p { margin-top: 16px; }
+
+    /* hero right — green panel */
+    .hero-right {
+      background: var(--green);
+      padding: 72px 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .hero-right-head {
+      font-size: clamp(40px, 5.2vw, 84px);
+      font-weight: 700;
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+      color: var(--black);
+    }
+    .hero-right-head sup {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.22em;
+      font-weight: 400;
+      vertical-align: super;
+      color: rgba(0,0,0,0.3);
+      letter-spacing: 0.06em;
+    }
+    .hero-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border-top: 1px solid rgba(0,0,0,0.16);
+      padding-top: 36px;
+    }
+    .stat { padding: 0 0 28px; }
+    .stat:nth-child(odd)  { padding-right: 28px; border-right: 1px solid rgba(0,0,0,0.12); }
+    .stat:nth-child(even) { padding-left:  28px; }
+    .stat-n {
+      font-family: 'Space Mono', monospace;
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--black);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-l {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,0.4);
+    }
+    .hero-foot {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: rgba(0,0,0,0.3);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── SECTION LABEL COLUMN PATTERN ─────────────── */
+    .section-row {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      border-bottom: 1px solid var(--line);
+    }
+    .s-label {
+      padding: 48px 36px;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .s-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--green);
+      letter-spacing: 0.14em;
+    }
+    .s-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .s-body { padding: 48px 56px; }
+
+    /* ── PLAIN ENGLISH ANCHOR ──────────────────────── */
+    .anchor {
+      font-size: clamp(24px, 3vw, 46px);
+      font-weight: 600;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      max-width: 860px;
+    }
+    .anchor em { font-style: normal; color: var(--green); }
+
+    /* ── TEAM ──────────────────────────────────────── */
+    .team-header {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      border-bottom: 1px solid var(--line);
+    }
+    .team-header-body {
+      padding: 48px 56px;
+      display: flex;
+      align-items: flex-end;
+    }
+    .team-header-body p {
+      font-size: 14px;
+      color: var(--dim);
+      max-width: 580px;
+      line-height: 1.7;
+    }
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      border-bottom: 1px solid var(--line);
+    }
+    .agent {
+      padding: 36px 26px 36px;
+      border-right: 1px solid var(--line);
+    }
+    .agent:last-child { border-right: none; }
+    .agent-idx {
+      display: block;
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--green);
+      letter-spacing: 0.14em;
+      margin-bottom: 22px;
+    }
+    .agent-name {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .agent-role {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--green);
+      margin-bottom: 18px;
+    }
+    .agent-plain {
+      font-size: 12px;
+      color: #5C5C5C;
+      line-height: 1.65;
+    }
+
+    /* ── PHASES ────────────────────────────────────── */
+    .phases-wrap { border-bottom: 1px solid var(--line); }
+    .phases-header {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      border-bottom: 1px solid var(--line);
+    }
+    .phases-header-body {
+      padding: 48px 56px;
+    }
+    .phases-header-body p {
+      font-size: 14px;
+      color: var(--dim);
+      max-width: 580px;
+      line-height: 1.7;
+    }
+    .phase-row {
+      display: grid;
+      grid-template-columns: 52px 200px 1fr 220px;
+      border-bottom: 1px solid var(--line);
+      min-height: 108px;
+    }
+    .phase-row:last-child { border-bottom: none; }
+    .phase-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid var(--line);
+      writing-mode: vertical-rl;
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--green);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+    .phase-name-col {
+      padding: 28px 32px;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 7px;
+    }
+    .phase-name-col h3 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .phase-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+    .phase-plain {
+      padding: 28px 40px;
+      border-right: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+    }
+    .phase-plain p {
+      font-size: 13px;
+      color: var(--dim);
+      line-height: 1.7;
+      max-width: 500px;
+    }
+    .phase-who {
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+    }
+    .who-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #3A3A3A;
+    }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      padding: 4px 10px;
+      background: #161616;
+      border-radius: 2px;
+      color: #888;
+      letter-spacing: 0.06em;
+    }
+    .tag.g { background: var(--green); color: var(--black); }
+
+    /* ── SPECIALISTS ───────────────────────────────── */
+    .spec-header {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      border-bottom: 1px solid var(--line);
+    }
+    .spec-header-body {
+      padding: 48px 56px;
+    }
+    .spec-header-body p {
+      font-size: 14px;
+      color: var(--dim);
+      max-width: 600px;
+      line-height: 1.7;
+    }
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--line);
+    }
+    .spec-card {
+      padding: 44px 36px;
+      border-right: 1px solid var(--line);
+    }
+    .spec-card:last-child { border-right: none; }
+    .spec-badge {
+      display: inline-block;
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green);
+      border: 1px solid rgba(4, 232, 90, 0.28);
+      padding: 4px 10px;
+      border-radius: 2px;
+      margin-bottom: 28px;
+    }
+    .spec-name {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin-bottom: 6px;
+    }
+    .spec-serves {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      margin-bottom: 20px;
+    }
+    .spec-plain {
+      font-size: 12px;
+      color: #5C5C5C;
+      line-height: 1.65;
+    }
+
+    /* ── RULES (green) ─────────────────────────────── */
+    .rules-section {
+      background: var(--green);
+      border-bottom: 1px solid var(--line);
+    }
+    .rules-head {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid rgba(0,0,0,0.12);
+    }
+    .rules-head-left {
+      padding: 64px 48px;
+      border-right: 1px solid rgba(0,0,0,0.12);
+    }
+    .rules-display {
+      font-size: clamp(48px, 6.5vw, 108px);
+      font-weight: 700;
+      line-height: 0.88;
+      letter-spacing: -0.04em;
+      color: var(--black);
+    }
+    .rules-display sup {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.22em;
+      font-weight: 400;
+      vertical-align: super;
+      color: rgba(0,0,0,0.28);
+      letter-spacing: 0.06em;
+    }
+    .rules-head-right {
+      padding: 64px 56px;
+      display: flex;
+      align-items: flex-end;
+    }
+    .rules-head-right p {
+      font-size: 14px;
+      color: rgba(0,0,0,0.48);
+      max-width: 480px;
+      line-height: 1.7;
+    }
+    .rules-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .rule {
+      padding: 40px 44px;
+      border-right: 1px solid rgba(0,0,0,0.1);
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    .rule:nth-child(3n)       { border-right: none; }
+    .rule:nth-last-child(-n+3) { border-bottom: none; }
+    .rule-i {
+      display: block;
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      color: rgba(0,0,0,0.28);
+      margin-bottom: 18px;
+    }
+    .rule-t {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--black);
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .rule-p {
+      font-size: 12px;
+      color: rgba(0,0,0,0.48);
+      line-height: 1.65;
+    }
+    .rule-ghost {
+      display: flex;
+      align-items: flex-end;
+    }
+    .rule-ghost-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: rgba(0,0,0,0.28);
+      line-height: 1.7;
+    }
+
+    /* ── FOOTER ────────────────────────────────────── */
+    footer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .foot-left {
+      padding: 64px 48px;
+      border-right: 1px solid var(--line);
+    }
+    .foot-display {
+      font-size: clamp(36px, 5vw, 76px);
+      font-weight: 700;
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+      margin-bottom: 28px;
+    }
+    .foot-display .g { color: var(--green); }
+    .foot-left p {
+      font-size: 13px;
+      color: var(--dim);
+      max-width: 380px;
+      line-height: 1.7;
+    }
+    .foot-right {
+      padding: 64px 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .foot-meta {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: #2E2E2E;
+      line-height: 2;
+    }
+    .foot-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .foot-sig {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+    .foot-v {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--green);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── REDUCED MOTION ────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ─────────────────────────────────────────── -->
+<nav>
+  <div class="nav-id mono">GMW<sup>SYSTEM</sup></div>
+  <ul class="nav-links">
+    <li>The Team</li>
+    <li>How It Works</li>
+    <li>The Rules</li>
+    <li>Futureland</li>
+  </ul>
+</nav>
+
+<!-- ── HERO ────────────────────────────────────────── -->
+<section class="hero">
+
+  <div class="hero-left">
+    <p class="hero-eyebrow mono">Futureland / SODA Build System</p>
+
+    <h1 class="hero-display">
+      God<br>Made<br>Weapon<span class="ver">v2.0</span>
+    </h1>
+
+    <div class="hero-body">
+      <p>Not a chatbot. Not a co-pilot. A structured AI build team — ten specialists, each with one job, one domain, and a rule set no one can override.</p>
+      <p>Work enters as a problem. It exits as shipped software. Every step between those two points is tracked, documented, and gated.</p>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <h2 class="hero-right-head">
+      One<br>agent<br>active<br>at a<br>time.<sup>Always</sup>
+    </h2>
+
+    <div>
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-n">10</div>
+          <div class="stat-l">Total Agents</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">05</div>
+          <div class="stat-l">Build Phases</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">01</div>
+          <div class="stat-l">Active at once</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">11</div>
+          <div class="stat-l">Hard Rules</div>
+        </div>
+      </div>
+      <p class="hero-foot mono" style="margin-top:24px;">Futureland — Cleveland, OH</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ── PLAIN ENGLISH ────────────────────────────────── -->
+<div class="section-row">
+  <div class="s-label">
+    <span class="s-num mono">00 —</span>
+    <span class="s-name mono">Plain English</span>
+  </div>
+  <div class="s-body">
+    <p class="anchor">
+      Think of GMW like a <em>film crew</em>. Everyone has exactly one job. Nobody improvises outside their role. Nothing ships until the final gate clears. <em>You are the studio.</em>
+    </p>
+  </div>
+</div>
+
+<!-- ── CORE TEAM ─────────────────────────────────────── -->
+<section>
+
+  <div class="team-header">
+    <div class="s-label">
+      <span class="s-num mono">01 —</span>
+      <span class="s-name mono">The Core Team</span>
+    </div>
+    <div class="team-header-body">
+      <p>Six specialists. They never talk to each other directly — every handoff routes through the Orchestrator. Like a relay race where only one person can hold the baton. When one agent finishes, the baton goes to the Orchestrator, who decides what moves next.</p>
+    </div>
+  </div>
+
+  <div class="team-grid">
+
+    <div class="agent">
+      <span class="agent-idx mono">AGT — 00</span>
+      <div class="agent-name">Orchestrator</div>
+      <div class="agent-role mono">The Director</div>
+      <p class="agent-plain">The only agent who talks to the whole team. Routes every task, tracks session state, and makes sure nothing slips between steps. Nothing moves without its routing decision.</p>
+    </div>
+
+    <div class="agent">
+      <span class="agent-idx mono">AGT — 01</span>
+      <div class="agent-name">Nelson</div>
+      <div class="agent-role mono">Research</div>
+      <p class="agent-plain">Runs the data. Studies how real users behave. Consults on what to build and how to measure whether it worked. Owns the research pipeline and the study protocol.</p>
+    </div>
+
+    <div class="agent">
+      <span class="agent-idx mono">AGT — 02</span>
+      <div class="agent-name">Aniya</div>
+      <div class="agent-role mono">Design + Frontend</div>
+      <p class="agent-plain">Designs every screen before a single line of backend code is written. Experience first — always. Prototype gets approved, then and only then does the build begin.</p>
+    </div>
+
+    <div class="agent">
+      <span class="agent-idx mono">AGT — 03</span>
+      <div class="agent-name">Kennis</div>
+      <div class="agent-role mono">Backend + API</div>
+      <p class="agent-plain">Builds the server logic, database, and APIs — always derived from Aniya's approved design. The code serves the experience. Never the other way around.</p>
+    </div>
+
+    <div class="agent">
+      <span class="agent-idx mono">AGT — 04</span>
+      <div class="agent-name">Brianna</div>
+      <div class="agent-role mono">DevOps + Deploy</div>
+      <p class="agent-plain">Gets it live. Manages the servers, environment, and the full release sequence. The deployment is hers from first step to last. Nothing goes out without her process.</p>
+    </div>
+
+    <div class="agent">
+      <span class="agent-idx mono">AGT — 05</span>
+      <div class="agent-name">Ghost</div>
+      <div class="agent-role mono">QA + Security</div>
+      <p class="agent-plain">The last gate before anything ships. Tries to break what got built so users never have to. Issues the final Clear to Ship — or holds the ticket until it's right.</p>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ── FIVE PHASES ──────────────────────────────────── -->
+<section class="phases-wrap">
+
+  <div class="phases-header">
+    <div class="s-label">
+      <span class="s-num mono">02 —</span>
+      <span class="s-name mono">The Five Phases</span>
+    </div>
+    <div class="phases-header-body">
+      <p>Every piece of work moves through all five phases — no skipping, no shortcuts. Each phase has one owner, one output, and one gate that must clear before the next phase begins. The phases are what prevent the team from producing surprises.</p>
+    </div>
+  </div>
+
+  <div class="phase-row">
+    <div class="phase-num mono">01</div>
+    <div class="phase-name-col">
+      <h3>Intake</h3>
+      <span class="phase-tag mono">Name the problem</span>
+    </div>
+    <div class="phase-plain">
+      <p>What's the actual problem? Written clearly, in plain language, in four sentences or fewer. If it's really two problems, it gets split into two separate tickets before anything else happens. Vague problems produce vague software.</p>
+    </div>
+    <div class="phase-who">
+      <span class="who-label mono">Owner</span>
+      <div class="tags">
+        <span class="tag g">Alysha</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-row">
+    <div class="phase-num mono">02</div>
+    <div class="phase-name-col">
+      <h3>Specification</h3>
+      <span class="phase-tag mono">Lock the plan</span>
+    </div>
+    <div class="phase-plain">
+      <p>Exactly what gets built, how it gets tested, and what done actually looks like — locked before a single line of code starts. This is what prevents the endless loop of building the wrong thing and spending weeks correcting it.</p>
+    </div>
+    <div class="phase-who">
+      <span class="who-label mono">Leads</span>
+      <div class="tags">
+        <span class="tag">Orchestrator</span>
+        <span class="tag">Nelson</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-row">
+    <div class="phase-num mono">03</div>
+    <div class="phase-name-col">
+      <h3>Build</h3>
+      <span class="phase-tag mono">Design first</span>
+    </div>
+    <div class="phase-plain">
+      <p>Aniya designs the screens. Alysha approves them. Only then does Kennis write the backend. The design determines what gets built — never the other way around. This is the rule that keeps engineers from building the wrong experience.</p>
+    </div>
+    <div class="phase-who">
+      <span class="who-label mono">Sequence</span>
+      <div class="tags">
+        <span class="tag">Aniya</span>
+        <span class="tag g">You ✓</span>
+        <span class="tag">Kennis</span>
+        <span class="tag">Brianna</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-row">
+    <div class="phase-num mono">04</div>
+    <div class="phase-name-col">
+      <h3>Verify</h3>
+      <span class="phase-tag mono">Try to break it</span>
+    </div>
+    <div class="phase-plain">
+      <p>Ghost runs every test it can think of — unit, integration, regression. If the work touches login or access control, Cipher audits the security. If it touches scale or performance, Load stress-tests it. Clear to Ship, or the ticket goes back.</p>
+    </div>
+    <div class="phase-who">
+      <span class="who-label mono">Gate Holders</span>
+      <div class="tags">
+        <span class="tag">Ghost</span>
+        <span class="tag">Cipher</span>
+        <span class="tag">Load</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-row">
+    <div class="phase-num mono">05</div>
+    <div class="phase-name-col">
+      <h3>Continuity</h3>
+      <span class="phase-tag mono">Nothing gets lost</span>
+    </div>
+    <div class="phase-plain">
+      <p>Scribe documents every decision, files every artifact, and updates the system's memory. A ticket does not close until Scribe issues the Clear to Close. This is what keeps the system from losing context between sessions, between people, and between versions.</p>
+    </div>
+    <div class="phase-who">
+      <span class="who-label mono">Owners</span>
+      <div class="tags">
+        <span class="tag">Scribe</span>
+        <span class="tag">Orchestrator</span>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ── SPECIALISTS ──────────────────────────────────── -->
+<section>
+
+  <div class="spec-header">
+    <div class="s-label">
+      <span class="s-num mono">03 —</span>
+      <span class="s-name mono">The Specialists</span>
+    </div>
+    <div class="spec-header-body">
+      <p>Four dormant agents who only activate when the work specifically needs them. They're invisible to the rest of the team until their coordinator calls them in — like on-call experts who don't show up unless the situation requires their exact skill set.</p>
+    </div>
+  </div>
+
+  <div class="spec-grid">
+
+    <div class="spec-card">
+      <div class="spec-badge mono">→ Orchestrator</div>
+      <div class="spec-name">Scribe</div>
+      <div class="spec-serves mono">Memory + Documentation</div>
+      <p class="spec-plain">Keeps the session log current after every phase transition. Files every artifact when a ticket closes. Records every decision with the reason it was made. The system's institutional memory. Tickets do not close without Scribe's sign-off.</p>
+    </div>
+
+    <div class="spec-card">
+      <div class="spec-badge mono">→ Aniya</div>
+      <div class="spec-name">Echo</div>
+      <div class="spec-serves mono">Words + Copy</div>
+      <p class="spec-plain">Reviews every word visible to users on every screen before it ships. Enforces the warmth phrase rules, keeps login responses neutral, and maintains a clean separation between each product's voice. No screen ships with unapproved copy.</p>
+    </div>
+
+    <div class="spec-card">
+      <div class="spec-badge mono">→ Ghost</div>
+      <div class="spec-name">Cipher</div>
+      <div class="spec-serves mono">Security Audit</div>
+      <p class="spec-plain">Activates automatically on any ticket touching login, one-time codes, or access control. Runs a full security checklist: pre-authorization, code handling, rate limiting, role boundaries. Ghost cannot approve auth work without Cipher's pass.</p>
+    </div>
+
+    <div class="spec-card">
+      <div class="spec-badge mono">→ Ghost</div>
+      <div class="spec-name">Load</div>
+      <div class="spec-serves mono">Performance Testing</div>
+      <p class="spec-plain">Verifies the system can handle real event scale before every major deployment. Tests database query plans, real-time message speed, and concurrent user limits. Sets hard thresholds — either it passes the number, or it doesn't ship.</p>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ── NON-NEGOTIABLES ──────────────────────────────── -->
+<section class="rules-section">
+
+  <div class="rules-head">
+    <div class="rules-head-left">
+      <h2 class="rules-display">
+        The<br>Non-<br>Negotiables<sup>11</sup>
+      </h2>
+    </div>
+    <div class="rules-head-right">
+      <p>These aren't guidelines. They're locked decisions. Changing any one of them requires a formal spec change and Alysha's approval. No agent can deviate from them — not even the Orchestrator. They exist because some mistakes are too expensive to make twice.</p>
+    </div>
+  </div>
+
+  <div class="rules-grid">
+
+    <div class="rule">
+      <span class="rule-i mono">R — 01</span>
+      <div class="rule-t">Design Before Code</div>
+      <p class="rule-p">Aniya designs. Alysha approves. Kennis builds from what was approved. The code serves the experience — never the reverse. This is not a preference. It is the sequence.</p>
+    </div>
+
+    <div class="rule">
+      <span class="rule-i mono">R — 02</span>
+      <div class="rule-t">Two Gates to Close</div>
+      <p class="rule-p">Every ticket needs two separate sign-offs: Ghost says the work is solid, Scribe says the documentation is complete. One alone is not enough to close.</p>
+    </div>
+
+    <div class="rule">
+      <span class="rule-i mono">R — 03</span>
+      <div class="rule-t">No Secrets in Code</div>
+      <p class="rule-p">API keys, passwords, and tokens never appear in any file. They live in a secrets manager. Committing a secret is an automatic stop — full stop, no exceptions.</p>
+    </div>
+
+    <div class="rule">
+      <span class="rule-i mono">R — 04</span>
+      <div class="rule-t">One Agent at a Time</div>
+      <p class="rule-p">Only one agent is working at any given moment. Everything routes through the Orchestrator. No agent speaks directly to another. This prevents conflicts and lost work.</p>
+    </div>
+
+    <div class="rule">
+      <span class="rule-i mono">R — 05</span>
+      <div class="rule-t">Security Reviews Auth</div>
+      <p class="rule-p">Any work touching login, codes, or access control gets a mandatory Cipher security review before Ghost can approve it. No exceptions on auth tickets. Ever.</p>
+    </div>
+
+    <div class="rule">
+      <span class="rule-i mono">R — 06</span>
+      <div class="rule-t">History Is Permanent</div>
+      <p class="rule-p">Event data is never deleted or rewritten. Only new records get added. This is what makes the data trustworthy for research and makes recovery possible when something goes wrong.</p>
+    </div>
+
+    <div class="rule">
+      <span class="rule-i mono">R — 07</span>
+      <div class="rule-t">Stop and Surface</div>
+      <p class="rule-p">Any agent that hits ambiguity, a security risk, or a major fork in the road stops immediately, documents exactly what happened, and waits. No guessing forward. No improvising.</p>
+    </div>
+
+    <div class="rule">
+      <span class="rule-i mono">R — 08</span>
+      <div class="rule-t">No Direct to Production</div>
+      <p class="rule-p">Nothing merges to main or production directly. Every change lives on its own branch and passes Ghost before a merge happens. Without exception.</p>
+    </div>
+
+    <div class="rule">
+      <span class="rule-i mono">R — 09</span>
+      <div class="rule-t">Warmth Words Are Fixed</div>
+      <p class="rule-p">The relationship warmth system uses exactly two phrases: "in rhythm" when active, "it's been a while" when cooling. No variations. Echo enforces this across every screen that ships.</p>
+    </div>
+
+    <div class="rule">
+      <span class="rule-i mono">R — 10</span>
+      <div class="rule-t">Verify Before the Code</div>
+      <p class="rule-p">For ops and host logins: the server checks if an email is on the authorized list before generating a code. An unauthorized email gets a neutral response that reveals nothing about why.</p>
+    </div>
+
+    <div class="rule">
+      <span class="rule-i mono">R — 11</span>
+      <div class="rule-t">Categories Are Locked</div>
+      <p class="rule-p">Profile chips have exactly five category types. Adding a sixth requires a formal spec change — not a code change. This keeps the entire data model consistent across the platform.</p>
+    </div>
+
+    <div class="rule rule-ghost">
+      <div>
+        <span class="rule-i mono">—</span>
+        <p class="rule-ghost-text">Maintained by Alysha.<br>Agents do not modify.</p>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ── FOOTER ───────────────────────────────────────── -->
+<footer>
+  <div class="foot-left">
+    <h3 class="foot-display">
+      Built to<br>ship <span class="g">right.</span><br>Not fast.
+    </h3>
+    <p>GMW isn't optimized for speed. It's optimized for trust. Every rule, every gate, every stop condition exists because building the wrong thing quickly is always worse than building the right thing carefully.</p>
+  </div>
+
+  <div class="foot-right">
+    <div class="foot-meta mono">
+      System — God Made Weapon<br>
+      Version — v2.0 / June 2026<br>
+      Products — SODA, Equalpoint<br>
+      Organization — Futureland<br>
+      Location — Cleveland, OH
+    </div>
+    <div class="foot-bottom">
+      <span class="foot-sig mono">futurelandcle.com</span>
+      <span class="foot-v mono">v2.0 <sup style="font-size:0.7em;">GMW</sup></span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

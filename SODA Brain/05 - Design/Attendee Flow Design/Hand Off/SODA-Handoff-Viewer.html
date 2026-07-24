@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>SODA, Handoff JSON</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+  :root{
+    --canvas:#111;--card:#1a1a1a;--surface:#202220;--border:#2a2a2a;
+    --green:#3bd75c;--ink:#f5f5f5;--muted:#8a8a8a;--hint:#5a5a5a;--amber:#f59e0b;--purple:#a47bff;--red:#ef4444;--gold:#e8c468;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0c0c0c;color:var(--ink);font-family:'DM Sans',sans-serif;padding:24px 18px 60px;line-height:1.5}
+  .wrap{max-width:1240px;margin:0 auto}
+  header{margin-bottom:6px}
+  .wm{font-family:'Archivo Black';font-size:13px;color:var(--green);letter-spacing:.04em;text-transform:uppercase}
+  h1{font-family:'Archivo Black';font-size:26px;margin:6px 0 4px}
+  .sub{color:var(--muted);font-size:13.5px;max-width:760px}
+  .topline{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 10px}
+  .pill{font-family:'DM Mono';font-size:10px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--border);border-radius:9999px;padding:5px 11px;color:var(--muted)}
+  .pill b{color:var(--green);font-weight:500}
+  .copy-all{font-family:'DM Mono';font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer}
+  .copy-all:hover{color:var(--green);border-color:var(--green)}
+  .dl{font-family:'DM Mono';font-size:11px;color:#06140a;background:var(--green);border:none;border-radius:8px;padding:7px 13px;cursor:pointer;font-weight:600;text-decoration:none;display:inline-block}
+
+  .layout{display:grid;grid-template-columns:200px 1fr 1fr;gap:16px;margin-top:18px}
+  @media (max-width:1000px){.layout{grid-template-columns:1fr}}
+
+  /* section rail */
+  .rail{display:flex;flex-direction:column;gap:4px;align-self:start;position:sticky;top:18px}
+  @media (max-width:1000px){.rail{flex-direction:row;flex-wrap:wrap;position:static}}
+  .rail button{text-align:left;border:1px solid var(--border);background:var(--card);border-radius:10px;padding:10px 12px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
+  .rail button.on{background:var(--green);color:#06140a;border-color:var(--green)}
+  .rail button .ct{margin-left:auto;font-family:'DM Mono';font-size:9px;opacity:.7}
+
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;min-height:200px}
+  .panel-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .panel-head .t{font-family:'Archivo Black';font-size:13px}
+  .badge{font-family:'DM Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;border-radius:9999px;padding:3px 9px;color:var(--green);border:1px solid rgba(59,215,92,.4)}
+  .badge.read{color:var(--purple);border-color:rgba(164,123,255,.4)}
+  .copy{font-family:'DM Mono';font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:4px 10px;cursor:pointer}
+  .copy:hover{color:var(--green);border-color:var(--green)}
+  .json{padding:14px 16px;overflow:auto;font-family:'DM Mono';font-size:11.5px;line-height:1.65;white-space:pre;max-height:680px}
+  .json::-webkit-scrollbar{width:8px}.json::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  .jk{color:#7ec8ff}.js{color:var(--green)}.jn{color:var(--amber)}.jb{color:var(--purple)}.jp{color:var(--hint)}
+
+  .read{padding:16px 18px;overflow:auto;max-height:680px;font-size:13px}
+  .read::-webkit-scrollbar{width:8px}.read::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  .read h3{font-family:'Archivo Black';font-size:15px;margin:0 0 4px}
+  .read .lead{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+  .kv{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid rgba(42,42,42,.5);font-size:12.5px}
+  .kv:last-child{border-bottom:none}
+  .kv .k{font-family:'DM Mono';font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--green);min-width:130px;flex-shrink:0;padding-top:1px}
+  .kv .v{color:var(--ink);flex:1}
+  .kv .v b{color:var(--ink)}
+  .kv .v code{font-family:'DM Mono';font-size:11px;background:var(--surface);padding:1px 5px;border-radius:4px;color:var(--green)}
+  .group-lbl{font-family:'DM Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
+  .group-lbl:first-child{margin-top:0}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 4px}
+  .chip{border-radius:9999px;padding:5px 11px;font-size:11px;font-weight:600;background:rgba(59,215,92,.1);border:1px solid rgba(59,215,92,.3);color:var(--green)}
+  .chip.warn{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.35);color:#ff8585}
+  .chip.purple{background:rgba(164,123,255,.1);border-color:rgba(164,123,255,.3);color:var(--purple)}
+  .swatch{display:inline-flex;align-items:center;gap:7px;font-family:'DM Mono';font-size:11px;color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 9px;margin:0 6px 6px 0}
+  .swatch i{width:13px;height:13px;border-radius:4px;flex-shrink:0;border:1px solid rgba(255,255,255,.1)}
+  .person{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(42,42,42,.5)}
+  .person:last-child{border-bottom:none}
+  .person .av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#06140a;flex-shrink:0}
+  .person .pn{font-weight:700;font-size:13px}
+  .person .pr{color:var(--muted);font-size:11px}
+  .person .pm{margin-left:auto;color:var(--purple);font-size:10px;font-family:'DM Mono';text-transform:uppercase;letter-spacing:.04em}
+  .num-row{display:flex;gap:8px;margin:10px 0}
+  .num{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:11px;text-align:center}
+  .num .b{font-family:'Archivo Black';font-size:20px;color:var(--green)}
+  .num .l{font-family:'DM Mono';font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:3px}
+  .li{display:flex;gap:9px;padding:7px 0;font-size:12.5px;align-items:flex-start}
+  .li .d{color:var(--green);flex-shrink:0;font-weight:700}
+  .li.warn .d{color:var(--amber)}
+  .note{margin-top:18px;border-left:3px solid var(--green);background:rgba(59,215,92,.05);padding:13px 16px;border-radius:0 12px 12px 0;font-size:12.5px;color:#cfd6cf}
+  .note b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="wm">SODA</div>
+    <h1>Handoff, the full state</h1>
+    <p class="sub">Everything needed to resume the SODA build in a new chat. Pick a section on the left, the raw JSON is in the middle, a readable view is on the right. Copy any section or the whole object.</p>
+  </header>
+
+  <div class="topline">
+    <span class="pill"><b>19</b> room people</span>
+    <span class="pill"><b>10</b> sections</span>
+    <span class="pill"><b>11</b> screen contracts</span>
+    <span class="pill"><b>2</b> open P0 security</span>
+    <button class="copy-all" onclick="copyAll()">Copy full JSON</button>
+    <a class="dl" id="dl">Download .json</a>
+  </div>
+
+  <div class="layout">
+    <div class="rail" id="rail"></div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="t" id="sec-name">section</span>
+        <button class="copy" onclick="copySection()">Copy section</button>
+      </div>
+      <div class="json" id="json"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><span class="t">Readable</span><span class="badge read">Rendered view</span></div>
+      <div class="read" id="read"></div>
+    </div>
+  </div>
+
+  <div class="note" id="note"></div>
+</div>
+
+<script type="application/json" id="data">{
+  "handoff": {
+    "title": "SODA Live-Fire, full state handoff",
+    "purpose": "Single source of truth to resume SODA build in a new chat. Carries product tokens, locked decisions, every screen contract, and the live-fire app data model.",
+    "dated": "2026-06-26",
+    "company": { "product": "SODA", "engine": "Equalpoint", "pilot_client": "Futureland Inc.", "owner": "Alysha Ellis Montgomery (Future)", "cto": "Brent Montgomery", "lead_engineer": "Nelson Foster", "domain": "grabsoda.app" },
+    "one_liner": "A name tag knows you showed up. SODA knows who you became to the room.",
+    "positioning": "SODA is the room. Equalpoint is the memory of every room.",
+    "events": { "LNT": "Latinos-N-Tech, imminent", "BTW": "Black Tech Week Cincinnati, Jul 14-16", "launch": "Sept 14" }
+  },
+
+  "house_rules": {
+    "no_em_dashes": true,
+    "no_skinny_arrows_in_buttons": true,
+    "no_it_is_not_x_it_is_y_contrast": true,
+    "me_face_has_no_chips": "Me face is identity only (name + show_up + signature). Chips live on Offers and Needs faces.",
+    "equalpoint_not_named_as_destination_yet": "Until Equalpoint platform is built, connections live in SODA People tab, kept warm. Add-connection destination = 'people'. Swap to 'equalpoint' later, one field.",
+    "two_call_gate": "AI/intros: /api/draft generates, /api/draft/approve writes. Nothing sends without explicit confirm. Marked in contracts as gated:true.",
+    "grid_uses_tabs_list_uses_clean": "Room: Grid layout shows Tabs pills (count Offers/Needs). List layout shows Clean rows (Matches you only). Layout drives density."
+  },
+
+  "design_tokens": {
+    "mode": "dark only",
+    "colors": {
+      "canvas": "#111111", "card": "#1a1a1a", "surface": "#202220", "border": "#2a2a2a",
+      "ink": "#f5f5f5", "muted": "#8a8a8a", "hint": "#5a5a5a",
+      "green": "#3bd75c", "green_deep": "#203229", "amber": "#f59e0b",
+      "purple": "#a47bff", "red": "#ef4444", "gold": "#e8c468"
+    },
+    "color_usage": { "green": "interactive/confirm only", "amber": "timers/cooling", "purple": "nudge/match", "gold": "achievement" },
+    "fonts": { "display": "Archivo Black", "ui": "DM Sans", "eyebrow_mono": "DM Mono", "signature": "Caveat" },
+    "mark": "four-dot SODA mark (d1/d2/d3 green dots)",
+    "warmth_formula": "max(0, round(base * Math.exp(-0.01 * days)))",
+    "warmth_enum": {
+      "in_rhythm": { "label": "In rhythm", "color": "#3bd75c" },
+      "cooling": { "label": "Cooling", "color": "#f59e0b" },
+      "been_a_while": { "label": "Been a while", "color": "#5a5a5a" }
+    }
+  },
+
+  "stack": {
+    "frontend": "Next.js 16 App Router, React 19.2, Turbopack, PWA, Vercel",
+    "backend": "Supabase (Postgres, RLS, Realtime, pg_cron)",
+    "auth": "Clerk for attendee front door (SODA-038) via Supabase Third-Party Auth; host/ops on Supabase Auth",
+    "email": "Resend", "errors": "Sentry", "ai": "claude-sonnet-4-6 for drafts",
+    "state": "Zustand four-store (useEventStore, useAttendeeStore, useAuthStore, useOpsStore)",
+    "rate_limiting": "Upstash", "ops_layer": "Airtable (one-way)",
+    "secrets_conflict": "SODA-030 says Vercel env vars; ops manual says Doppler. UNRESOLVED, needs Brent."
+  },
+
+  "open_p0_security": [
+    { "id": "SODA-042", "title": "Ops login pre-authorization gate", "issue": "Ops login issues OTP to any email", "fix": "server-side check vs ops_authorized_emails, neutral response either way, log attempts", "owner": "Kennis + Brent", "due": "pre-LNT" },
+    { "id": "OTP-ENUM", "title": "Attendee front-door OTP enumeration", "fix": "separate attendee and ops entry points, server-side role enforcement", "due": "pre-LNT" }
+  ],
+
+  "data_model": {
+    "me": {
+      "initials": "BM",
+      "active_card_id": "founder",
+      "cards": [
+        { "id": "founder", "role": "Founder", "name": "BRENT", "agency": "GILCHRIST", "agency_type": "Creative Agency", "show_up": "Building the room you walk into",
+          "offers": [ { "label": "Advice", "focus": ["fundraising"] }, { "label": "Mentorship", "focus": ["design"] } ],
+          "needs": [ { "label": "Collaboration", "focus": ["product design"] }, { "label": "Work", "focus": [] } ],
+          "signature": "Brent Montgomery" },
+        { "id": "designer", "role": "Designer", "name": "BRENT", "agency": "GILCHRIST", "agency_type": "Creative Agency", "show_up": "I make the thing feel like something",
+          "offers": [ { "label": "Design", "focus": ["product"] }, { "label": "Branding", "focus": ["identity"] } ],
+          "needs": [ { "label": "Collaboration", "focus": ["founders"] }, { "label": "Clients", "focus": ["startups"] } ],
+          "signature": "Brent Montgomery" },
+        { "id": "engineer", "role": "Engineer", "name": "BRENT", "agency": "GILCHRIST", "agency_type": "Creative Agency", "show_up": "I build what the design promises",
+          "offers": [ { "label": "Expertise", "focus": ["full-stack"] }, { "label": "Code review", "focus": ["mentorship"] } ],
+          "needs": [ { "label": "Co-founder", "focus": ["technical"] }, { "label": "Projects", "focus": ["contract"] } ],
+          "signature": "Brent Montgomery" }
+      ]
+    },
+    "room": {
+      "event_id": "evt_lnt_live", "event_name": "Latinos-N-Tech", "live": true,
+      "count_fix_note": "Roster expanded to 19 so hero reads a fuller, truthful number. Hero count = people.length.",
+      "people": [
+        { "id": "maya", "name": "Maya Okafor", "role": "Founder", "agency": "NORTHBOUND", "agency_type": "Studio", "color": "#3bd75c", "you": false,
+          "offers": [ { "label": "Mentorship", "focus": ["design"] }, { "label": "Introductions", "focus": ["investors"] } ],
+          "needs": [ { "label": "Collaboration", "focus": ["product design"] }, { "label": "Funding", "focus": ["pre-seed"] } ],
+          "match": { "is_match": true, "reason": "You both work in product design" } },
+        { "id": "devin", "name": "Devin Park", "role": "Fractional CFO", "agency": "LEDGERLINE", "agency_type": "Advisory", "color": "#f59e0b", "you": false,
+          "offers": [ { "label": "Advice", "focus": ["fundraising"] }, { "label": "Investment", "focus": ["pre-seed"] } ],
+          "needs": [ { "label": "Introductions", "focus": ["founders"] } ],
+          "match": { "is_match": true, "reason": "He funds what you are raising for" } },
+        { "id": "ife", "name": "Ife Adeyemi", "role": "Design lead", "agency": "FORM AND CO", "agency_type": "Product Studio", "color": "#3bd75c", "you": false,
+          "offers": [ { "label": "Feedback", "focus": ["product"] }, { "label": "Mentorship", "focus": ["design"] } ],
+          "needs": [ { "label": "Collaboration", "focus": ["gaming"] } ],
+          "match": { "is_match": true, "reason": "You both want to collaborate on gaming" } },
+        { "id": "tomas", "name": "Tomas Rivera", "role": "Just exited", "agency": "", "agency_type": "", "color": "#a47bff", "you": false,
+          "offers": [ { "label": "Investment", "focus": ["seed"] }, { "label": "Advice", "focus": ["go-to-market"] } ],
+          "needs": [ { "label": "Introductions", "focus": ["operators"] } ], "match": { "is_match": false } },
+        { "id": "nikki", "name": "Nikki Cho", "role": "Engineer", "agency": "", "agency_type": "", "color": "#60a5fa", "you": false,
+          "offers": [ { "label": "Collaboration", "focus": ["web", "3D"] } ],
+          "needs": [ { "label": "Work", "focus": ["design"] }, { "label": "Mentorship", "focus": ["engineering"] } ], "match": { "is_match": false } },
+        { "id": "lorena", "name": "Lorena Medina", "role": "Founder, creative", "agency": "MEDINA", "agency_type": "Creative", "color": "#f472b6", "you": false,
+          "offers": [ { "label": "Mentorship", "focus": ["brand"] }, { "label": "Introductions", "focus": ["press"] }, { "label": "Collaboration", "focus": ["brand"] } ],
+          "needs": [ { "label": "Advice", "focus": ["fundraising"] } ], "match": { "is_match": false } },
+        { "id": "toast", "name": "Toast", "role": "Engineer", "agency": "", "agency_type": "", "color": "#3bd75c", "you": false,
+          "offers": [ { "label": "Collaboration", "focus": ["web"] }, { "label": "Feedback", "focus": ["product"] } ],
+          "needs": [ { "label": "Mentorship", "focus": ["engineering"] }, { "label": "Work", "focus": [] } ], "match": { "is_match": false } },
+        { "id": "rosa", "name": "Rosa Kim", "role": "Founder", "agency": "BRIGHTSEED", "agency_type": "Startup", "color": "#3bd75c", "you": false,
+          "offers": [ { "label": "Partnerships", "focus": ["b2b"] } ],
+          "needs": [ { "label": "Funding", "focus": ["seed"] }, { "label": "Talent", "focus": ["engineering"] } ],
+          "match": { "is_match": true, "reason": "She needs the funding you can introduce" } },
+        { "id": "amara", "name": "Amara Obi", "role": "Product manager", "agency": "", "agency_type": "", "color": "#a47bff", "you": false,
+          "offers": [ { "label": "Feedback", "focus": ["product"] } ],
+          "needs": [ { "label": "Mentorship", "focus": ["leadership"] } ], "match": { "is_match": false } },
+        { "id": "jordan", "name": "Jordan Tate", "role": "Investor", "agency": "TATE CAPITAL", "agency_type": "Fund", "color": "#f59e0b", "you": false,
+          "offers": [ { "label": "Investment", "focus": ["pre-seed", "seed"] }, { "label": "Introductions", "focus": ["LPs"] } ],
+          "needs": [ { "label": "Dealflow", "focus": ["fintech"] } ],
+          "match": { "is_match": true, "reason": "He invests at your stage" } },
+        { "id": "kemi", "name": "Kemi Bello", "role": "Brand strategist", "agency": "FOLD", "agency_type": "Studio", "color": "#f472b6", "you": false,
+          "offers": [ { "label": "Branding", "focus": ["identity"] }, { "label": "Mentorship", "focus": ["brand"] } ],
+          "needs": [ { "label": "Collaboration", "focus": ["product"] } ], "match": { "is_match": false } },
+        { "id": "leo", "name": "Leo Park", "role": "Engineer", "agency": "", "agency_type": "", "color": "#60a5fa", "you": false,
+          "offers": [ { "label": "Code review", "focus": ["frontend"] } ],
+          "needs": [ { "label": "Co-founder", "focus": ["technical"] } ],
+          "match": { "is_match": true, "reason": "You both want a technical co-founder" } },
+        { "id": "sana", "name": "Sana Idris", "role": "Designer", "agency": "", "agency_type": "", "color": "#3bd75c", "you": false,
+          "offers": [ { "label": "Design", "focus": ["UX"] } ],
+          "needs": [ { "label": "Work", "focus": ["product"] } ], "match": { "is_match": false } },
+        { "id": "marco", "name": "Marco Diaz", "role": "Growth lead", "agency": "LIFTOFF", "agency_type": "Agency", "color": "#a47bff", "you": false,
+          "offers": [ { "label": "Advice", "focus": ["go-to-market"] }, { "label": "Introductions", "focus": ["press"] } ],
+          "needs": [ { "label": "Clients", "focus": ["b2b"] } ], "match": { "is_match": false } },
+        { "id": "priya", "name": "Priya Nair", "role": "Founder", "agency": "NESTED", "agency_type": "Startup", "color": "#3bd75c", "you": false,
+          "offers": [ { "label": "Mentorship", "focus": ["ops"] } ],
+          "needs": [ { "label": "Funding", "focus": ["pre-seed"] }, { "label": "Advice", "focus": ["hiring"] } ],
+          "match": { "is_match": true, "reason": "She is raising at the stage you advise" } },
+        { "id": "deon", "name": "Deon Carter", "role": "Just exited", "agency": "", "agency_type": "", "color": "#f59e0b", "you": false,
+          "offers": [ { "label": "Investment", "focus": ["seed"] }, { "label": "Advice", "focus": ["scaling"] } ],
+          "needs": [ { "label": "Introductions", "focus": ["operators"] } ], "match": { "is_match": false } },
+        { "id": "yuki", "name": "Yuki Sato", "role": "Engineer", "agency": "", "agency_type": "", "color": "#60a5fa", "you": false,
+          "offers": [ { "label": "Collaboration", "focus": ["3D", "web"] } ],
+          "needs": [ { "label": "Mentorship", "focus": ["engineering"] } ], "match": { "is_match": false } },
+        { "id": "bria", "name": "Bria Wells", "role": "Founder, creative", "agency": "WELLS AND CO", "agency_type": "Creative", "color": "#f472b6", "you": false,
+          "offers": [ { "label": "Introductions", "focus": ["press"] }, { "label": "Branding", "focus": ["identity"] } ],
+          "needs": [ { "label": "Advice", "focus": ["fundraising"] } ],
+          "match": { "is_match": true, "reason": "You both build creative brands" } },
+        { "id": "omar", "name": "Omar Haddad", "role": "Product designer", "agency": "", "agency_type": "", "color": "#3bd75c", "you": false,
+          "offers": [ { "label": "Feedback", "focus": ["UX"] }, { "label": "Mentorship", "focus": ["design"] } ],
+          "needs": [ { "label": "Collaboration", "focus": ["gaming"] } ], "match": { "is_match": false } }
+      ]
+    },
+    "connections_seed": [
+      { "id": "past_maya", "initials": "MO", "color": "#3bd75c", "name": "Maya Okafor", "role": "Founder, Coffee Connect", "warmth": "in_rhythm" },
+      { "id": "past_devin", "initials": "DP", "color": "#a47bff", "name": "Devin Park", "role": "Fractional CFO, Founder Mixer", "warmth": "cooling" }
+    ]
+  },
+
+  "screen_contracts": {
+    "_shared": {
+      "pattern": "{ screen|modal, state|variant, ...payload, primary, secondary }",
+      "principle": "Server writes JSON, client renders. Server decides, client reflects.",
+      "common_fields": ["state", "variant", "face_rule", "gated", "destination", "view.layout", "view.density"]
+    },
+
+    "home": {
+      "screen": "home", "event_state": "live", "user_state": "returning",
+      "hero": { "state": "live", "eyebrow": "Event live", "title": "Latinos-N-Tech is live right now.", "subtitle": "The room is open and {room_count} people are already in. Walk in as your card.", "cta": "Tap to enter", "cta_has_arrow": false, "action": { "type": "enter_room", "event_id": "evt_lnt_live" } },
+      "cards": { "active_card_id": "founder", "editable_card_id": "founder", "face_rule": "me_face_has_no_chips", "items_ref": "data_model.me.cards" },
+      "rooms_ref": "live room + past rooms", "connections_ref": "data_model.connections", "nav": { "active": "home", "items": ["home", "rooms", "card", "people", "you"] },
+      "notes": "Hero eyebrow is GREEN. Headline white 26px. Button no arrow. Deck: highlighted = editable, swipe to switch."
+    },
+
+    "room": {
+      "screen": "room",
+      "context": { "event_id": "evt_lnt_live", "event_name": "Latinos-N-Tech", "room_live": true, "room_count": 19 },
+      "view": { "layout": "grid", "density": "tabs", "rule": "grid_uses_tabs_list_uses_clean", "default_landing": "grid" },
+      "grid_tabs": "each card: identity + offers_count + needs_count + match. corner dot if match.",
+      "list_clean": "each row: identity + match.is_match ('Matches you'). No counts.",
+      "tap_action": { "type": "open_card", "opens": "expand_payload" },
+      "pill_action": { "type": "open_card_to_face", "faces": ["offers", "needs"] }
+    },
+
+    "card_expanded": {
+      "modal": "card_expanded", "trigger": "open_card",
+      "active_face": "me", "faces": ["offers", "me", "needs"], "face_rule": "me_face_has_no_chips",
+      "offers_needs_ref": "person.offers / person.needs with {label, focus[]}",
+      "match": { "is_match": true, "reason": "..." },
+      "actions": [
+        { "label": "Add connection", "action": "add_connection", "destination": "people", "added_label": "Added" },
+        { "label": "Start an intro", "action": "open_intro_starter", "gated": true }
+      ],
+      "spacing_rule": "match-strip and action buttons each have padding; nothing touches."
+    },
+
+    "chip_detail": {
+      "modal": "chip_detail", "trigger": "tap_or_hover_chip", "slides_from": "bottom",
+      "kind": "offer | need", "label": "Mentorship", "focus": ["design"],
+      "owner": "Maya", "owner_line": "{owner} offers this to the room | is looking for this",
+      "no_focus_copy": "No focus added. Just {label}, broadly.",
+      "actions": [ { "label": "Start an intro about this", "action": "open_intro_starter", "gated": true, "carries_chip_context": true }, { "label": "Close", "action": "dismiss" } ],
+      "hover": "desktop lift + glow cue; tap opens sheet (mobile + desktop)"
+    },
+
+    "intro_starter": {
+      "modal": "intro_starter", "trigger": "chip_tapped | card_action", "slides_from": "bottom",
+      "target": { "id": "usr_maya", "name": "Maya", "context": "Founder, in the room now" },
+      "based_on": { "kind": "offer", "label": "Mentorship", "focus": "design" },
+      "openers": { "Warm": "...", "Simple": "...", "Direct": "..." }, "selected_tone": "Warm", "editable": true,
+      "add_connection": { "offered": true, "default_on": true, "label": "Add to your connections", "destination": "people", "locks_on_if_already_connected": true },
+      "primary": { "label": "Send intro", "action": "send_intro", "gated": true },
+      "secondary": { "label": "Cancel", "action": "dismiss" },
+      "trust_line": "SODA drafts it. You send it. Nothing goes out on its own.",
+      "send_result": "intro_sent true; if add toggle on and not connected, connection_added true; toast 'Intro sent, {name} added to connections'"
+    },
+
+    "moment_event_left": {
+      "modal": "event_left", "variant": "summary | quiet", "trigger": "user_left_room",
+      "headline": { "value": "{connections_made}", "label": "connections made" },
+      "people_strip": "first 4 avatars + overflow count",
+      "body": "You walked in as {role} and left with {n} people worth knowing. They are warm now. Keep them that way.",
+      "primary": { "label": "See my connections", "action": "open_people" },
+      "secondary": { "label": "Back to {tab}", "action": "go_tab" },
+      "zero_state": "No connections this time. Room still live, offer return.",
+      "no_equalpoint_naming": true
+    },
+
+    "other_moment_modals_built": {
+      "match": ["mutual", "complement"], "connection_count": ["milestone", "pace"], "top_connector": ["achieved (podium, is_you)", "missed (leaderboard + you + gap + progress)"],
+      "note": "All carry gated flag on intro actions; gold for achievement; built in SODA-Moment-Modals(.html/-JSON.html)"
+    },
+
+    "condition_states_built": {
+      "families": ["error (offline banner, server 500, action_failed inline, not_found)", "loading (skeleton, processing)", "decision (confirm_send, confirm_destructive, permission)", "locked (locked, closed/window_expired, countdown)", "restricted (wrong_role neutral, rate_limited, at_capacity)", "success (toast)"],
+      "file": "SODA-Condition-States.html",
+      "key": "wrong_role carries reveals_nothing:true + log_attempt:true (SODA-042 posture)"
+    },
+
+    "people": { "screen": "people", "framing": "Kept warm in SODA", "items_ref": "connections", "warmth_enum_ref": "design_tokens.warmth_enum" },
+    "you": { "screen": "you", "stats": ["connections", "cards", "rooms"], "walking_in_as": "active card" },
+    "nav": { "items": ["home", "rooms", "card", "people", "you"], "in_room_leaving_via_nav": "triggers event_left moment, then routes to chosen tab" }
+  },
+
+  "live_fire_flow": {
+    "file": "SODA-Live-Fire.html",
+    "happy_path": ["Home (live hero)", "Tap to enter -> Room", "grid Tabs / list Clean", "tap card -> full card", "flip faces (Me no chips)", "tap chip -> chip detail sheet", "Start an intro -> intro sheet (tones + add toggle, gated send)", "or Add connection on card", "leave via nav -> event_left moment", "See my connections -> People", "state persists to Home + You stat"],
+    "state_persistence": "A connection added in room flows to: wrap-up count -> People -> Home Stay-warm -> You stat. One shared state object.",
+    "known_tradeoffs": ["intro openers are templates not live AI (v1 ok)", "scroll-snap deck best on touch/trackpad"]
+  },
+
+  "deliverables_in_outputs": [
+    "SODA-Live-Fire.html (the full interactive app)",
+    "SODA-Home-JSON.html", "SODA-Room-MicroCards.html", "SODA-Room-JSON.html",
+    "SODA-Intro-Starter-Mock.html", "SODA-Intro-Starter-JSON.html",
+    "SODA-Moment-Modals.html", "SODA-Moment-Modals-JSON.html",
+    "SODA-Condition-States.html", "SODA-Empty-States.html",
+    "SODA-Card-Deck-Mock.html", "SODA-Home-Card-Deck.html", "SODA-Nav-Mock.html",
+    "SODA-Recap-JSON.html", "SODA-Survey-Mock.html",
+    "SODA-DECISIONS.md", "SODA-BUILD-CHECKLIST.md", "SODA-Risky-Ten-Best-Practices(.md/.docx)",
+    "SODA-Ops-Manual-Gap-Analysis(.md/.docx)", "Equalpoint-Ops-Manual.md", "bank.ts (86 chips, 7 contexts)"
+  ],
+
+  "next_steps": [
+    "Write PIPELINE.md: consolidate every contract above into one buildable spec (warmth enum, {token} emphasis, state/variant/face_rule fields, gated flag, view.layout+density).",
+    "Resolve Doppler vs Vercel secrets conflict (SODA-030) with Brent.",
+    "Fold SODA-042 into risky-ten as unit 11.",
+    "Write 3 chip gate tests (migration RLS, cross-user PATCH, bank capital-need surfaces only capital-focus).",
+    "Dark-theme restyle of uploaded chip components (currently Equalpoint light theme).",
+    "Optional: add Drop and Chance act reveals firing inside the live room."
+  ]
+}
+</script>
+<script>
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const SECTIONS = Object.keys(DATA);
+const LABELS = {
+  handoff:'Overview', house_rules:'House rules', design_tokens:'Design tokens', stack:'Stack',
+  open_p0_security:'P0 security', data_model:'Data model', screen_contracts:'Screen contracts',
+  live_fire_flow:'Live-fire flow', deliverables_in_outputs:'Deliverables', next_steps:'Next steps'
+};
+let current = 'handoff';
+
+function highlight(obj){
+  let j=JSON.stringify(obj,null,2).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  j=j.replace(/"([^"]+)":/g,'<span class="jk">"$1"</span><span class="jp">:</span>');
+  j=j.replace(/: "([^"]*)"/g,': <span class="js">"$1"</span>');
+  j=j.replace(/: (-?\d+\.?\d*)/g,': <span class="jn">$1</span>');
+  j=j.replace(/: (true|false|null)/g,': <span class="jb">$1</span>');
+  j=j.replace(/([{}\[\],])/g,'<span class="jp">$1</span>');
+  return j;
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function countOf(key){
+  const v=DATA[key];
+  if(Array.isArray(v)) return v.length;
+  if(v && typeof v==='object') return Object.keys(v).length;
+  return '';
+}
+
+function renderRail(){
+  document.getElementById('rail').innerHTML = SECTIONS.map(k=>
+    '<button class="'+(k===current?'on':'')+'" onclick="setSec(\''+k+'\')">'+LABELS[k]+'<span class="ct">'+countOf(k)+'</span></button>'
+  ).join('');
+}
+function renderJSON(){
+  document.getElementById('json').innerHTML = highlight(DATA[current]);
+  document.getElementById('sec-name').textContent = current + '.json';
+}
+
+/* ---- readable renderers per section ---- */
+function kv(k,v){ return '<div class="kv"><div class="k">'+esc(k)+'</div><div class="v">'+v+'</div></div>'; }
+function readOverview(){
+  const h=DATA.handoff;
+  let out='<h3>'+esc(h.title)+'</h3><div class="lead">'+esc(h.purpose)+'</div>';
+  out+=kv('one liner','<b>'+esc(h.one_liner)+'</b>');
+  out+=kv('positioning',esc(h.positioning));
+  out+='<div class="group-lbl">Company</div>';
+  Object.entries(h.company).forEach(([k,v])=>out+=kv(k.replace(/_/g,' '),esc(v)));
+  out+='<div class="group-lbl">Events</div>';
+  Object.entries(h.events).forEach(([k,v])=>out+=kv(k,esc(v)));
+  return out;
+}
+function readHouseRules(){
+  const r=DATA.house_rules; let out='<h3>House rules</h3><div class="lead">The non-negotiables QA checks every deliverable against.</div>';
+  Object.entries(r).forEach(([k,v])=>{
+    const val = (v===true)?'<span class="chip">enforced</span>':esc(v);
+    out+=kv(k.replace(/_/g,' '),val);
+  });
+  return out;
+}
+function readTokens(){
+  const t=DATA.design_tokens; let out='<h3>Design tokens</h3><div class="lead">Dark mode only. Green is interactive/confirm.</div>';
+  out+='<div class="group-lbl">Colors</div><div>';
+  Object.entries(t.colors).forEach(([k,v])=>{ out+='<span class="swatch"><i style="background:'+v+'"></i>'+k+' '+v+'</span>'; });
+  out+='</div><div class="group-lbl">Color usage</div>';
+  Object.entries(t.color_usage).forEach(([k,v])=>out+=kv(k,esc(v)));
+  out+='<div class="group-lbl">Fonts</div>';
+  Object.entries(t.fonts).forEach(([k,v])=>out+=kv(k,esc(v)));
+  out+='<div class="group-lbl">Warmth</div>'+kv('formula','<code>'+esc(t.warmth_formula)+'</code>');
+  Object.entries(t.warmth_enum).forEach(([k,v])=>out+=kv(k,'<span class="swatch"><i style="background:'+v.color+'"></i>'+esc(v.label)+'</span>'));
+  return out;
+}
+function readStack(){
+  const s=DATA.stack; let out='<h3>Stack</h3><div class="lead">Next.js 16 on Vercel, Supabase, Clerk front door.</div>';
+  Object.entries(s).forEach(([k,v])=>{
+    const cls = k==='secrets_conflict' ? ' style="color:#ff8585"' : '';
+    out+=kv(k.replace(/_/g,' '),'<span'+cls+'>'+esc(v)+'</span>');
+  });
+  return out;
+}
+function readP0(){
+  let out='<h3>Open P0 security</h3><div class="lead">Live holes, before LNT. Sequenced ahead of feature work.</div>';
+  DATA.open_p0_security.forEach(p=>{
+    out+='<div class="group-lbl">'+esc(p.id)+' &middot; '+esc(p.title)+'</div>';
+    if(p.issue) out+=kv('issue','<span class="chip warn">'+esc(p.issue)+'</span>');
+    out+=kv('fix',esc(p.fix));
+    if(p.owner) out+=kv('owner',esc(p.owner));
+    out+=kv('due',esc(p.due));
+  });
+  return out;
+}
+function readDataModel(){
+  const d=DATA.data_model; let out='<h3>Data model</h3>';
+  out+='<div class="group-lbl">Your cards ('+d.me.cards.length+')</div>';
+  d.me.cards.forEach(c=>{
+    out+='<div class="person"><div class="av" style="background:var(--green)">'+esc(c.name[0])+'</div><div><div class="pn">'+esc(c.role)+'</div><div class="pr">'+esc(c.show_up)+'</div></div></div>';
+  });
+  out+='<div class="group-lbl">Room ('+d.room.people.length+' people)</div>';
+  d.room.people.forEach(p=>{
+    const m = p.match && p.match.is_match ? '<div class="pm">match</div>' : '';
+    const init = p.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+    out+='<div class="person"><div class="av" style="background:'+p.color+'">'+esc(init)+'</div><div><div class="pn">'+esc(p.name)+'</div><div class="pr">'+esc(p.role)+(p.agency?', '+esc(p.agency):'')+'</div></div>'+m+'</div>';
+  });
+  out+='<div class="group-lbl">Seed connections</div>';
+  d.connections_seed.forEach(c=>{
+    out+='<div class="person"><div class="av" style="background:'+c.color+'">'+esc(c.initials)+'</div><div><div class="pn">'+esc(c.name)+'</div><div class="pr">'+esc(c.role)+'</div></div></div>';
+  });
+  return out;
+}
+function readContracts(){
+  const c=DATA.screen_contracts; let out='<h3>Screen contracts</h3><div class="lead">'+esc(c._shared.principle)+'</div>';
+  out+=kv('pattern','<code>'+esc(c._shared.pattern)+'</code>');
+  out+='<div class="group-lbl">Common fields</div><div class="chips">'+c._shared.common_fields.map(f=>'<span class="chip">'+esc(f)+'</span>').join('')+'</div>';
+  Object.keys(c).filter(k=>k!=='_shared').forEach(k=>{
+    const v=c[k];
+    let summary='';
+    if(v.screen) summary='screen: '+v.screen;
+    else if(v.modal) summary='modal: '+v.modal;
+    if(v.gated || (v.actions && JSON.stringify(v.actions).includes('gated'))) summary+=' &middot; gated';
+    out+='<div class="group-lbl">'+k.replace(/_/g,' ')+'</div>';
+    out+='<div class="li"><span class="d">+</span><span>'+esc(summary||'contract')+'</span></div>';
+    // surface a key note if present
+    const noteKeys=['notes','note','key','principle','spacing_rule','no_equalpoint_naming'];
+    noteKeys.forEach(nk=>{ if(v[nk]) out+='<div class="li"><span class="d">&middot;</span><span>'+esc(typeof v[nk]==='boolean'?nk.replace(/_/g,' '):v[nk])+'</span></div>'; });
+  });
+  return out;
+}
+function readFlow(){
+  const f=DATA.live_fire_flow; let out='<h3>Live-fire flow</h3><div class="lead">File: <code>'+esc(f.file)+'</code></div>';
+  out+='<div class="group-lbl">Happy path</div>';
+  f.happy_path.forEach((s,i)=>out+='<div class="li"><span class="d">'+(i+1)+'</span><span>'+esc(s)+'</span></div>');
+  out+='<div class="group-lbl">State persistence</div><div class="li"><span class="d">&middot;</span><span>'+esc(f.state_persistence)+'</span></div>';
+  out+='<div class="group-lbl">Known tradeoffs</div>';
+  f.known_tradeoffs.forEach(s=>out+='<div class="li warn"><span class="d">&middot;</span><span>'+esc(s)+'</span></div>');
+  return out;
+}
+function readDeliverables(){
+  let out='<h3>Deliverables</h3><div class="lead">'+DATA.deliverables_in_outputs.length+' files in outputs.</div>';
+  DATA.deliverables_in_outputs.forEach(s=>out+='<div class="li"><span class="d">+</span><span>'+esc(s)+'</span></div>');
+  return out;
+}
+function readNext(){
+  let out='<h3>Next steps</h3><div class="lead">Where the new chat picks up.</div>';
+  DATA.next_steps.forEach((s,i)=>out+='<div class="li"><span class="d">'+(i+1)+'</span><span>'+esc(s)+'</span></div>');
+  return out;
+}
+const RENDER = {
+  handoff:readOverview, house_rules:readHouseRules, design_tokens:readTokens, stack:readStack,
+  open_p0_security:readP0, data_model:readDataModel, screen_contracts:readContracts,
+  live_fire_flow:readFlow, deliverables_in_outputs:readDeliverables, next_steps:readNext
+};
+function renderRead(){ document.getElementById('read').innerHTML = RENDER[current](); }
+
+function setSec(k){ current=k; renderRail(); renderJSON(); renderRead(); }
+function copySection(){ navigator.clipboard.writeText(JSON.stringify(DATA[current],null,2)).then(()=>flash('.copy','Copied')); }
+function copyAll(){ navigator.clipboard.writeText(JSON.stringify(DATA,null,2)).then(()=>flash('.copy-all','Copied full JSON')); }
+function flash(sel,txt){ const b=document.querySelector(sel); const o=b.textContent; b.textContent=txt; b.style.color='#3bd75c'; setTimeout(()=>{b.textContent=o;b.style.color='';},1200); }
+
+// download link
+const blob=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'});
+document.getElementById('dl').href=URL.createObjectURL(blob);
+document.getElementById('dl').download='SODA-Handoff.json';
+
+document.getElementById('note').innerHTML='<b>To resume:</b> download or copy the full JSON, paste it into a new chat, and say it is the SODA handoff. Start from the Next steps section.';
+
+renderRail(); renderJSON(); renderRead();
+</script>
+</body>
+</html>

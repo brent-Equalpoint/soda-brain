@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>SODA, Home</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+  :root{
+    --canvas:#111;--card:#1a1a1a;--surface:#202220;--border:#2a2a2a;
+    --green:#3bd75c;--green-deep:#203229;--ink:#f5f5f5;--muted:#8a8a8a;--hint:#5a5a5a;
+    --amber:#f59e0b;--purple:#a47bff;--red:#ef4444;
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:#000;color:var(--ink);font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:20px}
+  .mono{font-family:'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase}
+  .device{width:392px;height:840px;max-height:calc(100dvh - 40px);background:var(--canvas);border-radius:30px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px var(--border),0 40px 80px rgba(0,0,0,.65)}
+  @media (max-width:430px){body{padding:0}.device{width:100vw;height:100dvh;max-height:none;border-radius:0}}
+
+  /* top bar */
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;flex-shrink:0}
+  .wordmark{display:flex;align-items:center;gap:8px}
+  .soda-mark{position:relative;width:26px;height:26px;flex-shrink:0}
+  .soda-mark i{position:absolute;border-radius:50%;background:var(--green)}
+  .soda-mark .d1{width:8px;height:8px;top:0;left:2px}.soda-mark .d2{width:9px;height:9px;top:2px;right:0}.soda-mark .d3{width:13px;height:13px;bottom:0;left:4px}
+  .wordmark .nm{font-family:'Archivo Black';font-size:18px;letter-spacing:.02em;color:var(--green)}
+  .acct{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700;font-size:13px;cursor:pointer;transition:all .15s}
+  .acct:active{transform:scale(.94)}
+
+  .scroll{flex:1;overflow-y:auto;padding:4px 20px 20px}
+  .scroll::-webkit-scrollbar{display:none}
+
+  /* hero, state-aware */
+  .hero{border-radius:20px;padding:22px;margin-bottom:24px;position:relative;overflow:hidden;cursor:pointer;transition:transform .15s}
+  .hero:active{transform:scale(.99)}
+  .hero.live{background:linear-gradient(135deg,#162a18,#1a1a1a);border:1.5px solid var(--green);box-shadow:0 0 28px rgba(59,215,92,.25)}
+  .hero.idle{background:var(--card);border:1.5px solid var(--border);cursor:default}
+  .hero .pulse-dot{display:inline-flex;align-items:center;gap:8px;margin-bottom:14px}
+  .hero .pulse-dot i{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(59,215,92,.7);animation:pulse 1.8s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(59,215,92,.6)}70%{box-shadow:0 0 0 12px rgba(59,215,92,0)}100%{box-shadow:0 0 0 0 rgba(59,215,92,0)}}
+  .hero .pulse-dot span{font-size:11px;font-family:'DM Mono';letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+  .hero.idle .pulse-dot i{background:var(--hint);animation:none}
+  .hero.idle .pulse-dot span{color:var(--muted)}
+  .hero h2{font-family:'Archivo Black';font-size:25px;line-height:1.1;letter-spacing:-.01em;margin-bottom:6px}
+  .hero p{color:var(--muted);font-size:13.5px;line-height:1.45;margin-bottom:16px;max-width:80%}
+  .hero .enter-btn{display:inline-flex;align-items:center;gap:8px;background:var(--green);color:#06140a;font-weight:700;font-size:15px;padding:13px 22px;border-radius:11px;border:none;cursor:pointer}
+  .hero.idle .enter-btn{background:var(--surface);color:var(--muted)}
+
+  /* section header */
+  .sec{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 14px}
+  .sec h3{font-family:'Archivo Black';font-size:17px;letter-spacing:-.01em}
+  .sec .more{color:var(--green);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Mono';letter-spacing:.04em}
+
+  /* the card block */
+  .card-block{margin-bottom:26px}
+  .your-card{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+  .yc-head{display:flex;justify-content:space-between;align-items:flex-start;padding:18px 20px 0}
+  .yc-mark{position:relative;width:26px;height:26px}
+  .yc-mark i{position:absolute;border-radius:50%;background:var(--green)}
+  .yc-mark .d1{width:7px;height:7px;top:0;left:2px}.yc-mark .d2{width:8px;height:8px;top:2px;right:0}.yc-mark .d3{width:11px;height:11px;bottom:0;left:4px}
+  .yc-agency{text-align:right;line-height:1}
+  .yc-agency .nm{color:var(--green);font-size:16px;font-weight:600}
+  .yc-agency .ty{color:var(--muted);font-size:9px;font-style:italic;letter-spacing:.08em;margin-top:2px}
+  .yc-body{padding:14px 20px 16px;min-height:150px}
+  .yc-face{animation:fade .25s}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .yc-name{font-family:'Archivo Black';font-size:28px;color:var(--ink);line-height:1;margin-bottom:4px}
+  .yc-show{color:var(--muted);font-size:13px;font-style:italic;margin-bottom:4px}
+  .yc-role{color:var(--hint);font-size:11px;font-family:'DM Mono';letter-spacing:.06em;text-transform:uppercase}
+  .yc-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .yc-chip{border-radius:9999px;padding:8px 13px;font-size:12.5px;font-weight:600}
+  .yc-chip.offer{background:var(--green);color:#06140a}
+  .yc-chip.need{background:transparent;border:1px solid rgba(59,215,92,.4);color:var(--green)}
+  .yc-sig{margin-top:18px;border-bottom:2px solid var(--green);padding-bottom:2px;display:inline-block}
+  .yc-sig span{font-family:'DM Mono';font-style:italic;color:var(--green);font-size:15px}
+  .yc-tabs{display:flex;border-top:1px solid var(--border)}
+  .yc-tab{flex:1;text-align:center;padding:13px 0;font-family:'Archivo Black';font-size:14px;color:var(--muted);cursor:pointer;transition:all .15s;position:relative}
+  .yc-tab.on{color:var(--green)}
+  .yc-tab.on::after{content:"";position:absolute;bottom:0;left:25%;right:25%;height:2px;background:var(--green);border-radius:2px}
+  .edit-row{display:flex;justify-content:center;margin-top:12px}
+  .edit-btn{background:none;border:none;color:var(--hint);font-size:11px;font-family:'DM Mono';letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:4px}
+
+  /* rooms rail */
+  .rail{display:flex;gap:12px;overflow-x:auto;padding:2px 0 8px;margin:0 -20px;padding-left:20px;padding-right:20px;scroll-snap-type:x mandatory}
+  .rail::-webkit-scrollbar{display:none}
+  .room{flex:0 0 auto;width:150px;scroll-snap-align:start;background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:border-color .15s}
+  .room:active{border-color:var(--green)}
+  .room.live{border-color:var(--green)}
+  .room-top{height:84px;background:linear-gradient(135deg,#202220,#161616);display:flex;align-items:center;justify-content:center;position:relative}
+  .room.live .room-top{background:linear-gradient(135deg,#162a18,#1a1a1a)}
+  .room-top .ev{font-family:'Archivo Black';font-size:15px;color:var(--ink);text-align:center;padding:0 12px;line-height:1.05}
+  .room-live-tag{position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:5px;background:rgba(59,215,92,.15);border:1px solid rgba(59,215,92,.4);border-radius:9999px;padding:3px 8px}
+  .room-live-tag i{width:5px;height:5px;border-radius:50%;background:var(--green)}
+  .room-live-tag span{font-size:8px;font-family:'DM Mono';letter-spacing:.1em;color:var(--green)}
+  .room-stat{padding:11px 13px}
+  .room-stat .big{font-family:'Archivo Black';font-size:20px;color:var(--green);line-height:1}
+  .room-stat .lbl{color:var(--muted);font-size:11px;margin-top:2px}
+  .room-stat .date{color:var(--hint);font-size:10px;font-family:'DM Mono';margin-top:6px;letter-spacing:.04em}
+
+  /* connections preview */
+  .conn-block{margin-top:26px}
+  .conn{display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid rgba(42,42,42,.6);cursor:pointer}
+  .conn:last-child{border-bottom:none}
+  .conn .av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;color:#06140a}
+  .conn .info{flex:1;min-width:0}
+  .conn .info .nm{font-weight:700;font-size:15px}
+  .conn .info .role{color:var(--muted);font-size:12.5px;margin-top:1px}
+  .conn .warm{display:flex;align-items:center;gap:6px;flex-shrink:0}
+  .conn .warm .dot{width:7px;height:7px;border-radius:50%}
+  .conn .warm span{font-size:10px;font-family:'DM Mono';letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+  /* bottom nav */
+  .nav{flex-shrink:0;display:flex;border-top:1px solid var(--border);background:rgba(17,17,17,.96);backdrop-filter:blur(10px);padding-bottom:var(--safe-bottom)}
+  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:11px 0 9px;cursor:pointer;color:var(--muted);transition:color .15s}
+  .nav-item.on{color:var(--green)}
+  .nav-item svg{width:22px;height:22px}
+  .nav-item span{font-size:10px;font-weight:600;letter-spacing:.02em}
+  .nav-item:active{transform:scale(.92)}
+
+  .toast{position:absolute;left:50%;bottom:92px;transform:translateX(-50%) translateY(16px);background:#1d2a1f;border:1px solid rgba(59,215,92,.4);border-radius:9999px;padding:11px 18px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;white-space:nowrap;z-index:80}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="topbar">
+    <div class="wordmark">
+      <div class="soda-mark"><i class="d1"></i><i class="d2"></i><i class="d3"></i></div>
+      <span class="nm">SODA</span>
+    </div>
+    <div class="acct" onclick="toast('Account')">BM</div>
+  </div>
+
+  <div class="scroll">
+    <!-- state-aware hero -->
+    <div class="hero live" id="hero" onclick="enterRoom()">
+      <div class="pulse-dot"><i></i><span id="hero-tag">Event live</span></div>
+      <h2 id="hero-title">Latinos-N-Tech<br>is live right now.</h2>
+      <p id="hero-sub">The room is open and 19 people are already in. Walk in as your card.</p>
+      <button class="enter-btn" id="hero-btn">Tap to enter →</button>
+    </div>
+
+    <!-- your card -->
+    <div class="card-block">
+      <div class="sec"><h3>Your card</h3><span class="more" onclick="toast('Card editor')">Edit</span></div>
+      <div class="your-card">
+        <div class="yc-head">
+          <div class="yc-mark"><i class="d1"></i><i class="d2"></i><i class="d3"></i></div>
+          <div class="yc-agency"><div class="nm">NORTHBOUND</div><div class="ty">Studio</div></div>
+        </div>
+        <div class="yc-body" id="yc-body"></div>
+        <div class="yc-tabs">
+          <div class="yc-tab" data-face="offers" onclick="setFace('offers')">Offers</div>
+          <div class="yc-tab on" data-face="me" onclick="setFace('me')">Me</div>
+          <div class="yc-tab" data-face="needs" onclick="setFace('needs')">Needs</div>
+        </div>
+      </div>
+      <div class="edit-row"><button class="edit-btn" onclick="toast('Editing your card')">+ Edit how you show up</button></div>
+    </div>
+
+    <!-- recent rooms rail -->
+    <div class="sec"><h3>Your rooms</h3><span class="more" onclick="toast('All rooms')">See all</span></div>
+    <div class="rail">
+      <div class="room live" onclick="enterRoom()">
+        <div class="room-top"><span class="room-live-tag"><i></i><span>Live</span></span><span class="ev">Latinos<br>N-Tech</span></div>
+        <div class="room-stat"><div class="big">19</div><div class="lbl">in the room now</div><div class="date">Tonight</div></div>
+      </div>
+      <div class="room" onclick="toast('Coffee Connect recap')">
+        <div class="room-top"><span class="ev">Coffee<br>Connect</span></div>
+        <div class="room-stat"><div class="big">7</div><div class="lbl">connections made</div><div class="date">Jun 17</div></div>
+      </div>
+      <div class="room" onclick="toast('Founder Mixer recap')">
+        <div class="room-top"><span class="ev">Founder<br>Mixer</span></div>
+        <div class="room-stat"><div class="big">12</div><div class="lbl">connections made</div><div class="date">May 30</div></div>
+      </div>
+      <div class="room" onclick="toast('BTW recap')">
+        <div class="room-top"><span class="ev">Black<br>Tech Wk</span></div>
+        <div class="room-stat"><div class="big">23</div><div class="lbl">connections made</div><div class="date">Apr 12</div></div>
+      </div>
+    </div>
+
+    <!-- connections preview -->
+    <div class="conn-block">
+      <div class="sec"><h3>Stay warm</h3><span class="more" onclick="toast('All connections')">All</span></div>
+      <div class="conn" onclick="toast('Open Maya')">
+        <div class="av" style="background:#3bd75c">MO</div>
+        <div class="info"><div class="nm">Maya Okafor</div><div class="role">Founder · Coffee Connect</div></div>
+        <div class="warm"><div class="dot" style="background:#3bd75c"></div><span>In rhythm</span></div>
+      </div>
+      <div class="conn" onclick="toast('Open Devin')">
+        <div class="av" style="background:#a47bff">DP</div>
+        <div class="info"><div class="nm">Devin Park</div><div class="role">Fractional CFO · Founder Mixer</div></div>
+        <div class="warm"><div class="dot" style="background:#f59e0b"></div><span>Cooling</span></div>
+      </div>
+      <div class="conn" onclick="toast('Open Ife')">
+        <div class="av" style="background:#f59e0b">IA</div>
+        <div class="info"><div class="nm">Ife Adeyemi</div><div class="role">Designer · BTW</div></div>
+        <div class="warm"><div class="dot" style="background:#5a5a5a"></div><span>Been a while</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- bottom nav -->
+  <div class="nav">
+    <div class="nav-item on" onclick="navTo(this,'Home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="navTo(this,'Rooms')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18" stroke-linecap="round"/></svg>
+      <span>Rooms</span>
+    </div>
+    <div class="nav-item" onclick="navTo(this,'Card')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h6M7 14h4" stroke-linecap="round"/></svg>
+      <span>Card</span>
+    </div>
+    <div class="nav-item" onclick="navTo(this,'People')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke-linecap="round"/><circle cx="17" cy="9" r="2.2"/><path d="M16 14.5c2.6.4 5 2.5 5 5.5" stroke-linecap="round"/></svg>
+      <span>People</span>
+    </div>
+    <div class="nav-item" onclick="navTo(this,'Account')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke-linecap="round"/></svg>
+      <span>You</span>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+const ME = {
+  name:'BRENT',
+  show:'Building the room you walk into',
+  role:'Founder · Northbound Studio',
+  offers:[['Mentorship','design'],['Introductions','investors']],
+  needs:[['Collaboration','product'],['Funding','pre-seed']],
+};
+
+let face='me';
+function setFace(f){
+  face=f;
+  document.querySelectorAll('.yc-tab').forEach(t=>t.classList.toggle('on',t.dataset.face===f));
+  renderFace();
+}
+function renderFace(){
+  const b=document.getElementById('yc-body');
+  if(face==='me'){
+    b.innerHTML=`<div class="yc-face">
+      <div class="yc-name">${ME.name}</div>
+      <div class="yc-show">${ME.show}</div>
+      <div class="yc-role">${ME.role}</div>
+      <div class="yc-sig"><span>Brent Montgomery</span></div>
+    </div>`;
+    return;
+  }
+  const isOffer=face==='offers';
+  const list=isOffer?ME.offers:ME.needs;
+  b.innerHTML=`<div class="yc-face">
+    <div class="yc-role" style="margin-bottom:12px">${isOffer?'What I offer':'What I need'}</div>
+    <div class="yc-chips">
+      ${list.map(c=>`<span class="yc-chip ${isOffer?'offer':'need'}">${c[0]} <span style="font-weight:500;opacity:.8">· ${c[1]}</span></span>`).join('')}
+    </div>
+  </div>`;
+}
+
+function enterRoom(){ toast('Entering Latinos-N-Tech...'); }
+function navTo(el,label){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
+  el.classList.add('on');
+  toast(label);
+}
+let tg;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(tg); tg=setTimeout(()=>t.classList.remove('show'),1600);
+}
+
+// demo toggle: tap the hero tag area twice quickly to flip live/idle (shows state-aware design)
+let tapCount=0,tapTimer;
+document.getElementById('hero-tag').addEventListener('click',e=>{
+  e.stopPropagation();
+  tapCount++;
+  clearTimeout(tapTimer);
+  tapTimer=setTimeout(()=>{
+    if(tapCount>=2) toggleHero();
+    tapCount=0;
+  },300);
+});
+let live=true;
+function toggleHero(){
+  live=!live;
+  const h=document.getElementById('hero');
+  if(live){
+    h.className='hero live';
+    document.getElementById('hero-tag').textContent='Event live';
+    document.getElementById('hero-title').innerHTML='Latinos-N-Tech<br>is live right now.';
+    document.getElementById('hero-sub').textContent='The room is open and 19 people are already in. Walk in as your card.';
+    document.getElementById('hero-btn').textContent='Tap to enter →';
+  } else {
+    h.className='hero idle';
+    document.getElementById('hero-tag').textContent='No live room';
+    document.getElementById('hero-title').innerHTML='No room open<br>right now.';
+    document.getElementById('hero-sub').textContent='When your next event goes live, it shows up here. Until then, keep your connections warm.';
+    document.getElementById('hero-btn').textContent='Browse your rooms';
+  }
+  toast(live?'Switched to live state':'Switched to idle state');
+}
+
+renderFace();
+</script>
+</body>
+</html>

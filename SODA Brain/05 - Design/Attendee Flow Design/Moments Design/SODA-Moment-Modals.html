@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>SODA, Moment Modals</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Caveat:wght@600&display=swap');
+  :root{
+    --canvas:#111;--card:#1a1a1a;--surface:#202220;--border:#2a2a2a;
+    --green:#3bd75c;--green-deep:#203229;--ink:#f5f5f5;--muted:#8a8a8a;--hint:#5a5a5a;
+    --amber:#f59e0b;--purple:#a47bff;--red:#ef4444;--gold:#e8c468;
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:#000;color:var(--ink);font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100dvh;padding:18px}
+  .mono{font-family:'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase}
+
+  .picker{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;max-width:392px;margin-bottom:14px}
+  .pick{border:1px solid var(--border);background:var(--card);border-radius:9999px;padding:7px 13px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
+  .pick.on{background:var(--green);color:#06140a;border-color:var(--green)}
+
+  .device{width:392px;height:800px;max-height:calc(100dvh - 90px);background:var(--canvas);border-radius:30px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px var(--border),0 40px 80px rgba(0,0,0,.65)}
+  @media (max-width:430px){body{padding:8px}.device{width:100vw;height:calc(100dvh - 70px);border-radius:20px}}
+
+  /* faux room behind the modal */
+  .behind{position:absolute;inset:0;padding:18px;opacity:.5}
+  .behind .br{height:54px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:12px}
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);z-index:10}
+
+  /* modal shell */
+  .modal{position:absolute;left:16px;right:16px;top:50%;transform:translateY(-50%);z-index:20;background:var(--card);border:1px solid var(--border);border-radius:26px;overflow:hidden;animation:pop .4s cubic-bezier(.22,1.2,.36,1)}
+  @keyframes pop{from{opacity:0;transform:translateY(-50%) scale(.9)}to{opacity:1;transform:translateY(-50%) scale(1)}}
+  .modal .x{position:absolute;top:16px;right:16px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.08);border:none;color:var(--muted);font-size:16px;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center}
+
+  .m-pad{padding:30px 24px calc(var(--safe-bottom) + 24px)}
+  .eyebrow{font-family:'DM Mono';font-size:11px;letter-spacing:.18em;text-transform:uppercase;text-align:center;margin-bottom:18px}
+  .eyebrow.green{color:var(--green)}.eyebrow.purple{color:var(--purple)}.eyebrow.gold{color:var(--gold)}
+
+  /* big number */
+  .bignum{font-family:'Archivo Black';font-size:96px;line-height:.9;text-align:center;letter-spacing:-.03em}
+  .bignum.green{color:var(--green)}.bignum.purple{color:var(--purple)}.bignum.gold{color:var(--gold)}
+  .num-cap{text-align:center;font-family:'DM Mono';font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+
+  .m-title{font-family:'Archivo Black';font-size:26px;line-height:1.1;text-align:center;margin-bottom:10px}
+  .m-sub{text-align:center;color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:24px}
+
+  /* avatars */
+  .av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#06140a;flex-shrink:0}
+  .match-avs{display:flex;align-items:center;justify-content:center;margin-bottom:22px;gap:0}
+  .match-avs .av{width:78px;height:78px;font-size:26px;border:3px solid var(--card)}
+  .match-avs .av.a{background:var(--green)}
+  .match-avs .av.b{background:var(--purple);margin-left:-20px}
+  .spark{position:absolute;font-size:18px;animation:twinkle 1.6s infinite}
+  @keyframes twinkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
+
+  /* shared chip */
+  .shared{background:rgba(59,215,92,.1);border:1px solid rgba(59,215,92,.3);border-radius:12px;padding:13px 16px;text-align:center;font-size:14px;color:var(--green);margin-bottom:22px}
+  .shared b{font-weight:700}
+
+  /* primary / secondary CTA */
+  .cta{width:100%;min-height:54px;border:none;border-radius:14px;font-weight:700;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s}
+  .cta:active{transform:scale(.98)}
+  .cta.primary{background:var(--green);color:#06140a}
+  .cta.purple{background:var(--purple);color:#0c0814}
+  .cta.gold{background:var(--gold);color:#241c08}
+  .cta.ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border);margin-top:10px}
+  .cta-stack{display:flex;flex-direction:column}
+
+  /* podium for top connector */
+  .podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:22px}
+  .pod{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .pod .av{margin-bottom:2px}
+  .pod.first .av{width:74px;height:74px;font-size:24px;background:var(--gold);box-shadow:0 0 24px rgba(232,196,104,.4)}
+  .pod.second .av{width:54px;height:54px;font-size:18px;background:#c0c4cc}
+  .pod.third .av{width:54px;height:54px;font-size:18px;background:#cd8e5a}
+  .pod .nm{font-size:12px;font-weight:700;text-align:center;max-width:80px;line-height:1.2}
+  .pod .ct{font-family:'DM Mono';font-size:11px;color:var(--muted)}
+  .pod .bar{width:74px;border-radius:8px 8px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:8px;font-family:'Archivo Black';font-size:18px}
+  .pod.first .bar{height:64px;background:linear-gradient(180deg,var(--gold),transparent);color:var(--gold)}
+  .pod.second .bar{width:54px;height:42px;background:linear-gradient(180deg,#c0c4cc,transparent);color:#c0c4cc}
+  .pod.third .bar{width:54px;height:30px;background:linear-gradient(180deg,#cd8e5a,transparent);color:#cd8e5a}
+
+  /* rank list (for non-top variant) */
+  .rank{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(42,42,42,.6)}
+  .rank:last-child{border-bottom:none}
+  .rank .pos{font-family:'Archivo Black';font-size:16px;width:24px;color:var(--muted)}
+  .rank.you .pos{color:var(--green)}
+  .rank .av{width:40px;height:40px;font-size:14px}
+  .rank .info{flex:1}.rank .info .n{font-weight:700;font-size:14px}.rank .info .n .youtag{color:var(--green);font-size:11px;font-family:'DM Mono';margin-left:6px}
+  .rank .ct{font-family:'DM Mono';font-size:13px;color:var(--muted)}
+
+  /* progress to top */
+  .prog-wrap{margin-bottom:22px}
+  .prog-line{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px}
+  .prog-line b{color:var(--ink)}
+  .prog-track{height:10px;background:var(--surface);border-radius:5px;overflow:hidden}
+  .prog-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:5px}
+
+  /* people-met list for the count modal */
+  .met-strip{display:flex;justify-content:center;margin-bottom:8px}
+  .met-strip .av{width:42px;height:42px;font-size:14px;border:2px solid var(--card);margin-left:-10px}
+  .met-strip .av:first-child{margin-left:0}
+  .met-more{width:42px;height:42px;border-radius:50%;background:var(--surface);border:2px solid var(--card);margin-left:-10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted)}
+
+  .footnote{text-align:center;color:var(--hint);font-size:11px;font-family:'DM Mono';letter-spacing:.04em;margin-top:14px}
+  .caption{max-width:392px;margin:14px auto 0;color:var(--muted);font-size:12.5px;text-align:center;line-height:1.5}
+  .caption b{color:var(--ink)}
+</style>
+</head>
+<body>
+  <div class="picker" id="picker"></div>
+  <div class="device">
+    <div class="behind"><div class="br"></div><div class="br"></div><div class="br"></div><div class="br"></div><div class="br"></div><div class="br"></div></div>
+    <div class="scrim"></div>
+    <div id="modal-mount"></div>
+  </div>
+  <div class="caption" id="caption"></div>
+
+<script>
+const A=(cls)=>cls; // helper noop
+
+// ── MODAL DEFINITIONS ──
+const MODALS = {
+  // 1. POST-EVENT, you left the room
+  left_summary:{
+    group:'Left the event',
+    caption:"<b>The wrap-up.</b> Fires when you leave or the room closes. The big number is the connections you made, the strip shows who, and the one action takes you to your connections, kept warm. This is the Bump 'you got 14 views' energy, made about connections instead of vanity.",
+    html:`
+      <div class="modal"><button class="x">×</button><div class="m-pad">
+        <div class="eyebrow green">That's a wrap · Coffee Connect</div>
+        <div class="bignum green">7</div>
+        <div class="num-cap">connections made</div>
+        <div style="height:22px"></div>
+        <div class="met-strip">
+          <div class="av" style="background:#3bd75c">MO</div>
+          <div class="av" style="background:#a47bff">DP</div>
+          <div class="av" style="background:#f59e0b">IA</div>
+          <div class="av" style="background:#3bd75c">LM</div>
+          <div class="met-more">+3</div>
+        </div>
+        <div class="m-sub" style="margin-top:18px">You walked in as a Founder and left with 7 people worth knowing. They are warm now. Keep them that way.</div>
+        <div class="cta-stack">
+          <button class="cta primary">See my connections</button>
+          <button class="cta ghost">See the full recap</button>
+        </div>
+      </div></div>`
+  },
+  left_quiet:{
+    group:'Left the event',
+    caption:"<b>The quiet variant.</b> Same moment, lower key, for a smaller night or a returning user who does not need confetti. One connection still gets dignity. Good when the celebratory version would feel like too much for the size of the night.",
+    html:`
+      <div class="modal"><button class="x">×</button><div class="m-pad">
+        <div class="eyebrow green">You left Founder Mixer</div>
+        <div class="m-title" style="margin-top:6px">3 new connections.</div>
+        <div class="m-sub">Rosa, Jordan, and Amara. The room did its job. They are warm now, ready whenever you are.</div>
+        <div class="met-strip" style="margin-bottom:24px">
+          <div class="av" style="background:#3bd75c">RK</div>
+          <div class="av" style="background:#a47bff">JT</div>
+          <div class="av" style="background:#f59e0b">AM</div>
+        </div>
+        <div class="cta-stack">
+          <button class="cta primary">Open my connections</button>
+        </div>
+      </div></div>`
+  },
+
+  // 2. MATCH, a connection matched
+  match_mutual:{
+    group:'A match',
+    caption:"<b>The match moment, mutual.</b> Fires in-room when you and someone share an offer or need. Two avatars collide, the shared thing is named, and the intro starter is one tap away. This rides the two-call gate: the modal suggests, you send.",
+    html:`
+      <div class="modal"><button class="x">×</button><div class="m-pad">
+        <div class="eyebrow purple">✦ A match in the room</div>
+        <div class="match-avs" style="position:relative">
+          <span class="spark" style="left:32%;top:-6px">✦</span>
+          <span class="spark" style="right:30%;bottom:-4px;animation-delay:.5s">✦</span>
+          <div class="av a">YOU</div>
+          <div class="av b">MO</div>
+        </div>
+        <div class="m-title">You and Maya match.</div>
+        <div class="shared">You both offer <b>Mentorship in design</b></div>
+        <div class="m-sub" style="margin-top:-6px">She is in the room right now. Want to say something?</div>
+        <div class="cta-stack">
+          <button class="cta purple">Start an intro</button>
+          <button class="cta ghost">Maybe later</button>
+        </div>
+      </div></div>`
+  },
+  match_complement:{
+    group:'A match',
+    caption:"<b>The match moment, complementary.</b> The stronger kind: one person needs what the other offers. The copy names the direction (she needs, you have) so the reason to connect is obvious. Same shape, sharper hook.",
+    html:`
+      <div class="modal"><button class="x">×</button><div class="m-pad">
+        <div class="eyebrow purple">✦ A match in the room</div>
+        <div class="match-avs" style="position:relative">
+          <span class="spark" style="left:30%;top:-6px">✦</span>
+          <div class="av a">YOU</div>
+          <div class="av b">RK</div>
+        </div>
+        <div class="m-title">Rosa needs what you have.</div>
+        <div class="shared">She needs <b>Funding</b> · you offer <b>Investor intros</b></div>
+        <div class="m-sub" style="margin-top:-6px">This is the kind of match the night was built for.</div>
+        <div class="cta-stack">
+          <button class="cta purple">Start an intro</button>
+          <button class="cta ghost">Not now</button>
+        </div>
+      </div></div>`
+  },
+
+  // 3. CONNECTION COUNT milestone
+  count_milestone:{
+    group:'Connection count',
+    caption:"<b>The milestone.</b> Fires when you cross a number worth noticing (5, 10, 25). The big number is the hero, the line underneath gives it meaning. Light celebration, not a trophy, it marks momentum without making it a game.",
+    html:`
+      <div class="modal"><button class="x">×</button><div class="m-pad">
+        <div class="eyebrow gold">Milestone</div>
+        <div class="bignum gold">10</div>
+        <div class="num-cap">people connected tonight</div>
+        <div class="m-sub" style="margin-top:20px">Double digits in one room. You are one of the most connected people here tonight.</div>
+        <div class="cta-stack">
+          <button class="cta gold">See who I met</button>
+          <button class="cta ghost">Keep going</button>
+        </div>
+      </div></div>`
+  },
+  count_pace:{
+    group:'Connection count',
+    caption:"<b>The pace nudge variant.</b> Mid-event, not a milestone, a gentle pulse showing how the night is going and nudging one more. Useful to keep energy up without waiting for the end. The number is smaller and the tone is momentum, not trophy.",
+    html:`
+      <div class="modal"><button class="x">×</button><div class="m-pad">
+        <div class="eyebrow green">Your night so far</div>
+        <div class="bignum green">4</div>
+        <div class="num-cap">connections · 2 still unmet matches</div>
+        <div class="m-sub" style="margin-top:20px">There are 2 people here you matched with but have not met yet. The room closes in 40 minutes.</div>
+        <div class="cta-stack">
+          <button class="cta primary">Show me my matches</button>
+          <button class="cta ghost">I'm good</button>
+        </div>
+      </div></div>`
+  },
+
+  // 4. TOP CONNECTOR, achieved
+  top_achieved:{
+    group:'Top connector',
+    caption:"<b>Top connector, achieved.</b> The achievement card, SODA's version of the Bump 'Best Friends' card. A podium puts you first with second and third beside you, so it celebrates you while still naming the room. Dignified gold, not carnival.",
+    html:`
+      <div class="modal"><button class="x">×</button><div class="m-pad">
+        <div class="eyebrow gold">★ Top connector · Coffee Connect</div>
+        <div class="podium" style="margin-top:8px">
+          <div class="pod second"><div class="av">LM</div><div class="nm">Lorena</div><div class="bar">2</div></div>
+          <div class="pod first"><div class="av">YOU</div><div class="nm">You</div><div class="bar">1</div></div>
+          <div class="pod third"><div class="av">DP</div><div class="nm">Devin</div><div class="bar">3</div></div>
+        </div>
+        <div class="m-title" style="margin-top:6px">You ran the room.</div>
+        <div class="m-sub">7 connections, more than anyone else tonight. You were the center of gravity at Coffee Connect.</div>
+        <div class="cta-stack">
+          <button class="cta gold">Share my card</button>
+          <button class="cta ghost">See the full recap</button>
+        </div>
+      </div></div>`
+  },
+  top_missed:{
+    group:'Top connector',
+    caption:"<b>Top connector, not achieved.</b> The same card when you did not take the crown. It shows the top three honestly, marks where you landed, and turns the gap into a reason to connect more. Never a loss screen, a path forward.",
+    html:`
+      <div class="modal"><button class="x">×</button><div class="m-pad">
+        <div class="eyebrow gold">Top connectors · Coffee Connect</div>
+        <div style="background:var(--surface);border-radius:16px;padding:8px 16px;margin:14px 0 18px">
+          <div class="rank"><div class="pos">1</div><div class="av" style="background:var(--gold)">LM</div><div class="info"><div class="n">Lorena Medina</div></div><div class="ct">9</div></div>
+          <div class="rank"><div class="pos">2</div><div class="av" style="background:#c0c4cc">RK</div><div class="info"><div class="n">Rosa Kim</div></div><div class="ct">8</div></div>
+          <div class="rank"><div class="pos">3</div><div class="av" style="background:#cd8e5a">DP</div><div class="info"><div class="n">Devin Park</div></div><div class="ct">7</div></div>
+          <div class="rank you"><div class="pos">5</div><div class="av" style="background:#3bd75c">YOU</div><div class="info"><div class="n">You <span class="youtag">that's you</span></div></div><div class="ct">4</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-line"><span>You made <b>4</b></span><span>Top spot was <b>9</b></span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:44%"></div></div>
+        </div>
+        <div class="m-sub" style="margin-bottom:18px">5 more connections and the crown was yours. There are people here you have not met. The night is not over.</div>
+        <div class="cta-stack">
+          <button class="cta primary">Find more matches</button>
+          <button class="cta ghost">See the recap</button>
+        </div>
+      </div></div>`
+  }
+};
+
+const ORDER=['left_summary','left_quiet','match_mutual','match_complement','count_milestone','count_pace','top_achieved','top_missed'];
+const LABELS={left_summary:'Wrap-up',left_quiet:'Wrap (quiet)',match_mutual:'Match (mutual)',match_complement:'Match (complement)',count_milestone:'Milestone',count_pace:'Pace nudge',top_achieved:'Top: won',top_missed:'Top: missed'};
+
+let current='left_summary';
+function renderPicker(){
+  document.getElementById('picker').innerHTML=ORDER.map(k=>`<div class="pick ${k===current?'on':''}" onclick="setModal('${k}')">${LABELS[k]}</div>`).join('');
+}
+function renderModal(){
+  document.getElementById('modal-mount').innerHTML=MODALS[current].html;
+  document.getElementById('caption').innerHTML=MODALS[current].caption;
+  // wire close buttons to just re-pop for demo feel
+  document.querySelectorAll('.modal .x, .cta.ghost').forEach(b=>b.addEventListener('click',()=>{
+    const m=document.querySelector('.modal'); if(m){m.style.animation='none'; void m.offsetWidth; m.style.animation='pop .4s cubic-bezier(.22,1.2,.36,1)';}
+  }));
+}
+function setModal(k){ current=k; renderPicker(); renderModal(); }
+renderPicker(); renderModal();
+</script>
+</body>
+</html>

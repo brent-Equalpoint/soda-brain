@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>SODA, Intro Starter JSON</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Caveat:wght@600&display=swap');
+  :root{
+    --canvas:#111;--card:#1a1a1a;--surface:#202220;--border:#2a2a2a;
+    --green:#3bd75c;--ink:#f5f5f5;--muted:#8a8a8a;--hint:#5a5a5a;--amber:#f59e0b;--purple:#a47bff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0c0c0c;color:var(--ink);font-family:'DM Sans',sans-serif;padding:24px 18px 60px;line-height:1.5}
+  .mono{font-family:'DM Mono',monospace}
+  .wrap{max-width:1180px;margin:0 auto}
+  header{margin-bottom:8px}
+  .wm{font-family:'Archivo Black';font-size:13px;color:var(--green);letter-spacing:.04em;text-transform:uppercase}
+  h1{font-family:'Archivo Black';font-size:26px;margin:6px 0 4px}
+  .sub{color:var(--muted);font-size:13.5px;max-width:740px}
+  .tabs{display:flex;gap:8px;margin:22px 0 20px;flex-wrap:wrap}
+  .tab{border:1px solid var(--border);background:var(--card);border-radius:9999px;padding:9px 16px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
+  .tab.on{background:var(--green);color:#06140a;border-color:var(--green)}
+  .tab .fm{font-size:9px;opacity:.7;margin-left:6px;text-transform:uppercase;font-family:'DM Mono'}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media (max-width:920px){.split{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .panel-head{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .panel-head .t{font-family:'Archivo Black';font-size:14px}
+  .badge{font-family:'DM Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);border:1px solid rgba(59,215,92,.4);border-radius:9999px;padding:3px 9px}
+  .badge.render{color:var(--purple);border-color:rgba(164,123,255,.4)}
+  .copy{font-family:'DM Mono';font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:5px 10px;cursor:pointer}
+  .copy:hover{color:var(--green);border-color:var(--green)}
+  .json{padding:16px 18px;overflow:auto;font-family:'DM Mono';font-size:12.5px;line-height:1.7;white-space:pre;max-height:720px}
+  .json::-webkit-scrollbar{width:8px}.json::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  .jk{color:#7ec8ff}.js{color:var(--green)}.jn{color:var(--amber)}.jb{color:var(--purple)}.jp{color:var(--hint)}
+
+  .render-pane{padding:18px;display:flex;justify-content:center;background:#0c0c0c}
+  .phone{width:340px;height:620px;background:var(--canvas);border:1px solid var(--border);border-radius:24px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+
+  .p-top{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+  .p-top .fl{font-family:'DM Mono';font-size:9px;letter-spacing:.12em;color:var(--muted)}
+  .p-live{display:flex;align-items:center;gap:6px;color:var(--green);font-size:9px;font-family:'DM Mono'}
+  .p-live i{width:6px;height:6px;border-radius:50%;background:var(--green)}
+  .p-head{padding:13px 16px 4px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-shrink:0}
+  .p-head .eyebrow{color:var(--green);font-size:9px;font-family:'DM Mono';letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+  .p-head h2{font-family:'Archivo Black';font-size:19px;text-transform:uppercase;line-height:1}
+  .p-head p{color:var(--muted);font-size:11px;margin-top:4px}
+  .p-add{flex-shrink:0;background:transparent;border:1.5px solid var(--green);color:var(--green);border-radius:9999px;padding:7px 11px;font-size:11px;font-weight:700;white-space:nowrap}
+  .p-add.added{background:rgba(59,215,92,.12);border-color:rgba(59,215,92,.3)}
+
+  .cardwrap{flex:1;overflow-y:auto;padding:12px 14px}
+  .biz{background:var(--card);border:1px solid rgba(164,123,255,.4);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;min-height:420px}
+  .biz-head{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 16px 0}
+  .smark{position:relative;width:24px;height:24px}
+  .smark i{position:absolute;border-radius:50%;background:var(--green)}
+  .smark .d1{width:7px;height:7px;top:0;left:2px}.smark .d2{width:9px;height:9px;top:2px;right:0}.smark .d3{width:12px;height:12px;bottom:0;left:4px}
+  .agency{text-align:right}.agency .nm{color:var(--green);font-size:15px;font-weight:600}.agency .ty{color:var(--muted);font-size:9px;font-style:italic;margin-top:2px}
+  .biz-body{flex:1;padding:12px 16px}
+  .fn{color:var(--green);font-family:'Archivo Black';font-size:24px}
+  .fr{color:var(--muted);font-size:12px;font-style:italic;margin-bottom:14px}
+  .slbl{color:var(--muted);font-size:11px;font-style:italic;margin:10px 0 8px}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{border-radius:9999px;padding:7px 12px;font-size:11.5px;font-weight:600;position:relative}
+  .chip.offer{background:var(--green);color:#06140a}
+  .chip.need{background:transparent;border:1px solid rgba(59,215,92,.4);color:var(--green)}
+  .chip .foc{font-weight:500;opacity:.8}
+  .chip.pulse::after{content:"";position:absolute;inset:-3px;border-radius:9999px;border:1.5px solid rgba(59,215,92,.5);animation:ring 1.8s infinite}
+  @keyframes ring{0%{transform:scale(1);opacity:.7}70%{transform:scale(1.12);opacity:0}100%{opacity:0}}
+  .taphint{color:var(--hint);font-size:10px;font-family:'DM Mono';letter-spacing:.06em;text-transform:uppercase;margin-top:14px;display:flex;align-items:center;gap:6px}
+  .taphint .dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+  .biz-toggle{display:flex;gap:6px;padding:10px 16px;border-top:1px solid var(--border)}
+  .biz-toggle span{font-family:'Archivo Black';font-size:13px;color:var(--muted)}
+  .biz-toggle span.on{background:var(--green);color:#06140a;border-radius:8px;padding:3px 10px}
+
+  /* sheet render */
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.66);z-index:5}
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:10;background:var(--card);border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:12px 16px 18px}
+  .handle{width:34px;height:5px;border-radius:3px;background:var(--border);margin:0 auto 12px}
+  .who{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .who .av{width:38px;height:38px;border-radius:50%;background:var(--green);color:#06140a;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  .who .nm{font-weight:700;font-size:15px}.who .ctx{color:var(--muted);font-size:11px}
+  .based{background:rgba(59,215,92,.08);border:1px solid rgba(59,215,92,.25);border-radius:10px;padding:9px 12px;margin-bottom:12px;font-size:12px;color:var(--green)}
+  .based b{color:var(--ink)}
+  .slbl2{font-family:'DM Mono';font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+  .msgbox{background:var(--canvas);border:1px solid var(--green);border-radius:12px;padding:12px;font-size:13px;line-height:1.5;min-height:72px}
+  .alts{display:flex;gap:7px;margin:10px 0 0}
+  .alt{border:1px solid var(--border);border-radius:9999px;padding:6px 12px;font-size:11px;color:var(--muted)}
+  .alt.on{border-color:var(--green);color:var(--green);background:rgba(59,215,92,.08)}
+  .addrow{display:flex;align-items:center;justify-content:space-between;background:var(--canvas);border:1px solid var(--border);border-radius:11px;padding:10px 13px;margin-top:12px;gap:10px}
+  .addrow .lbl{font-size:12.5px;font-weight:600}.addrow .lbl small{display:block;color:var(--muted);font-size:10px;font-weight:400;margin-top:2px}
+  .sw{width:40px;height:23px;border-radius:9999px;background:var(--green);border:1px solid var(--green);position:relative;flex-shrink:0}
+  .sw::after{content:"";position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#06140a;transform:translateX(17px)}
+  .srow{display:flex;gap:9px;margin-top:13px}
+  .sbtn{min-height:46px;border-radius:11px;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .sbtn.primary{background:var(--green);color:#06140a;flex:2}
+  .sbtn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border);flex:1;font-weight:600}
+  .trust{text-align:center;color:var(--hint);font-size:9px;font-family:'DM Mono';letter-spacing:.05em;margin-top:11px}
+
+  .msg-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
+  .msg-center .glyph{width:64px;height:64px;border-radius:18px;background:rgba(59,215,92,.12);border:1.5px solid rgba(59,215,92,.4);display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--green);margin-bottom:18px}
+  .msg-center h3{font-family:'Archivo Black';font-size:18px;margin-bottom:8px}
+  .msg-center p{color:var(--muted);font-size:13px;max-width:240px}
+  .toastpill{margin-top:18px;background:#1d2a1f;border:1px solid rgba(59,215,92,.4);border-radius:9999px;padding:10px 16px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .toastpill .c{color:var(--green)}
+
+  .note{margin-top:22px;border-left:3px solid var(--green);background:rgba(59,215,92,.05);padding:15px 18px;border-radius:0 12px 12px 0;font-size:13px;color:#cfd6cf}
+  .note b{color:var(--ink)}
+  .note code{font-family:'DM Mono';font-size:12px;background:var(--surface);padding:1px 6px;border-radius:5px;color:var(--green)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="wm">SODA</div>
+    <h1>Intro starter, the data contract</h1>
+    <p class="sub">Viewing someone's card in the room. Tap a chip and SODA drafts an opener you can send, or add the person to your connections. The JSON on the left is what SODA writes, the screen on the right is what the client renders. Switch states with the tabs.</p>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="split">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="t" id="json-name">view_card.json</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge" id="state-badge">Screen</span>
+          <button class="copy" onclick="copyJSON()">Copy</button>
+        </div>
+      </div>
+      <div class="json" id="json"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><span class="t">What it renders</span><span class="badge render">Client renders this</span></div>
+      <div class="render-pane"><div class="phone" id="phone"></div></div>
+    </div>
+  </div>
+
+  <div class="note" id="screen-note"></div>
+</div>
+
+<script>
+const STATES = {
+  view_card:{
+    family:'screen', badge:'Screen · viewing',
+    json:{
+      screen:"view_card",
+      context:{ event_id:"evt_lnt", event_name:"Futureland", room_count:19, room_live:true },
+      viewer:{ id:"usr_brent" },
+      card:{
+        id:"usr_maya", name:"Maya", full_name:"Maya Okafor", role:"Founder",
+        agency:"NORTHBOUND", agency_type:"Studio",
+        active_face:"offers", faces:["offers","me","needs"],
+        face_rule:"me_face_has_no_chips",
+        offers:[
+          { label:"Mentorship", focus:["design","early-stage"], intro_enabled:true },
+          { label:"Introductions", focus:["investors"], intro_enabled:true }
+        ],
+        needs:[
+          { label:"Collaboration", focus:["product design"], intro_enabled:true },
+          { label:"Funding", focus:["pre-seed"], intro_enabled:true }
+        ],
+        signature:"Maya Okafor"
+      },
+      connection:{
+        is_connected:false,
+        action:{ label:"Add", added_label:"Added", action:"add_connection", target_id:"usr_maya", destination:"people" }
+      },
+      intro_starter:{
+        enabled:true, trigger:"tap_chip",
+        prompt:"Tap any chip to start an intro. The room writes the opener, you send it."
+      }
+    },
+    note:"<b>The screen is a card you are viewing plus two things you can do with it.</b> Each chip in <code>offers</code> and <code>needs</code> carries <code>intro_enabled</code>, the hook for the intro starter. The <code>connection</code> block holds <code>is_connected</code> and an add action whose <code>destination:\"people\"</code> means the person lands in your SODA People tab, kept warm. <code>face_rule: me_face_has_no_chips</code> carries over, the Me face is identity only.",
+    render:renderCard
+  },
+  intro_opener:{
+    family:'sheet', badge:'Sheet · chip tapped',
+    json:{
+      modal:"intro_starter", trigger:"chip_tapped",
+      target:{ id:"usr_maya", name:"Maya", context:"Founder · in the room now", initials:"MO" },
+      based_on:{ kind:"offer", label:"Mentorship", focus:"design" },
+      openers:{
+        Warm:"Hey Maya, saw you offer Mentorship in design. I'd love to hear more, can we connect?",
+        Simple:"Tell me more, I'd like to connect!",
+        Direct:"Mentorship in design is exactly what I'm looking for. Free to chat here?"
+      },
+      selected_tone:"Warm",
+      editable:true,
+      add_connection:{ offered:true, default_on:true, label:"Add Maya to your connections", destination:"people" },
+      primary:{ label:"Send intro", action:"send_intro", gated:true },
+      secondary:{ label:"Cancel", action:"dismiss" },
+      trust_line:"SODA drafts it. You send it. Nothing goes out on its own."
+    },
+    note:"<b>Tapping a chip opens the sheet, and the sheet is where the two-call gate lives.</b> SODA fills <code>openers</code> with three tones built from the tapped chip, <code>selected_tone</code> picks the default, and <code>editable:true</code> means you can change the words. <code>primary.gated:true</code> is the gate: SODA drafts, you send, nothing leaves on its own. The <code>add_connection</code> block rides along so one Send both sends the intro and keeps the person.",
+    render:renderSheet
+  },
+  sent_added:{
+    family:'success', badge:'Success · sent + added',
+    json:{
+      screen:"view_card", state:"success",
+      result:{
+        intro_sent:true, sent_to:"Maya",
+        connection_added:true, added_to:"people",
+        message:"Intro sent · Maya added to connections",
+        style:"toast", duration_ms:2600
+      },
+      connection:{ is_connected:true }
+    },
+    note:"<b>One Send, two outcomes, one quiet confirmation.</b> The result carries both <code>intro_sent</code> and <code>connection_added</code>, and the toast names both. After this, <code>connection.is_connected</code> flips to true, so the Add button on the card reads Added and the sheet toggle locks on. The success is a <code>toast</code>, it confirms and fades, it never takes over the room.",
+    render:renderSuccess
+  },
+  added_only:{
+    family:'success', badge:'Success · added only',
+    json:{
+      screen:"view_card", state:"success",
+      result:{
+        intro_sent:false,
+        connection_added:true, added_to:"people",
+        message:"Maya added to your connections",
+        style:"toast", duration_ms:2600
+      },
+      connection:{ is_connected:true }
+    },
+    note:"<b>Adding a connection stands on its own, no intro required.</b> This is the Add button on the card header. Sometimes you just want to keep someone without messaging them right now. <code>intro_sent:false</code>, <code>connection_added:true</code>. Adding to your own connections is not a message to them, so it is not gated, a single tap with a toast is enough.",
+    render:renderSuccess
+  }
+};
+
+let current='view_card';
+
+function highlight(obj){
+  let j=JSON.stringify(obj,null,2).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  j=j.replace(/"([^"]+)":/g,'<span class="jk">"$1"</span><span class="jp">:</span>');
+  j=j.replace(/: "([^"]*)"/g,': <span class="js">"$1"</span>');
+  j=j.replace(/: (-?\d+\.?\d*)/g,': <span class="jn">$1</span>');
+  j=j.replace(/: (true|false|null)/g,': <span class="jb">$1</span>');
+  j=j.replace(/([{}\[\],])/g,'<span class="jp">$1</span>');
+  return j;
+}
+
+function chipRow(list,kind){
+  return list.map(function(c,i){
+    var foc=c.focus&&c.focus.length?' <span class="foc">in '+c.focus[0]+'</span>':'';
+    return '<span class="chip '+kind+(i===0?' pulse':'')+'">'+c.label+foc+'</span>';
+  }).join('');
+}
+
+function renderCard(j){
+  var c=j.card;
+  var isOffer=c.active_face==='offers';
+  var list=isOffer?c.offers:c.needs;
+  var conn=j.connection;
+  return ''+
+    '<div class="p-top"><span class="fl">FUTURELAND</span><span class="p-live"><i></i> '+j.context.room_count+' here</span></div>'+
+    '<div class="p-head"><div><div class="eyebrow">Viewing a card</div><h2>'+c.name+"'s card</h2><p>"+j.intro_starter.prompt+'</p></div>'+
+      '<button class="p-add'+(conn.is_connected?' added':'')+'">'+(conn.is_connected?'\u2713 '+conn.action.added_label:'+ '+conn.action.label)+'</button></div>'+
+    '<div class="cardwrap"><div class="biz">'+
+      '<div class="biz-head"><div class="smark"><i class="d1"></i><i class="d2"></i><i class="d3"></i></div><div class="agency"><div class="nm">'+c.agency+'</div><div class="ty">'+c.agency_type+'</div></div></div>'+
+      '<div class="biz-body"><div class="fn">'+c.name.toUpperCase()+'</div><div class="fr">'+c.role+'</div>'+
+        '<div class="slbl">'+(isOffer?'Offers:':'Needs:')+'</div>'+
+        '<div class="chips">'+chipRow(list,isOffer?'offer':'need')+'</div>'+
+        '<div class="taphint"><span class="dot"></span> Tap a chip to start an intro</div>'+
+      '</div>'+
+      '<div class="biz-toggle">'+c.faces.map(function(f){return '<span class="'+(f===c.active_face?'on':'')+'">'+f.charAt(0).toUpperCase()+f.slice(1)+'</span>';}).join('')+'</div>'+
+    '</div></div>';
+}
+
+function renderSheet(j){
+  return ''+
+    '<div class="p-top"><span class="fl">FUTURELAND</span><span class="p-live"><i></i> 19 here</span></div>'+
+    '<div class="scrim"></div>'+
+    '<div class="sheet">'+
+      '<div class="handle"></div>'+
+      '<div class="who"><div class="av">'+j.target.initials+'</div><div><div class="nm">'+j.target.name+'</div><div class="ctx">'+j.target.context+'</div></div></div>'+
+      '<div class="based">\u2726 Based on <b>'+j.based_on.label+(j.based_on.focus?' in '+j.based_on.focus:'')+'</b></div>'+
+      '<div class="slbl2">Suggested opener</div>'+
+      '<div class="msgbox">'+j.openers[j.selected_tone]+'</div>'+
+      '<div class="alts">'+Object.keys(j.openers).map(function(t){return '<span class="alt'+(t===j.selected_tone?' on':'')+'">'+t+'</span>';}).join('')+'</div>'+
+      '<div class="addrow"><div class="lbl">'+j.add_connection.label+'<small>Keep them warm after the room</small></div><div class="sw"></div></div>'+
+      '<div class="srow"><span class="sbtn ghost">'+j.secondary.label+'</span><span class="sbtn primary">'+j.primary.label+'</span></div>'+
+      '<div class="trust">'+j.trust_line+'</div>'+
+    '</div>';
+}
+
+function renderSuccess(j){
+  return ''+
+    '<div class="p-top"><span class="fl">FUTURELAND</span><span class="p-live"><i></i> 19 here</span></div>'+
+    '<div class="msg-center"><div class="glyph">\u2713</div>'+
+      '<h3>'+(j.result.intro_sent?'Intro on its way':'Saved to your people')+'</h3>'+
+      '<p>'+(j.result.intro_sent?'Maya got your message, and she is in your connections now.':'Maya is in your connections, kept warm whenever you are ready.')+'</p>'+
+      '<div class="toastpill"><span class="c">\u2713</span> '+j.result.message+'</div>'+
+    '</div>';
+}
+
+function renderJSON(){
+  document.getElementById('json').innerHTML=highlight(STATES[current].json);
+  var j=STATES[current].json;
+  document.getElementById('json-name').textContent=(j.screen||j.modal||'state')+'.json';
+  var colors={screen:'#3bd75c',sheet:'#a47bff',success:'#3bd75c'};
+  var b=document.getElementById('state-badge');
+  b.textContent=STATES[current].badge; b.style.color=colors[STATES[current].family]; b.style.border='1px solid '+colors[STATES[current].family]+'55';
+}
+function renderPhone(){ document.getElementById('phone').innerHTML=STATES[current].render(STATES[current].json); }
+function renderNote(){ document.getElementById('screen-note').innerHTML=STATES[current].note; }
+function renderTabs(){
+  var order=['view_card','intro_opener','sent_added','added_only'];
+  var labels={view_card:'Viewing card',intro_opener:'Intro opener',sent_added:'Sent + added',added_only:'Added only'};
+  document.getElementById('tabs').innerHTML=order.map(function(k){return '<div class="tab '+(k===current?'on':'')+'" onclick="setState(\''+k+'\')">'+labels[k]+'<span class="fm">'+STATES[k].family+'</span></div>';}).join('');
+}
+function setState(k){ current=k; renderTabs(); renderJSON(); renderPhone(); renderNote(); }
+function copyJSON(){ navigator.clipboard.writeText(JSON.stringify(STATES[current].json,null,2)).then(function(){var b=document.querySelector('.copy');var o=b.textContent;b.textContent='Copied';b.style.color='#3bd75c';setTimeout(function(){b.textContent=o;b.style.color='';},1200);}); }
+
+renderTabs(); renderJSON(); renderPhone(); renderNote();
+</script>
+</body>
+</html>

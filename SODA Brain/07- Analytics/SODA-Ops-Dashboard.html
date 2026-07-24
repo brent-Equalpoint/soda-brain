@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>SODA Ops, Live Room</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&display=swap');
+  :root{
+    --canvas:#111;--card:#1a1a1a;--surface:#202220;--border:#2a2a2a;
+    --ink:#f5f5f5;--muted:#8a8a8a;--hint:#5a5a5a;
+    --green:#3bd75c;--green-deep:#203229;--amber:#f59e0b;--purple:#a47bff;--red:#ef4444;--gold:#e8c468;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0b0b0b;color:var(--ink);font-family:'Public Sans',sans-serif;padding:22px 18px 50px;line-height:1.5}
+  .wrap{max-width:1180px;margin:0 auto}
+
+  .top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+  .mk{position:relative;width:20px;height:20px;display:inline-block;vertical-align:middle;margin-right:8px}
+  .mk i{position:absolute;border-radius:50%;background:var(--green)}
+  .mk .d1{width:6px;height:6px;top:0;left:2px}.mk .d2{width:7px;height:7px;top:2px;right:0}.mk .d3{width:10px;height:10px;bottom:0;left:2px}
+  h1{font-family:'Public Sans';font-weight:900;font-size:23px;letter-spacing:-.02em;display:flex;align-items:center}
+  .sub{color:var(--muted);font-size:13px;margin-top:4px}
+  .livepill{display:inline-flex;align-items:center;gap:7px;font-family:'Public Sans';font-weight:600;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--green);background:rgba(59,215,92,.09);border:1px solid rgba(59,215,92,.35);border-radius:9999px;padding:6px 12px}
+  .livepill i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
+  @keyframes pulse{50%{opacity:.35}}
+
+  /* the glance row: five numbers, five seconds */
+  .glance{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:20px 0 8px}
+  @media (max-width:900px){.glance{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px}
+  .stat .lbl{font-family:'Public Sans';font-weight:600;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .stat .val{font-family:'Public Sans';font-weight:800;font-size:34px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .stat .foot{font-size:11.5px;color:var(--hint);margin-top:6px}
+  .stat.alarm{border-color:rgba(239,68,68,.5);background:linear-gradient(180deg,#241618,#181414)}
+  .stat.alarm .val{color:var(--red)}
+  .stat.alarm .lbl{color:#ff9a9a}
+  .stat.good .val{color:var(--green)}
+  .bar{height:5px;border-radius:3px;background:#242424;margin-top:10px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:3px;background:var(--green)}
+  .bar i.warn{background:var(--amber)}
+
+  /* the actionable list */
+  .row2{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;margin-top:14px}
+  @media (max-width:900px){.row2{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+  .panel.urgent{border-color:rgba(239,68,68,.4)}
+  .ph{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .ph .t{font-family:'Public Sans';font-weight:800;font-size:14px;letter-spacing:-.01em}
+  .ph .n{font-family:'Public Sans';font-weight:600;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--red);background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:9999px;padding:3px 9px}
+  .ph .why{font-size:11.5px;color:var(--hint);font-weight:400}
+  .pb{padding:6px 8px;max-height:340px;overflow-y:auto}
+  .pb::-webkit-scrollbar{width:7px}.pb::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+  .lone{display:flex;align-items:center;gap:11px;padding:10px 10px;border-radius:11px;transition:background .15s}
+  .lone:hover{background:var(--surface)}
+  .lone .av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#06140a;flex-shrink:0}
+  .lone .nm{font-weight:700;font-size:13.5px}
+  .lone .meta{color:var(--muted);font-size:11px;margin-top:1px}
+  .lone .fix{margin-left:auto;text-align:right;flex-shrink:0}
+  .lone .fix .lead{font-size:11.5px;color:var(--purple);font-weight:600}
+  .lone .fix .cta{font-family:'Public Sans';font-weight:600;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--hint);margin-top:2px}
+  .lone .time{font-family:'Public Sans';font-weight:600;font-size:10px;color:var(--amber);flex-shrink:0;margin-left:8px}
+
+  .kv{display:flex;justify-content:space-between;align-items:center;padding:11px 12px;border-bottom:1px solid rgba(42,42,42,.6);font-size:13px}
+  .kv:last-child{border-bottom:none}
+  .kv .k{color:var(--muted)}
+  .kv .v{font-family:'Public Sans';font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
+  .kv .v.g{color:var(--green)}.kv .v.a{color:var(--amber)}
+
+  /* the buried diagnostic */
+  .diag{margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+  .diag summary{padding:14px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;list-style:none;user-select:none}
+  .diag summary::-webkit-details-marker{display:none}
+  .diag summary .t{font-family:'Public Sans';font-weight:800;font-size:13px;color:var(--muted);letter-spacing:-.01em}
+  .diag summary .hint{font-size:11px;color:var(--hint)}
+  .diag summary:hover .t{color:var(--ink)}
+  .diag .db{padding:4px 16px 16px;border-top:1px solid var(--border)}
+  .privacy{display:flex;gap:9px;background:#16201a;border:1px solid rgba(59,215,92,.25);border-radius:11px;padding:11px 13px;margin:12px 0;font-size:12px;color:#cfe0cf;line-height:1.5}
+  .privacy b{color:var(--green)}
+  .sig{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  @media (max-width:700px){.sig{grid-template-columns:1fr}}
+  .sigbox{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px}
+  .sigbox .st{font-family:'Public Sans';font-weight:600;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}
+  .sigbox.ok .st{color:var(--green)}
+  .sigbox.bad .st{color:var(--amber)}
+  .sigbox .sv{font-family:'Public Sans';font-weight:800;font-size:22px;letter-spacing:-.02em}
+  .sigbox .sd{font-size:11.5px;color:var(--hint);margin-top:5px;line-height:1.45}
+
+  .note{margin-top:18px;border-left:3px solid var(--green);background:rgba(59,215,92,.05);padding:13px 15px;border-radius:0 12px 12px 0;font-size:12.5px;color:#cfd6cf;line-height:1.55}
+  .note b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1><span class="mk"><i class="d1"></i><i class="d2"></i><i class="d3"></i></span> Latinos-N-Tech</h1>
+      <div class="sub">Live room, doors opened 6:04 PM. Glance, act, put the phone away.</div>
+    </div>
+    <span class="livepill"><i></i> Room live</span>
+  </div>
+
+  <!-- five numbers, five seconds -->
+  <div class="glance">
+    <div class="stat">
+      <div class="lbl">In the room</div>
+      <div class="val">187</div>
+      <div class="foot">of 214 checked in</div>
+    </div>
+    <div class="stat">
+      <div class="lbl">Cards built</div>
+      <div class="val">163</div>
+      <div class="bar"><i style="width:87%"></i></div>
+      <div class="foot">87 percent</div>
+    </div>
+    <div class="stat good">
+      <div class="lbl">Connections</div>
+      <div class="val">412</div>
+      <div class="foot">2.2 per person</div>
+    </div>
+    <div class="stat">
+      <div class="lbl">Considered</div>
+      <div class="val">68<span style="font-size:18px">%</span></div>
+      <div class="bar"><i class="warn" style="width:68%"></i></div>
+      <div class="foot">wrote a why, not just collected</div>
+    </div>
+    <div class="stat alarm">
+      <div class="lbl">Connected with nobody</div>
+      <div class="val">24</div>
+      <div class="foot">people standing alone right now</div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <!-- the actionable list, this is the point of the whole screen -->
+    <div class="panel urgent">
+      <div class="ph">
+        <div>
+          <div class="t">Go talk to these people</div>
+          <div class="why">Zero connections. Each one has a match already in the room.</div>
+        </div>
+        <span class="n">24 alone</span>
+      </div>
+      <div class="pb" id="lonely"></div>
+    </div>
+
+    <!-- room composition, reassuring or actionable -->
+    <div class="panel">
+      <div class="ph"><div class="t">Room health</div></div>
+      <div class="pb" style="padding:0 8px">
+        <div class="kv"><span class="k">Matches surfaced</span><span class="v">338</span></div>
+        <div class="kv"><span class="k">Matches acted on</span><span class="v a">41%</span></div>
+        <div class="kv"><span class="k">Intros started</span><span class="v">96</span></div>
+        <div class="kv"><span class="k">Receipts signed</span><span class="v g">18</span></div>
+        <div class="kv"><span class="k">Convenes active</span><span class="v">3</span></div>
+        <div class="kv"><span class="k">Median time to first connection</span><span class="v">9 min</span></div>
+        <div class="kv"><span class="k">Verified</span><span class="v g">71%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- the buried diagnostic. you have to go get it, on purpose. -->
+  <details class="diag">
+    <summary>
+      <span class="t">Messaging diagnostic</span>
+      <span class="hint">Open only when connections look low. Content is never readable.</span>
+    </summary>
+    <div class="db">
+      <div class="privacy">
+        <span>🔒</span>
+        <span><b>No message content is stored in a queryable form.</b> These are counts and timings only. The analytics role has no read access to message bodies, and the stats table has no column that could hold them.</span>
+      </div>
+      <div class="sig">
+        <div class="sigbox ok">
+          <div class="st">Coordination, healthy</div>
+          <div class="sv">4.1 msgs</div>
+          <div class="sd">Average length of a thread that produced a connection. Short burst, then quiet, because they found each other and are talking.</div>
+        </div>
+        <div class="sigbox bad">
+          <div class="st">Hiding, watch this</div>
+          <div class="sv">31 msgs</div>
+          <div class="sd">Average length of a thread that produced nothing. 7 threads currently look like this. People texting instead of walking over.</div>
+        </div>
+      </div>
+      <div class="kv" style="margin-top:12px;border-top:1px solid var(--border);padding-top:14px"><span class="k">Threads that landed a connection</span><span class="v g">118</span></div>
+      <div class="kv"><span class="k">Threads that went nowhere</span><span class="v a">7</span></div>
+      <div class="kv"><span class="k">Median minutes to quiet</span><span class="v">3.4</span></div>
+    </div>
+  </details>
+
+  <div class="note">
+    <b>How to use this screen.</b> Glance every twenty minutes. Read one number, the red one. Open the list, walk over to two or three people, introduce them to their match. Then put the phone down and read the room with your eyes, which is a better instrument than any dashboard.
+  </div>
+</div>
+
+<script>
+const LONELY=[
+  {nm:'Andre Willis',   role:'Engineer',            col:'#60a5fa', mins:52, lead:'Nikki Cho',   why:'both want a technical co-founder'},
+  {nm:'Priya Nair',     role:'Founder, Nested',     col:'#3bd75c', mins:47, lead:'Devin Park',  why:'he funds her stage'},
+  {nm:'Marcus Bell',    role:'Looking for work',    col:'#f472b6', mins:44, lead:'Ife Adeyemi',  why:'she is hiring design'},
+  {nm:'Tessa Vaughn',   role:'Brand strategist',    col:'#a47bff', mins:41, lead:'Lorena Medina',why:'both in brand, no overlap yet'},
+  {nm:'Omar Haddad',    role:'Product designer',    col:'#3bd75c', mins:38, lead:'Maya Okafor',  why:'she needs product design'},
+  {nm:'Jae Sun Lim',    role:'Just exited',         col:'#f59e0b', mins:35, lead:'Rosa Kim',     why:'she is raising, he invests'},
+  {nm:'Bianca Ortiz',   role:'Growth lead',         col:'#f472b6', mins:33, lead:'Jordan Tate',  why:'he wants b2b dealflow'},
+  {nm:'Noel Kimathi',   role:'Engineer',            col:'#60a5fa', mins:29, lead:'Toast',        why:'both web and 3D'}
+];
+function initials(n){ return n.split(' ').map(w=>w[0]).slice(0,2).join(''); }
+document.getElementById('lonely').innerHTML = LONELY.map(p=>
+  '<div class="lone">'+
+    '<div class="av" style="background:'+p.col+'">'+initials(p.nm)+'</div>'+
+    '<div><div class="nm">'+p.nm+'</div><div class="meta">'+p.role+'</div></div>'+
+    '<span class="time">'+p.mins+'m</span>'+
+    '<div class="fix"><div class="lead">Introduce to '+p.lead+'</div><div class="cta">'+p.why+'</div></div>'+
+  '</div>'
+).join('') + '<div style="padding:12px;text-align:center;color:var(--hint);font-size:11.5px">16 more</div>';
+</script>
+</body>
+</html>

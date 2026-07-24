@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>SODA, The Room</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Caveat:wght@600&display=swap');
+  :root{
+    --canvas:#111;--card:#1a1a1a;--surface:#202220;--border:#2a2a2a;
+    --green:#3bd75c;--ink:#f5f5f5;--muted:#8a8a8a;--hint:#5a5a5a;--purple:#a47bff;
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:#000;color:var(--ink);font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:20px;overflow:hidden}
+  .mono{font-family:'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase}
+  .display{font-family:'Archivo Black',sans-serif;text-transform:uppercase;letter-spacing:-.02em;line-height:1.04}
+  .device{width:392px;height:800px;max-height:calc(100dvh - 40px);background:var(--canvas);border-radius:30px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px var(--border),0 40px 80px rgba(0,0,0,.65)}
+  @media (max-width:430px){body{padding:0}.device{width:100vw;height:100dvh;max-height:none;border-radius:0}}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+  .live{display:flex;align-items:center;gap:7px;color:var(--green);font-size:10px}
+  .live i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(59,215,92,.5)}70%{box-shadow:0 0 0 6px rgba(59,215,92,0)}100%{box-shadow:0 0 0 0 rgba(59,215,92,0)}}
+  .head{padding:18px 20px 10px;flex-shrink:0}
+  .head .eyebrow{color:var(--green);font-size:11px;font-family:'DM Mono';letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}
+  .head h2{font-size:30px}
+  .head p{color:var(--muted);font-size:13px;margin-top:4px}
+  .seg{display:flex;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:4px;margin:6px 20px 0;flex-shrink:0}
+  .seg button{flex:1;height:38px;border:none;background:transparent;color:var(--muted);font-family:'DM Mono';font-size:11px;letter-spacing:.06em;text-transform:uppercase;border-radius:9px;cursor:pointer;transition:all .15s}
+  .seg button.on{background:var(--green);color:#06140a;font-weight:500}
+  .grid{flex:1;overflow-y:auto;padding:16px 20px calc(var(--safe-bottom) + 20px);display:grid;grid-template-columns:1fr 1fr;gap:12px;align-content:start}
+  .micro{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;cursor:pointer;transition:transform .12s,border-color .15s;display:flex;flex-direction:column;gap:10px;min-height:150px;position:relative;overflow:hidden}
+  .micro:active{transform:scale(.97)}
+  .micro.match{border-color:rgba(164,123,255,.5)}
+  .micro .match-dot{position:absolute;top:12px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--purple);box-shadow:0 0 8px var(--purple)}
+  .micro .avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#06140a;font-weight:700;font-size:15px;flex-shrink:0}
+  .micro .nm{font-weight:700;font-size:15px;line-height:1.1}
+  .micro .role{color:var(--muted);font-size:12px;margin-top:1px}
+  .micro .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto}
+  .micro .t{font-size:10px;font-weight:600;border-radius:9999px;padding:3px 8px;background:rgba(59,215,92,.1);border:1px solid rgba(59,215,92,.25);color:var(--green);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .micro .t.more{background:transparent;border-color:var(--border);color:var(--muted)}
+  .micro .you-badge{font-size:9px;background:var(--green);color:#06140a;border-radius:9999px;padding:2px 7px;font-weight:700;font-family:'DM Mono';letter-spacing:.05em}
+  .grid.list{grid-template-columns:1fr}
+  .grid.list .micro{flex-direction:row;align-items:center;min-height:0;gap:12px}
+  .grid.list .micro .tags{margin-top:0;margin-left:auto;justify-content:flex-end;max-width:46%}
+  .grid.list .micro .body{flex:1;min-width:0}
+  .scrim{position:absolute;inset:0;z-index:60;background:rgba(0,0,0,.7);opacity:0;pointer-events:none;transition:opacity .26s}
+  .scrim.open{opacity:1;pointer-events:auto}
+  .full{position:absolute;left:12px;right:12px;top:50%;transform:translateY(-50%) scale(.94);opacity:0;pointer-events:none;z-index:70;transition:transform .3s cubic-bezier(.22,1,.36,1),opacity .26s}
+  .full.open{transform:translateY(-50%) scale(1);opacity:1;pointer-events:auto}
+  .biz{background:var(--card);border:1px solid var(--border);border-radius:24px;height:540px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.6)}
+  .biz-head{display:flex;justify-content:space-between;align-items:flex-start;padding:20px 22px 0}
+  .soda-mark{position:relative;width:32px;height:32px;flex-shrink:0}
+  .soda-mark i{position:absolute;border-radius:50%;background:var(--green)}
+  .soda-mark .d1{width:10px;height:10px;top:0;left:2px}.soda-mark .d2{width:12px;height:12px;top:3px;right:0}.soda-mark .d3{width:16px;height:16px;bottom:0;left:5px}
+  .agency{text-align:right;line-height:1}
+  .agency .nm{color:var(--green);font-size:22px;font-weight:600;font-family:'DM Sans'}
+  .agency .ty{color:var(--muted);font-size:11px;font-style:italic;letter-spacing:.1em;margin-top:3px}
+  .biz-body{flex:1;padding:6px 22px;overflow-y:auto;display:flex;flex-direction:column}
+  .me-face{flex:1;display:flex;flex-direction:column;justify-content:center}
+  .me-name{color:var(--green);font-family:'Archivo Black';font-size:46px;letter-spacing:-.02em;line-height:.9}
+  .me-role{color:var(--muted);font-size:17px;font-style:italic;margin-top:6px}
+  .sig{margin-top:auto;padding-bottom:6px}
+  .sig .nm{color:var(--green);font-family:'Caveat',cursive;font-size:30px;line-height:1;border-bottom:2px solid var(--green);padding-bottom:2px}
+  .sig .lbl{color:var(--green);font-size:10px;margin-top:4px}
+  .face-name{color:var(--green);font-family:'Archivo Black';font-size:24px;margin:4px 0 12px}
+  .face-section{color:var(--muted);font-size:14px;font-style:italic;margin:6px 0 9px}
+  .biz-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+  .biz-chip{background:var(--green);color:#06140a;border-radius:9999px;padding:8px 14px;font-size:12px;font-weight:600;font-style:italic}
+  .biz-chip.focus{display:inline-flex;align-items:center;gap:5px;background:rgba(59,215,92,.12);border:1px solid rgba(59,215,92,.35);color:var(--green)}
+  .biz-chip.focus .p{font-style:normal;font-weight:700}
+  .biz-toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 22px 18px;flex-shrink:0;gap:8px}
+  .biz-toggle button{background:none;border:none;cursor:pointer;font-family:'Archivo Black';font-size:26px;color:var(--green);padding:6px 4px;transition:all .15s}
+  .biz-toggle button.active{background:var(--green);color:#06140a;border-radius:12px;padding:6px 15px}
+  .full-close{position:absolute;top:-44px;right:0;background:var(--card);border:1px solid var(--border);color:var(--ink);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .match-strip{background:rgba(164,123,255,.12);border-top:1px solid rgba(164,123,255,.3);padding:11px 22px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+  .match-strip .mono{color:var(--purple);font-size:10px}
+  .match-strip .why{color:var(--ink);font-size:12px;flex:1}
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="topbar">
+    <span class="mono" style="font-size:10px;color:var(--muted)">FUTURELAND</span>
+    <span class="live mono"><i></i> 8 here</span>
+  </div>
+  <div class="head">
+    <div class="eyebrow">In the room</div>
+    <h2 class="display">The room</h2>
+    <p>Tap any card to open it. Purple dot means you two match.</p>
+  </div>
+  <div class="seg">
+    <button class="on" onclick="setView('grid',this)">Grid</button>
+    <button onclick="setView('list',this)">List</button>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="scrim" id="scrim" onclick="closeCard()"></div>
+  <div class="full" id="full">
+    <button class="full-close" onclick="closeCard()">x</button>
+    <div class="biz">
+      <div class="biz-head">
+        <div class="soda-mark"><i class="d1"></i><i class="d2"></i><i class="d3"></i></div>
+        <div class="agency"><div class="nm" id="f-agency">GILCHRIST</div><div class="ty" id="f-agency-ty">Creative Agency</div></div>
+      </div>
+      <div class="biz-body" id="f-body"></div>
+      <div class="biz-toggle">
+        <button id="f-offers" onclick="flip('offers')">Offers</button>
+        <button id="f-me" class="active" onclick="flip('me')">Me</button>
+        <button id="f-needs" onclick="flip('needs')">Needs</button>
+      </div>
+      <div class="match-strip" id="f-match" style="display:none">
+        <span class="mono">Match</span>
+        <span class="why" id="f-why"></span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const PEOPLE = [
+  {nm:"Brent", role:"Founder", agency:"GILCHRIST", ty:"Creative Agency", col:"#a47bff", you:true,
+   offers:[["Advice",["fundraising","brand"]],["Mentorship",["design"]]],
+   needs:[["Collaboration",["product design","gaming"]],["Work",[]]]},
+  {nm:"Maya Okafor", role:"Founder", agency:"NORTHBOUND", ty:"Studio", col:"#3bd75c",
+   offers:[["Mentorship",["design","early-stage"]],["Introductions",["investors"]]],
+   needs:[["Collaboration",["product design"]],["Funding",["pre-seed"]]], match:"You both work in product design"},
+  {nm:"Devin Park", role:"Fractional CFO", agency:"LEDGERLINE", ty:"Advisory", col:"#f59e0b",
+   offers:[["Advice",["fundraising","pricing"]],["Investment",["pre-seed"]]],
+   needs:[["Introductions",["founders"]]], match:"He funds what you are raising for"},
+  {nm:"Ife Adeyemi", role:"Design lead", agency:"FORM AND CO", ty:"Product Studio", col:"#3bd75c",
+   offers:[["Feedback",["product","UX"]],["Mentorship",["design"]]],
+   needs:[["Collaboration",["gaming"]]], match:"You both want to collaborate on gaming"},
+  {nm:"Tomas Rivera", role:"Just exited", agency:"", ty:"", col:"#a47bff",
+   offers:[["Investment",["seed"]],["Advice",["go-to-market"]]],
+   needs:[["Introductions",["operators"]]]},
+  {nm:"Nikki Cho", role:"Engineer", agency:"", ty:"", col:"#60a5fa",
+   offers:[["Collaboration",["web","3D"]]],
+   needs:[["Work",["design"]],["Mentorship",["engineering"]]]},
+  {nm:"Lorena Medina", role:"Founder, creative", agency:"MEDINA", ty:"Creative", col:"#f472b6",
+   offers:[["Mentorship",["brand"]],["Introductions",["press"]],["Collaboration",["brand"]]],
+   needs:[["Advice",["fundraising"]]]},
+  {nm:"Toast", role:"Engineer", agency:"", ty:"", col:"#3bd75c",
+   offers:[["Collaboration",["web"]],["Feedback",["product"]]],
+   needs:[["Mentorship",["engineering"]],["Work",[]]]},
+];
+let viewMode='grid', face='me', current=0;
+const grid=document.getElementById('grid');
+function chipLabel(c){const cat=c[0],focus=c[1];return focus&&focus.length?cat+" in "+focus[0]:cat;}
+function renderGrid(){
+  grid.className='grid'+(viewMode==='list'?' list':'');
+  grid.innerHTML='';
+  PEOPLE.forEach((p,i)=>{
+    const card=document.createElement('div');
+    card.className='micro'+(p.match?' match':'');
+    const initials=p.nm.split(' ').map(w=>w[0]).slice(0,2).join('');
+    const preview=p.offers.slice(0,2).map(chipLabel);
+    const extra=(p.offers.length+p.needs.length)-preview.length;
+    card.innerHTML=
+      (p.match?'<div class="match-dot"></div>':'')+
+      '<div style="display:flex;align-items:center;gap:10px">'+
+        '<div class="avatar" style="background:'+p.col+'">'+initials+'</div>'+
+        '<div class="body">'+
+          '<div class="nm">'+p.nm.split(' ')[0]+(p.you?' <span class="you-badge">YOU</span>':'')+'</div>'+
+          '<div class="role">'+p.role+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="tags">'+
+        preview.map(t=>'<span class="t">'+t+'</span>').join('')+
+        (extra>0?'<span class="t more">+'+extra+'</span>':'')+
+      '</div>';
+    card.onclick=function(){openCard(i)};
+    grid.appendChild(card);
+  });
+}
+function setView(m,btn){viewMode=m;document.querySelectorAll('.seg button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderGrid();}
+function openCard(i){
+  current=i;face='me';
+  const p=PEOPLE[i];
+  document.getElementById('f-agency').textContent=p.agency||p.nm.split(' ')[0].toUpperCase();
+  document.getElementById('f-agency-ty').textContent=p.ty||p.role;
+  const ms=document.getElementById('f-match');
+  if(p.match){ms.style.display='flex';document.getElementById('f-why').textContent=p.match;}
+  else ms.style.display='none';
+  flip('me');
+  document.getElementById('scrim').classList.add('open');
+  document.getElementById('full').classList.add('open');
+}
+function closeCard(){document.getElementById('scrim').classList.remove('open');document.getElementById('full').classList.remove('open');}
+function flip(f){
+  face=f;
+  const p=PEOPLE[current];
+  ['offers','me','needs'].forEach(x=>document.getElementById('f-'+x).className=(x===f?'active':''));
+  const body=document.getElementById('f-body');
+  if(f==='me'){
+    body.innerHTML=
+      '<div class="me-face"><div><div class="me-name">'+p.nm.split(' ')[0].toUpperCase()+'</div>'+
+      '<div class="me-role">'+p.role+'</div></div>'+
+      '<div class="sig"><div class="nm">'+p.nm+'</div><div class="lbl">Signature</div></div></div>';
+    return;
+  }
+  const list=f==='offers'?p.offers:p.needs;
+  const cats=list.map(c=>c[0]);
+  const focuses=[];list.forEach(c=>c[1].forEach(fo=>{if(focuses.indexOf(fo)<0)focuses.push(fo)}));
+  body.innerHTML=
+    '<div class="face-name">'+p.nm.split(' ')[0].toUpperCase()+'</div>'+
+    '<div class="face-section">'+(f==='offers'?'Offers:':'Needs')+'</div>'+
+    '<div class="biz-chips">'+(cats.length?cats.map(c=>'<span class="biz-chip">'+c+'</span>').join(''):'<span style="color:var(--hint);font-size:13px">nothing added</span>')+'</div>'+
+    (focuses.length?'<div class="face-section" style="margin-top:16px">in:</div><div class="biz-chips">'+focuses.map(fo=>'<span class="biz-chip focus"><span class="p">+</span> '+fo+'</span>').join('')+'</div>':'');
+}
+renderGrid();
+</script>
+</body>
+</html>

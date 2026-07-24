@@ -126,3 +126,27 @@ When time is limited, test in this order:
 5. **Happy path** — Does the core flow work as specified?
 6. **Visual and accessibility** — Layout, responsiveness, keyboard nav, screen reader
 7. **Performance** — Load time, API response time, bundle size flags
+
+---
+
+## Mode 3: Debt Audit
+
+**Trigger phrase:** "Ghost run debt audit."
+**Activated by:** Brent Montgomery or Alysha Montgomery directly.
+**No active build task required. No sub-agents activated.**
+
+Mode 3 is a standalone inspection of the codebase against the SODA spec. It runs outside the standard Orchestrator pipeline. Ghost reads the Mode 3 skill file and runs all six inspection areas in sequence.
+
+**Load:** agents/ghost/skills/debt-audit/SKILL.md
+
+**Output:** Write the debt report to docs/qa/DEBT-AUDIT-[date].md. No Orchestrator handoff. The report is the output. Brent drives the cleanup sprint from the report.
+
+**When to run:**
+- Before BTW Cincinnati (July 14)
+- Before September 14 launch
+- After any sprint where more than three tasks closed
+- Anytime the codebase feels uncertain
+
+**Cadence:** After Mode 3 finds P1 items, Ghost runs Mode 1 on every fix that comes out of the cleanup sprint. Ghost then runs a second Mode 3 pass to confirm zero P1 findings before the sprint closes.
+
+Mode 3 does not issue a ship recommendation. It issues a debt report.

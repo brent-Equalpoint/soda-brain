@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/soda-design-system-3bd6870c-1128-41f9-9980-65c489568cdb/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/soda-design-system-3bd6870c-1128-41f9-9980-65c489568cdb/tokens/colors.css">
+<link rel="stylesheet" href="_ds/soda-design-system-3bd6870c-1128-41f9-9980-65c489568cdb/tokens/typography.css">
+<link rel="stylesheet" href="_ds/soda-design-system-3bd6870c-1128-41f9-9980-65c489568cdb/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/soda-design-system-3bd6870c-1128-41f9-9980-65c489568cdb/tokens/effects.css">
+<link rel="stylesheet" href="_ds/soda-design-system-3bd6870c-1128-41f9-9980-65c489568cdb/tokens/base.css">
+<link rel="stylesheet" href="_ds/soda-design-system-3bd6870c-1128-41f9-9980-65c489568cdb/styles.css">
+<script src="_ds/soda-design-system-3bd6870c-1128-41f9-9980-65c489568cdb/_ds_bundle.js"></script>
+
+<!-- ============================================================
+     FONTS — change the app's typefaces HERE (one place).
+     1. Swap the <link> for your font's embed link (fonts.google.com → "Get font" → @import/link).
+     2. Put its family name first in the matching --font-* line below.
+     Leave a line unchanged to keep the SODA default.
+     ============================================================ -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&amp;display=swap">
+<style>
+@font-face{font-family:'Be Vietnam Pro';src:url('fonts/BeVietnamPro-Light.woff2') format('woff2');font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:'Be Vietnam Pro';src:url('fonts/BeVietnamPro-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Be Vietnam Pro';src:url('fonts/BeVietnamPro-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Be Vietnam Pro';src:url('fonts/BeVietnamPro-SemiBold.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Be Vietnam Pro';src:url('fonts/BeVietnamPro-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Be Vietnam Pro';src:url('fonts/BeVietnamPro-ExtraBold.woff2') format('woff2');font-weight:800;font-style:normal;font-display:swap}
+@font-face{font-family:'Be Vietnam Pro';src:url('fonts/BeVietnamPro-Black.woff2') format('woff2');font-weight:900;font-style:normal;font-display:swap}
+:root{
+  --font-display: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;   /* headlines & big numbers */
+  --font-sans:    'Be Vietnam Pro', system-ui, -apple-system, sans-serif; /* body & UI text */
+  --font-mono:    'DM Mono', ui-monospace, 'SF Mono', monospace;  /* eyebrows, labels, counts */
+}
+:root{ --gutter:clamp(18px,5vw,26px); --frame:460px; }
+*{box-sizing:border-box}
+body{margin:0;background:#050605}
+.soda-scroll::-webkit-scrollbar{display:none}
+.soda-scroll{-ms-overflow-style:none;scrollbar-width:none}
+@keyframes ob-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes ob-slide{from{transform:translateY(12px)}to{transform:none}}
+@keyframes ob-fade{from{opacity:0}to{opacity:1}}
+@keyframes ob-pulse{0%{box-shadow:0 0 0 0 rgba(59,215,92,.5)}70%{box-shadow:0 0 0 8px rgba(59,215,92,0)}100%{box-shadow:0 0 0 0 rgba(59,215,92,0)}}
+@keyframes ob-pop{0%{opacity:0;transform:scale(.8)}60%{transform:scale(1.06)}100%{opacity:1;transform:scale(1)}}
+</style>
+</helmet>
+
+<div style="min-height:100dvh;background:#050605;display:flex;justify-content:center;align-items:stretch">
+<div style="position:relative;width:100%;max-width:var(--frame);min-height:100dvh;height:100dvh;background:var(--bg-canvas);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 0 1px var(--border),0 30px 90px rgba(0,0,0,.6)">
+
+  <!-- TOPBAR -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:15px var(--gutter) 13px;border-bottom:1px solid var(--border);flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:7px">
+      <span style="width:9px;height:9px;border-radius:50%;background:var(--accent);display:inline-block"></span>
+      <span style="font-family:var(--font-display);font-weight:900;font-size:16px;letter-spacing:-.01em">SODA</span>
+      <span style="color:var(--accent);font-size:12px">✦</span>
+    </div>
+    <button onClick="{{ restart }}" style="font-family:var(--font-mono);font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:5px">↻ Restart</button>
+  </div>
+
+  <div class="soda-scroll" style="flex:1;overflow-y:auto;position:relative">
+
+    <!-- STEP: EMAIL -->
+    <sc-if value="{{ isEmail }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:44px var(--gutter) 40px;min-height:100%;display:flex;flex-direction:column;text-align:center">
+        <div style="font-family: Be Vietnam Pro; font-size: 20px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; animation: ob-slide .5s var(--ease) both; text-align: center">Latinos-N-Tech · Tonight</div>
+        <div style="font-family: var(--font-display); font-weight: 900; font-size: clamp(28px,8.5vw,38px); letter-spacing: -.02em; text-transform: uppercase; line-height: 1.0; margin-bottom: 14px; animation: ob-slide .5s var(--ease) both; animation-delay: .06s; position: relative; top: 27px">You made it!<br><span style="font-weight: 600; text-transform: none; color: var(--accent); position: relative; top: 9px;">Welcome in ✦</span></div>
+        
+        
+        <input value="{{ profileName }}" onInput="{{ setName }}" placeholder="Your name" style="width: 100%; padding: 15px 16px; background: var(--surface-1); border: 1px solid var(--border-strong); border-radius: var(--r-md); outline: none; color: var(--text-primary); font-family: var(--font-sans); font-size: 16px; font-weight: 400; margin-bottom: 16px; text-align: left; animation: ob-slide .5s var(--ease) both; animation-delay: .22s; margin-top: 70px">
+        
+        <input value="{{ email }}" onInput="{{ setEmail }}" type="email" placeholder="you@studio.com" style="width: 100%; padding: 15px 16px; background: var(--surface-1); border: 1px solid {{ emailBorder }}; border-radius: var(--r-md); outline: none; color: var(--text-primary); font-family: var(--font-sans); font-size: 16px; font-weight: 400; margin-bottom: 20px; text-align: left; animation: ob-slide .5s var(--ease) both; animation-delay: .24s">
+        <button onClick="{{ submitEmail }}" disabled="{{ emailInvalid }}" style="width:100%;min-height:52px;border-radius:var(--r-md);border:none;cursor:{{ emailCursor }};background:{{ emailBtnBg }};color:{{ emailBtnColor }};font-family:var(--font-sans);font-size:15px;font-weight:700;transition:opacity .15s var(--ease);animation:ob-slide .5s var(--ease) both;animation-delay:.30s">Send my code</button>
+        <div style="margin-top:auto;padding-top:32px;color:var(--text-faint);font-size:12px;font-weight:300;line-height:1.5;font-style:italic">A name tag knows you showed up. SODA knows who you became to the room.</div>
+      </div>
+    </sc-if>
+
+    <!-- STEP: CODE -->
+    <sc-if value="{{ isCode }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:44px var(--gutter) 40px;min-height:100%;display:flex;flex-direction:column">
+        <button onClick="{{ backToEmail }}" style="align-self:flex-start;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;background:none;border:none;margin-bottom:26px">← Back</button>
+        <div style="font-family:var(--font-display);font-weight:900;font-size:clamp(26px,7vw,32px);letter-spacing:-.02em;text-transform:uppercase;line-height:1.05;margin-bottom:10px">Check your email</div>
+        <div style="color:var(--text-secondary);font-size:14px;font-weight:300;line-height:1.5;margin-bottom:28px">We sent a six-digit code to <b style="color:var(--text-primary);font-weight:600">{{ email }}</b>. Enter any six digits to continue.</div>
+        <div style="position:relative;margin-bottom:22px">
+          <div style="display:flex;gap:8px">
+            <sc-for list="{{ codeCells }}" as="c" hint-placeholder-count="6">
+              <div style="flex:1;height:58px;border-radius:var(--r-md);background:var(--surface-1);border:1px solid {{ c.border }};display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:24px;color:var(--text-primary)">{{ c.d }}</div>
+            </sc-for>
+          </div>
+          <input value="{{ code }}" onInput="{{ setCode }}" inputmode="numeric" autocomplete="one-time-code" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;outline:none;letter-spacing:40px;font-size:24px;caret-color:transparent">
+        </div>
+        <button onClick="{{ resendCode }}" style="align-self:flex-start;font-family:var(--font-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);background:none;border:none;cursor:pointer">Resend code</button>
+      </div>
+    </sc-if>
+
+    <!-- STEP: CARD (identity) -->
+    <sc-if value="{{ isCard }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 38px var(--gutter) 40px; min-height: 100%; display: flex; flex-direction: column; justify-content: flex-start">
+        <button onClick="{{ backToCode }}" style="align-self:flex-start;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;background:none;border:none;margin-bottom:22px">← Back</button>
+        <div style="font-family: Be Vietnam Pro; font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px">Build your card · 1 of 3</div>
+        <div style="font-family: var(--font-display); font-weight: 800; font-size: clamp(26px,7vw,32px); letter-spacing: -.02em; text-transform: none; line-height: 1.15; margin-bottom: 10px">Hey {{ greetName }}, how do you show in this room?</div>
+        
+
+        <div style="font-family: Be Vietnam Pro; font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 7px; position: static; margin-top: 34px">Who do you show up as?</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 16px; justify-content: center; height: 200px; margin-top: 15px">
+          <sc-for list="{{ roleChips }}" as="r" hint-placeholder-count="7">
+            <button onClick="{{ r.set }}" style="padding:8px 13px;border-radius:var(--r-pill);cursor:pointer;font-family:var(--font-sans);font-size:12.5px;font-weight:600;background:{{ r.bg }};border:1px solid {{ r.border }};color:{{ r.color }};transition:all .13s var(--ease)">{{ r.label }}</button>
+          </sc-for>
+          <button onClick="{{ openCustomRole }}" style="padding:8px 13px;border-radius:var(--r-pill);cursor:pointer;font-family:var(--font-sans);font-size:12.5px;font-weight:600;background:transparent;border:1px dashed var(--border-strong);color:var(--text-secondary)">+ Custom</button>
+        </div>
+        <sc-if value="{{ addingCustomRole }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <input value="{{ customRoleInput }}" onInput="{{ setCustomRoleInput }}" placeholder="Type your own…" style="flex:1;padding:10px 13px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-md);outline:none;color:var(--text-primary);font-family:var(--font-sans);font-size:14px">
+            <button onClick="{{ addCustomRole }}" style="padding:10px 16px;border-radius:var(--r-md);border:none;background:var(--accent);color:var(--on-accent);cursor:pointer;font-family:var(--font-sans);font-size:14px;font-weight:700">Add</button>
+          </div>
+        </sc-if>
+
+        <div style="font-family: Be Vietnam Pro; font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 9px; margin-top: 28px">Affiliation</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; justify-content: center; height: 89px">
+          <sc-for list="{{ affiliationChips }}" as="a" hint-placeholder-count="5">
+            <button onClick="{{ a.set }}" style="padding:8px 13px;border-radius:var(--r-pill);cursor:pointer;font-family:var(--font-sans);font-size:12.5px;font-weight:600;background:{{ a.bg }};border:1px solid {{ a.border }};color:{{ a.color }};transition:all .13s var(--ease)">{{ a.label }}</button>
+          </sc-for>
+        </div>
+        <div style="font-family: Be Vietnam Pro; font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 7px">{{ businessLabel }} <span style="color:var(--text-faint);text-transform:none;letter-spacing:0">· optional</span></div>
+        <input value="{{ profileBusiness }}" onInput="{{ setBusiness }}" placeholder="{{ businessPh }}" style="width:100%;padding:14px 16px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-md);outline:none;color:var(--text-primary);font-family:var(--font-sans);font-size:16px;font-weight:400;margin-bottom:30px">
+
+        <button onClick="{{ submitCard }}" disabled="{{ profileInvalid }}" style="width: 100%; min-height: 52px; margin-top: 30px; border-radius: var(--r-md); border: none; cursor: {{ profileCursor }}; background: {{ profileBtnBg }}; color: {{ profileBtnColor }}; font-family: var(--font-sans); font-size: 15px; font-weight: 700; transition: opacity .15s var(--ease)">Continue</button>
+      </div>
+    </sc-if>
+
+    <!-- STEP: OFFER -->
+    <sc-if value="{{ isOffer }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:38px var(--gutter) 40px;min-height:100%;display:flex;flex-direction:column">
+        <button onClick="{{ backToCard }}" style="align-self:flex-start;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;background:none;border:none;margin-bottom:22px">←&nbsp; Back</button>
+        <div style="font-family: Be Vietnam Pro; font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px">Build your card · 2 of 3</div>
+        <div style="font-family: var(--font-display); font-weight: 900; font-size: clamp(26px,7vw,32px); letter-spacing: -.02em; text-transform: none; line-height: 1.04; margin-bottom: 10px">What can you offer?</div>
+        <div style="color:var(--text-secondary);font-size:14px;font-weight:300;line-height:1.5;margin-bottom:22px">What the room reaches out to you for. Tap any that fit, then personalize up to 3 each.</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center; margin-top: 45px">
+          <sc-for list="{{ offerChips }}" as="o" hint-placeholder-count="7">
+            <button onClick="{{ o.toggle }}" style="display: inline-flex; align-items: stretch; gap: 7px; padding: 10px 15px; border-radius: var(--r-pill); cursor: pointer; font-family: var(--font-sans); font-size: 13.5px; font-weight: 600; background: {{ o.bg }}; border: 1px solid {{ o.border }}; color: {{ o.color }}; transition: all .13s var(--ease); justify-content: center"><span style="font-size:12px">{{ o.mark }}</span>{{ o.label }}</button>
+          </sc-for>
+          <button onClick="{{ openCustomOffer }}" style="display:inline-flex;align-items:center;gap:6px;padding:10px 15px;border-radius:var(--r-pill);cursor:pointer;font-family:var(--font-sans);font-size:13.5px;font-weight:600;background:transparent;border:1px dashed var(--border-strong);color:var(--text-secondary)">+ Custom</button>
+        </div>
+        <sc-if value="{{ addingCustomOffer }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:8px;margin-bottom:20px">
+            <input value="{{ customOfferInput }}" onInput="{{ setCustomOfferInput }}" placeholder="Type your own…" style="flex:1;padding:10px 13px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-md);outline:none;color:var(--text-primary);font-family:var(--font-sans);font-size:14px">
+            <button onClick="{{ addCustomOffer }}" style="padding:10px 16px;border-radius:var(--r-md);border:none;background:var(--accent);color:var(--on-accent);cursor:pointer;font-family:var(--font-sans);font-size:14px;font-weight:700">Add</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showFocusCoach }}" hint-placeholder-val="{{ false }}">
+          <div style="position:relative;margin:0 0 18px">
+            <div style="position:absolute;top:-6px;left:24px;width:13px;height:13px;background:var(--surface-purple);border-left:1px solid var(--private-border);border-top:1px solid var(--private-border);transform:rotate(45deg)"></div>
+            <div style="position:relative;background:var(--surface-purple);border:1px solid var(--private-border);border-radius:var(--r-lg);padding:14px 15px;animation:ob-rise .26s var(--ease) both">
+              <button onClick="{{ dismissFocusCoach }}" aria-label="Dismiss" style="position:absolute;top:11px;right:12px;background:none;border:none;color:var(--text-muted);font-size:16px;line-height:1;cursor:pointer;padding:0 2px">×</button>
+              <div style="font-family:var(--font-mono);font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--private);margin-bottom:7px">✦ One quick tip</div>
+              <div style="font-size:14.5px;font-weight:700;color:var(--text-primary);line-height:1.4;margin-bottom:4px;max-width:30ch">Add a focus to your offers to sharpen the room</div>
+              <div style="font-size:12.5px;font-weight:300;color:var(--text-secondary);line-height:1.5;max-width:34ch">A specific or two under a category helps the right people find you faster. You'll only see this once.</div>
+              <button onClick="{{ ackFocusCoach }}" style="margin-top:13px;padding:9px 18px;border-radius:var(--r-pill);border:1px solid var(--private-border);background:rgba(164,123,255,.16);color:var(--private);font-family:var(--font-sans);font-size:13px;font-weight:700;cursor:pointer">Got it</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-for list="{{ profileOfferRows }}" as="r" hint-placeholder-count="0">
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 13px;margin-bottom:9px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+              <div style="font-family: Be Vietnam Pro; font-size: 10px; letter-spacing: .6px; text-transform: uppercase; color: var(--accent)">{{ r.chip }}</div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-faint)">{{ r.countLabel }}</div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:9px">
+              <sc-for list="{{ r.tags }}" as="t" hint-placeholder-count="0">
+                <span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--text-primary);background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-pill);padding:5px 6px 5px 11px">{{ t.label }}<button onClick="{{ t.remove }}" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0 2px">×</button></span>
+              </sc-for>
+              <sc-if value="{{ r.canAdd }}" hint-placeholder-val="{{ true }}">
+                <input value="{{ r.input }}" onInput="{{ r.setInput }}" onKeyDown="{{ r.onKey }}" placeholder="{{ r.placeholder }}" style="flex:1;min-width:90px;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--font-sans);font-size:13px;font-weight:400;padding:4px 2px">
+              </sc-if>
+            </div>
+            <sc-if value="{{ r.canAdd }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ r.suggestions }}" as="sg" hint-placeholder-count="0">
+                  <button onClick="{{ sg.add }}" style="font-size:11px;font-weight:500;color:var(--text-muted);background:none;border:1px dashed var(--border-strong);border-radius:var(--r-pill);padding:4px 10px;cursor:pointer">+ {{ sg.label }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+        <button onClick="{{ submitOffer }}" style="width:100%;min-height:52px;margin-top:20px;border-radius:var(--r-md);border:none;cursor:pointer;background:var(--accent);color:var(--on-accent);font-family:var(--font-sans);font-size:15px;font-weight:700">{{ offerStepCta }}</button>
+      </div>
+    </sc-if>
+
+    <!-- STEP: NEED -->
+    <sc-if value="{{ isNeed }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:38px var(--gutter) 40px;min-height:100%;display:flex;flex-direction:column">
+        <button onClick="{{ backToOffer }}" style="align-self:flex-start;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;background:none;border:none;margin-bottom:22px">← Back</button>
+        <div style="font-family: Be Vietnam Pro; font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px">Build your card · 3 of 3</div>
+        <div style="font-family: var(--font-display); font-weight: 900; font-size: clamp(26px,7vw,32px); letter-spacing: -.02em; text-transform: none; line-height: 1.04; margin-bottom: 10px">What do you need?</div>
+        <div style="color:var(--text-secondary);font-size:14px;font-weight:300;line-height:1.5;margin-bottom:22px">What you came to find tonight. Tap any that fit, then personalize up to 3 each.</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center; margin-top: 22px">
+          <sc-for list="{{ needChips }}" as="n" hint-placeholder-count="7">
+            <button onClick="{{ n.toggle }}" style="display:inline-flex;align-items:center;gap:7px;padding:10px 15px;border-radius:var(--r-pill);cursor:pointer;font-family:var(--font-sans);font-size:13.5px;font-weight:600;background:{{ n.bg }};border:1px solid {{ n.border }};color:{{ n.color }};transition:all .13s var(--ease)"><span style="font-size:12px">{{ n.mark }}</span>{{ n.label }}</button>
+          </sc-for>
+          <button onClick="{{ openCustomNeed }}" style="display:inline-flex;align-items:center;gap:6px;padding:10px 15px;border-radius:var(--r-pill);cursor:pointer;font-family:var(--font-sans);font-size:13.5px;font-weight:600;background:transparent;border:1px dashed var(--border-strong);color:var(--text-secondary)">+ Custom</button>
+        </div>
+        <sc-if value="{{ addingCustomNeed }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:8px;margin-bottom:20px">
+            <input value="{{ customNeedInput }}" onInput="{{ setCustomNeedInput }}" placeholder="Type your own…" style="flex:1;padding:10px 13px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-md);outline:none;color:var(--text-primary);font-family:var(--font-sans);font-size:14px">
+            <button onClick="{{ addCustomNeed }}" style="padding:10px 16px;border-radius:var(--r-md);border:none;background:var(--accent);color:var(--on-accent);cursor:pointer;font-family:var(--font-sans);font-size:14px;font-weight:700">Add</button>
+          </div>
+        </sc-if>
+        <sc-for list="{{ profileNeedRows }}" as="r" hint-placeholder-count="0">
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 13px;margin-bottom:9px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+              <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--accent)">{{ r.chip }}</div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-faint)">{{ r.countLabel }}</div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:9px">
+              <sc-for list="{{ r.tags }}" as="t" hint-placeholder-count="0">
+                <span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--text-primary);background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-pill);padding:5px 6px 5px 11px">{{ t.label }}<button onClick="{{ t.remove }}" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0 2px">×</button></span>
+              </sc-for>
+              <sc-if value="{{ r.canAdd }}" hint-placeholder-val="{{ true }}">
+                <input value="{{ r.input }}" onInput="{{ r.setInput }}" onKeyDown="{{ r.onKey }}" placeholder="{{ r.placeholder }}" style="flex:1;min-width:90px;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--font-sans);font-size:13px;font-weight:400;padding:4px 2px">
+              </sc-if>
+            </div>
+            <sc-if value="{{ r.canAdd }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ r.suggestions }}" as="sg" hint-placeholder-count="0">
+                  <button onClick="{{ sg.add }}" style="font-size:11px;font-weight:500;color:var(--text-muted);background:none;border:1px dashed var(--border-strong);border-radius:var(--r-pill);padding:4px 10px;cursor:pointer">+ {{ sg.label }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+        <button onClick="{{ submitNeed }}" style="width:100%;min-height:52px;margin-top:20px;border-radius:var(--r-md);border:none;cursor:pointer;background:var(--accent);color:var(--on-accent);font-family:var(--font-sans);font-size:15px;font-weight:700">{{ needStepCta }}</button>
+      </div>
+    </sc-if>
+
+    <!-- STEP: SPLASH -->
+    <sc-if value="{{ isSplash }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:40px var(--gutter);min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+        <div style="width:16px;height:16px;border-radius:50%;background:var(--accent);animation:ob-pulse 1.6s infinite;margin-bottom:30px"></div>
+        <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:16px">Latinos-N-Tech</div>
+        <div style="font-family:var(--font-display);font-weight:900;font-size:clamp(44px,14vw,64px);letter-spacing:-.03em;text-transform:uppercase;line-height:.98;margin-bottom:16px;animation:ob-pop .5s cubic-bezier(.22,1,.36,1) both">You're in.</div>
+        <div style="color:var(--text-secondary);font-size:15px;font-weight:300;line-height:1.55;max-width:32ch;margin-bottom:34px">Welcome, {{ name }}. Your card's live and <b style="color:var(--accent);font-weight:700">{{ roomCount }}</b> people are already in the room.</div>
+        <button onClick="{{ enterRoom }}" style="min-width:220px;min-height:52px;border-radius:var(--r-md);border:none;cursor:pointer;background:var(--accent);color:var(--on-accent);font-family:var(--font-sans);font-size:15px;font-weight:700">Enter the room →</button>
+      </div>
+    </sc-if>
+
+    <!-- STEP: ROOM (first-session) -->
+    <sc-if value="{{ isRoom }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:22px var(--gutter) 130px">
+        <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin-bottom:7px;display:flex;align-items:center;gap:8px"><span style="width:7px;height:7px;border-radius:50%;background:var(--accent);animation:ob-pulse 1.8s infinite"></span>You're in · Latinos-N-Tech</div>
+        <div style="font-family:var(--font-display);font-weight:900;font-size:clamp(26px,7vw,32px);letter-spacing:-.02em;text-transform:uppercase;line-height:1.05;margin-bottom:6px">Welcome, {{ name }}.</div>
+        <div style="color:var(--text-secondary);font-size:14px;font-weight:300;line-height:1.5;margin-bottom:22px">Your card's live. <b style="color:var(--accent);font-weight:700">{{ roomCount }}</b> people are in the room.</div>
+
+        <!-- YOUR CARD PREVIEW -->
+        <div style="background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-xl);padding:18px;margin-bottom:20px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:15px">
+            <x-import component-from-global-scope="SODADesignSystem_3bd687.Avatar" hint-size="46px,46px" name="{{ name }}" color="#3bd75c" size="{{ 46 }}"></x-import>
+            <div style="min-width:0">
+              <div style="font-weight:700;font-size:15.5px">{{ name }}</div>
+              <div style="color:var(--text-muted);font-size:12.5px;font-weight:300;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ cardSubtitle }}</div>
+            </div>
+          </div>
+
+          <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">You offer</div>
+          <sc-if value="{{ cardHasOffers }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px">
+              <sc-for list="{{ cardOfferPills }}" as="o" hint-placeholder-count="2">
+                <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.3px;color:var(--accent);background:var(--accent-soft);border-radius:var(--r-pill);padding:6px 12px">{{ o.text }}</span>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ cardNoOffers }}" hint-placeholder-val="{{ true }}">
+            <div style="color:var(--text-faint);font-size:13px;font-weight:300;margin-bottom:14px">Nothing yet.</div>
+          </sc-if>
+
+          <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">You need</div>
+          <sc-if value="{{ cardHasNeeds }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px">
+              <sc-for list="{{ cardNeedPills }}" as="n" hint-placeholder-count="2">
+                <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.3px;color:var(--text-secondary);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-pill);padding:6px 12px">{{ n.text }}</span>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ cardNoNeeds }}" hint-placeholder-val="{{ true }}">
+            <div style="color:var(--text-faint);font-size:13px;font-weight:300;margin-bottom:14px">Nothing yet.</div>
+          </sc-if>
+
+          <div style="display:flex;gap:9px">
+            <button onClick="{{ openOffer }}" style="flex:1;min-height:44px;border-radius:var(--r-md);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer;font-family:var(--font-sans);font-size:13.5px;font-weight:700">{{ offerCta }}</button>
+            <button onClick="{{ openFocus }}" style="flex:1;min-height:44px;border-radius:var(--r-md);border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text-secondary);cursor:pointer;font-family:var(--font-sans);font-size:13.5px;font-weight:600">{{ focusCta }}</button>
+          </div>
+          <sc-if value="{{ showNudge }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:12px;font-size:12.5px;font-weight:300;color:var(--text-muted);line-height:1.45">{{ nudgeText }}</div>
+          </sc-if>
+        </div>
+
+        <!-- MATCH BANNER -->
+        <sc-if value="{{ matchShow }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--surface-purple);border:1px solid var(--private-border);border-radius:var(--r-xl);padding:17px;margin-bottom:20px;animation:ob-rise .3s var(--ease) both">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px">
+              <div style="font-family:var(--font-mono);font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--private)">✦ A match in the room</div>
+              <button onClick="{{ dismissMatch }}" style="background:none;border:none;color:var(--text-muted);font-size:16px;line-height:1;cursor:pointer;flex-shrink:0">×</button>
+            </div>
+            <div style="font-size:14.5px;font-weight:300;line-height:1.5;color:var(--text-secondary);margin-bottom:14px">{{ matchText }}</div>
+            <button onClick="{{ matchAction }}" style="width:100%;min-height:46px;border-radius:var(--r-md);border:none;background:var(--private);color:#160f28;cursor:pointer;font-family:var(--font-sans);font-size:14px;font-weight:700">Sharpen my matches</button>
+          </div>
+        </sc-if>
+
+        <!-- NO-OFFERS BANNER -->
+        <sc-if value="{{ noOffersShow }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-xl);padding:17px;margin-bottom:20px;animation:ob-rise .3s var(--ease) both">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+              <div style="font-family:var(--font-mono);font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-muted)">Optional · ~20 seconds</div>
+              <button onClick="{{ dismissNoOffers }}" style="background:none;border:none;color:var(--text-muted);font-size:16px;line-height:1;cursor:pointer;flex-shrink:0">×</button>
+            </div>
+            <div style="font-weight:700;font-size:15px;margin-bottom:5px">Tell the room what you offer</div>
+            <div style="color:var(--text-muted);font-size:13px;font-weight:300;line-height:1.45;margin-bottom:13px">Right now the room only sees who you are. What you bring is what makes people reach out.</div>
+            <button onClick="{{ openOffer }}" style="width:100%;min-height:44px;border-radius:var(--r-md);border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer;font-family:var(--font-sans);font-size:13.5px;font-weight:700">Add what I offer</button>
+          </div>
+        </sc-if>
+
+        <!-- GRADUATION -->
+        <sc-if value="{{ graduateShow }}" hint-placeholder-val="{{ false }}">
+          <a href="SODA Attendee.dc.html?enter=room" style="display:block;text-decoration:none;background:var(--surface-green);border:1px solid var(--accent);border-radius:var(--r-xl);padding:18px;margin-bottom:20px;animation:ob-rise .3s var(--ease) both">
+            <div style="font-family:var(--font-mono);font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin-bottom:8px">✓ Your card is ready</div>
+            <div style="font-family:var(--font-display);font-weight:900;font-size:19px;letter-spacing:-.01em;text-transform:uppercase;color:var(--text-primary);margin-bottom:6px">Step into the full room</div>
+            <div style="color:var(--text-secondary);font-size:13px;font-weight:300;line-height:1.5;margin-bottom:14px">You told the room what you offer and where. Now see everyone, every match, and the live moments as the night unfolds.</div>
+            <div style="display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 20px;border-radius:var(--r-md);background:var(--accent);color:var(--on-accent);font-family:var(--font-sans);font-size:14px;font-weight:700">Enter the full room →</div>
+          </a>
+        </sc-if>
+
+        <!-- PRESENT PEOPLE -->
+        <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px">Here now</div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ present }}" as="p" hint-placeholder-count="4">
+            <div style="position:relative;display:flex;align-items:center;gap:13px;padding:13px 15px;background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-lg)">
+              <sc-if value="{{ p.isMatch }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:11px;right:13px;width:8px;height:8px;border-radius:50%;background:var(--private);box-shadow:0 0 0 3px var(--surface-1)"></span></sc-if>
+              <x-import component-from-global-scope="SODADesignSystem_3bd687.Avatar" hint-size="42px,42px" name="{{ p.name }}" color="{{ p.color }}" size="{{ 42 }}"></x-import>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                <div style="color:var(--text-muted);font-size:12px;font-weight:300;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.role }}</div>
+              </div>
+              <span style="font-family:var(--font-mono);font-size:9.5px;letter-spacing:.3px;color:var(--text-muted);background:var(--surface-2);border-radius:var(--r-pill);padding:4px 10px;flex-shrink:0">{{ p.offerLabel }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <!-- SHEET LAYER -->
+  <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:absolute;inset:0;z-index:60;display:flex;align-items:flex-end">
+    <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(0,0,0,.64);animation:ob-fade .2s var(--ease)"></div>
+    <div class="soda-scroll" style="position:relative;width:100%;max-height:86%;overflow-y:auto;background:var(--surface-1);border-top:1px solid var(--border-strong);border-radius:var(--r-2xl) var(--r-2xl) 0 0;box-shadow:0 -20px 50px rgba(0,0,0,.5);padding:10px var(--gutter) 26px;animation:ob-rise .26s var(--ease) both">
+      <div style="width:38px;height:4px;border-radius:2px;background:var(--border-strong);margin:6px auto 18px"></div>
+
+      <!-- OFFER SHEET -->
+      <sc-if value="{{ sheetIsOffer }}" hint-placeholder-val="{{ true }}">
+        <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Your card · offers</div>
+        <div style="font-family:var(--font-display);font-weight:900;font-size:24px;letter-spacing:-.01em;text-transform:uppercase;margin-bottom:8px">What can you offer?</div>
+        <div style="color:var(--text-secondary);font-size:13.5px;font-weight:300;line-height:1.5;margin-bottom:20px">Tap any that fit. This is what the room reaches out for. No minimum.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:9px;margin-bottom:22px">
+          <sc-for list="{{ offerChips }}" as="o" hint-placeholder-count="7">
+            <button onClick="{{ o.toggle }}" style="display:inline-flex;align-items:center;gap:7px;padding:11px 16px;border-radius:var(--r-pill);cursor:pointer;font-family:var(--font-sans);font-size:14px;font-weight:600;background:{{ o.bg }};border:1px solid {{ o.border }};color:{{ o.color }};transition:all .13s var(--ease)"><span style="font-size:13px">{{ o.mark }}</span>{{ o.label }}</button>
+          </sc-for>
+          <button onClick="{{ openCustomOffer }}" style="display:inline-flex;align-items:center;gap:6px;padding:11px 16px;border-radius:var(--r-pill);cursor:pointer;font-family:var(--font-sans);font-size:14px;font-weight:600;background:transparent;border:1px dashed var(--border-strong);color:var(--text-secondary)">+ Custom</button>
+        </div>
+        <sc-if value="{{ addingCustomOffer }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:8px;margin-bottom:22px">
+            <input value="{{ customOfferInput }}" onInput="{{ setCustomOfferInput }}" placeholder="Type your own…" style="flex:1;padding:11px 14px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-md);outline:none;color:var(--text-primary);font-family:var(--font-sans);font-size:14px">
+            <button onClick="{{ addCustomOffer }}" style="padding:11px 18px;border-radius:var(--r-md);border:none;background:var(--accent);color:var(--on-accent);cursor:pointer;font-family:var(--font-sans);font-size:14px;font-weight:700">Add</button>
+          </div>
+        </sc-if>
+        <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--accent);margin-bottom:6px">What do you need?</div>
+        <div style="color:var(--text-secondary);font-size:13px;font-weight:300;line-height:1.5;margin-bottom:14px">What you came to find. The room can point you to it.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:9px;margin-bottom:24px">
+          <sc-for list="{{ needChips }}" as="n" hint-placeholder-count="7">
+            <button onClick="{{ n.toggle }}" style="display:inline-flex;align-items:center;gap:7px;padding:11px 16px;border-radius:var(--r-pill);cursor:pointer;font-family:var(--font-sans);font-size:14px;font-weight:600;background:{{ n.bg }};border:1px solid {{ n.border }};color:{{ n.color }};transition:all .13s var(--ease)"><span style="font-size:13px">{{ n.mark }}</span>{{ n.label }}</button>
+          </sc-for>
+          <button onClick="{{ openCustomNeed }}" style="display:inline-flex;align-items:center;gap:6px;padding:11px 16px;border-radius:var(--r-pill);cursor:pointer;font-family:var(--font-sans);font-size:14px;font-weight:600;background:transparent;border:1px dashed var(--border-strong);color:var(--text-secondary)">+ Custom</button>
+        </div>
+        <sc-if value="{{ addingCustomNeed }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:8px;margin-bottom:24px">
+            <input value="{{ customNeedInput }}" onInput="{{ setCustomNeedInput }}" placeholder="Type your own…" style="flex:1;padding:11px 14px;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-md);outline:none;color:var(--text-primary);font-family:var(--font-sans);font-size:14px">
+            <button onClick="{{ addCustomNeed }}" style="padding:11px 18px;border-radius:var(--r-md);border:none;background:var(--accent);color:var(--on-accent);cursor:pointer;font-family:var(--font-sans);font-size:14px;font-weight:700">Add</button>
+          </div>
+        </sc-if>
+        <button onClick="{{ doneOffer }}" style="width:100%;min-height:52px;border-radius:var(--r-md);border:none;background:var(--accent);color:var(--on-accent);cursor:pointer;font-family:var(--font-sans);font-size:15px;font-weight:700">{{ offerDoneLabel }}</button>
+      </sc-if>
+
+      <!-- FOCUS SHEET -->
+      <sc-if value="{{ sheetIsFocus }}" hint-placeholder-val="{{ false }}">
+        <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Your card · focus</div>
+        <div style="font-family:var(--font-display);font-weight:900;font-size:24px;letter-spacing:-.01em;text-transform:uppercase;margin-bottom:8px">Add your focus</div>
+        <div style="color:var(--text-secondary);font-size:13.5px;font-weight:300;line-height:1.5;margin-bottom:20px">Where, exactly? Type and press Enter, or tap a suggestion. A general offer or need becomes something the room can act on.</div>
+        <sc-if value="{{ hasFocusOfferRows }}" hint-placeholder-val="{{ true }}">
+          <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin-bottom:11px">What you offer</div>
+          <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:24px">
+            <sc-for list="{{ focusOfferRows }}" as="r" hint-placeholder-count="2">
+              <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 15px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                  <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--accent)">{{ r.chip }}</div>
+                  <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-faint)">{{ r.countLabel }}</div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:11px">
+                  <sc-for list="{{ r.tags }}" as="t" hint-placeholder-count="1">
+                    <span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--text-primary);background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-pill);padding:5px 6px 5px 11px">{{ t.label }}<button onClick="{{ t.remove }}" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0 2px">×</button></span>
+                  </sc-for>
+                  <sc-if value="{{ r.canAdd }}" hint-placeholder-val="{{ true }}"><input value="{{ r.input }}" onInput="{{ r.setInput }}" onKeyDown="{{ r.onKey }}" placeholder="{{ r.placeholder }}" style="flex:1;min-width:110px;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--font-sans);font-size:13.5px;font-weight:400;padding:5px 2px"></sc-if>
+                </div>
+                <sc-if value="{{ r.canAdd }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:6px">
+                    <sc-for list="{{ r.suggestions }}" as="s" hint-placeholder-count="3">
+                      <button onClick="{{ s.add }}" style="font-size:11.5px;font-weight:500;color:var(--text-muted);background:none;border:1px dashed var(--border-strong);border-radius:var(--r-pill);padding:5px 11px;cursor:pointer">+ {{ s.label }}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ r.hasPreview }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:11px;font-size:13px;font-weight:300;color:var(--text-secondary);line-height:1.4">Reads as: <b style="color:var(--accent);font-weight:600">{{ r.preview }}</b></div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ hasFocusNeedRows }}" hint-placeholder-val="{{ true }}">
+          <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-muted);margin-bottom:11px">What you need</div>
+          <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:24px">
+            <sc-for list="{{ focusNeedRows }}" as="r" hint-placeholder-count="2">
+              <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 15px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                  <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--text-secondary)">{{ r.chip }}</div>
+                  <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-faint)">{{ r.countLabel }}</div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:11px">
+                  <sc-for list="{{ r.tags }}" as="t" hint-placeholder-count="1">
+                    <span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--text-primary);background:var(--surface-1);border:1px solid var(--border-strong);border-radius:var(--r-pill);padding:5px 6px 5px 11px">{{ t.label }}<button onClick="{{ t.remove }}" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;line-height:1;padding:0 2px">×</button></span>
+                  </sc-for>
+                  <sc-if value="{{ r.canAdd }}" hint-placeholder-val="{{ true }}"><input value="{{ r.input }}" onInput="{{ r.setInput }}" onKeyDown="{{ r.onKey }}" placeholder="{{ r.placeholder }}" style="flex:1;min-width:110px;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--font-sans);font-size:13.5px;font-weight:400;padding:5px 2px"></sc-if>
+                </div>
+                <sc-if value="{{ r.canAdd }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:6px">
+                    <sc-for list="{{ r.suggestions }}" as="s" hint-placeholder-count="3">
+                      <button onClick="{{ s.add }}" style="font-size:11.5px;font-weight:500;color:var(--text-muted);background:none;border:1px dashed var(--border-strong);border-radius:var(--r-pill);padding:5px 11px;cursor:pointer">+ {{ s.label }}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ r.hasPreview }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:11px;font-size:13px;font-weight:300;color:var(--text-secondary);line-height:1.4">Reads as: <b style="color:var(--accent);font-weight:600">{{ r.preview }}</b></div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <div style="display:flex;gap:10px">
+          <button onClick="{{ skipFocus }}" style="flex:1;min-height:52px;border-radius:var(--r-md);border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text-secondary);cursor:pointer;font-family:var(--font-sans);font-size:14px;font-weight:600">Skip for now</button>
+          <button onClick="{{ saveFocus }}" style="flex:1.5;min-height:52px;border-radius:var(--r-md);border:none;background:{{ saveBg }};color:{{ saveColor }};cursor:{{ saveCursor }};font-family:var(--font-sans);font-size:14px;font-weight:700">Save to my card</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- TOAST -->
+  <sc-if value="{{ toastShow }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:50%;bottom:30px;transform:translateX(-50%);z-index:70;display:inline-flex;align-items:center;gap:11px;max-width:88%;background:var(--surface-2);border:1px solid var(--accent);color:var(--text-primary);font-size:13px;font-weight:500;padding:12px 16px 12px 18px;border-radius:var(--r-pill);box-shadow:var(--shadow-toast);animation:ob-rise .24s var(--ease) both"><span style="width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0"></span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ toast }}</span><sc-if value="{{ toastHasUndo }}" hint-placeholder-val="{{ false }}"><button onClick="{{ doUndo }}" style="flex-shrink:0;background:none;border:none;cursor:pointer;font-family:var(--font-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--accent);padding:2px 4px">Undo</button></sc-if></div>
+  </sc-if>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.state = {
+      step:'email', email:'', code:'',
+      name:'', business:'', role:'', affiliation:'company',
+      customRoles:[], addingCustomRole:false, customRoleInput:'',
+      offers:[], needs:[], focuses:{}, focusInputs:{},
+      customOffers:[], customNeeds:[], addingCustomOffer:false, addingCustomNeed:false, customOfferInput:'', customNeedInput:'',
+      focusCoachSeen:false, focusCoachSkipped:false,
+      activeSheet:null,
+      bannerDismissed:{ noOffers:false, match:false },
+      matchReady:false,
+      toast:null, toastUndo:null,
+    };
+  }
+  componentWillUnmount(){ clearTimeout(this._mt); clearTimeout(this._toastT); clearTimeout(this._codeT); clearTimeout(this._splashT); }
+  reduced(){ try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e){ return false; } }
+
+  OFFERS = ['Introductions','Advice','Mentorship','Feedback','Hiring','Investment','Partnerships','Hosting','Collaboration','Production','Legal','Business Management','Coaching','Studio/Workspace','Content Creation'];
+  NEEDS = ['A job','Talent','Funding','Customers','Collaborators','Advice','Introductions','Audience Growth','Sponsorship','Grants','Content Creation','Studio/Workspace','Marketing'];
+  SUGGEST = {
+    Introductions:['founders','investors','operators'],
+    Advice:['fundraising','GTM','hiring'],
+    Mentorship:['design','early-stage','career'],
+    Feedback:['product','portfolio','pitch'],
+    Hiring:['engineering','design','growth'],
+    Investment:['pre-seed','seed','angel'],
+    Partnerships:['agencies','studios','brands'],
+  };
+  SUGGEST_NEED = {
+    'A job':['product design','engineering','full-time'],
+    Talent:['designers','engineers','contract'],
+    Funding:['pre-seed','seed','angel'],
+    Customers:['B2B','early adopters','pilots'],
+    Collaborators:['co-founder','side project','research'],
+    Advice:['fundraising','GTM','hiring'],
+    Introductions:['founders','investors','operators'],
+  };
+  PRESENT = [
+    { name:'Maya Okafor', role:'Founder, Northbound', color:'#3bd75c', offers:['Mentorship','Advice'] },
+    { name:'Devin Park', role:'Fractional CFO, Ledgerline', color:'#5FB0F0', offers:['Investment','Introductions'] },
+    { name:'Ife Adeyemi', role:'Product Designer, Formwork', color:'#FFD23F', offers:['Feedback','Partnerships'] },
+    { name:'Tomás Rivera', role:'Community Lead, The Fold', color:'#5FF088', offers:['Introductions','Hiring'] },
+  ];
+
+  // ---------- helpers ----------
+  first(s){ return (s||'').split(/[@\s]/)[0]; }
+  cap(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
+  nameFromEmail(){ return this.cap(this.first(this.state.email)) || 'You'; }
+  hasFocusOf(f){ return Object.keys(f||{}).some(k => (f[k]||[]).length > 0); }
+  hasOfferFocus(){ const f = this.state.focuses; return Object.keys(f).some(k => k.indexOf('offer:')===0 && (f[k]||[]).length > 0); }
+  hasNeedFocus(){ const f = this.state.focuses; return Object.keys(f).some(k => k.indexOf('need:')===0 && (f[k]||[]).length > 0); }
+  MAX_DETAIL = 3;
+  detailRow(kind, label){
+    const key = kind + ':' + label;
+    const s = this.state;
+    const list = s.focuses[key] || [];
+    const sugMap = kind==='need' ? this.SUGGEST_NEED : this.SUGGEST;
+    const used = list.map(x => x.toLowerCase());
+    const atMax = list.length >= this.MAX_DETAIL;
+    const suggestions = atMax ? [] : (sugMap[label] || []).filter(x => !used.includes(x.toLowerCase())).map(t => ({ label:t, add:() => this.addTag(key, t) }));
+    return {
+      chip: label,
+      countLabel: list.length + '/' + this.MAX_DETAIL,
+      tags: list.map((t, i) => ({ label:t, remove:() => this.removeTag(key, i) })),
+      input: s.focusInputs[key] || '',
+      setInput:(e) => this.setFocusInput(key, e),
+      onKey:(e) => this.onFocusKey(key, e),
+      placeholder: list.length ? 'Add another…' : ('e.g. ' + ((sugMap[label] || [])[0] || 'detail')),
+      suggestions,
+      canAdd: !atMax,
+      hasPreview: list.length > 0,
+      preview: label + (kind==='need' ? ': ' : ' in ') + list.join(', '),
+    };
+  }
+
+  // ---------- email / code ----------
+  setEmail = (e) => this.setState({ email: e.target ? e.target.value : '' });
+  emailOk(){ return /.+@.+\..+/.test(this.state.email.trim()); }
+  entryOk(){ return !!(this.state.name.trim() && this.emailOk()); }
+  submitEmail = () => { if (this.entryOk()) this.setState({ step:'code' }); };
+  backToEmail = () => this.setState({ step:'email' });
+  setCode = (e) => {
+    const v = (e.target ? e.target.value : '').replace(/\D/g,'').slice(0,6);
+    this.setState({ code:v });
+    if (v.length === 6) { clearTimeout(this._codeT); this._codeT = setTimeout(() => this.setState({ step:'card' }), this.reduced() ? 1 : 420); }
+  };
+  resendCode = () => this.showToast('New code sent to ' + this.state.email);
+
+  // ---------- card / offer / need steps ----------
+  setName = (e) => this.setState({ name: e.target ? e.target.value : '' });
+  setBusiness = (e) => this.setState({ business: e.target ? e.target.value : '' });
+  setAffiliation = (v) => this.setState({ affiliation: v });
+  AFFILIATIONS = [
+    { id:'company',      label:'Company',      field:'Where you work',   ph:'Gilchrist' },
+    { id:'agency',       label:'Agency',       field:'Your agency',      ph:'Gilchrist Creative' },
+    { id:'entrepreneur', label:'Entrepreneur', field:'Your business',     ph:'What you\u2019re building' },
+    { id:'studio',       label:'Studio',       field:'Your studio',      ph:'Northbound Studio' },
+    { id:'independent',  label:'Independent',  field:'What you do',       ph:'Freelance designer' },
+    { id:'student',      label:'Student',      field:'School / program', ph:'CSU — Design' },
+    { id:'organization', label:'Organization', field:'Org you’re with', ph:'City of Cleveland' },
+  ];
+  ROLES = ['Founder','Designer','Engineer','Investor','Operator','Marketer','Creative','Content Creator','Coach','Consultant','Artist','Musician','Community Builder'];
+  selectRole = (label) => this.setState({ role: label });
+  openCustomRole = () => this.setState({ addingCustomRole:true });
+  setCustomRoleInput = (e) => this.setState({ customRoleInput: e.target.value });
+  addCustomRole = () => {
+    const label = this.state.customRoleInput.trim();
+    if (!label) { this.setState({ addingCustomRole:false }); return; }
+    this.setState(s => {
+      const dupe = [...this.ROLES, ...s.customRoles].some(l => l.toLowerCase()===label.toLowerCase());
+      const customRoles = dupe ? s.customRoles : [...s.customRoles, label];
+      return { customRoles, role:label, addingCustomRole:false, customRoleInput:'' };
+    });
+  };
+  setRole = (e) => this.setState({ role: e.target ? e.target.value : '' });
+  profileOk(){ return !!(this.state.role.trim()); }
+  submitCard = () => { if (this.profileOk()) this.setState({ step:'offer' }); };
+  submitOffer = () => this.setState({ step:'need' });
+  submitNeed = () => {
+    this.setState({ step:'splash' });
+    clearTimeout(this._splashT);
+    this._splashT = setTimeout(() => this.enterRoom(), this.reduced() ? 1 : 2000);
+  };
+  enterRoom = () => {
+    clearTimeout(this._splashT);
+    this.setState({ step:'room' });
+    this.scheduleMatch();
+    if (this.state.focusCoachSkipped && !this.hasOfferFocus() && !this.hasNeedFocus()) {
+      clearTimeout(this._nudgeT);
+      this._nudgeT = setTimeout(() => this.showToast('✦ Add a focus to your offers or needs anytime to sharpen the room'), this.reduced() ? 1 : 700);
+    }
+  };
+  ackFocusCoach = () => this.setState({ focusCoachSeen:true });
+  dismissFocusCoach = () => this.setState({ focusCoachSeen:true, focusCoachSkipped:true });
+  backToCode = () => this.setState({ step:'code' });
+  backToCard = () => this.setState({ step:'card' });
+  backToOffer = () => this.setState({ step:'offer' });
+
+  toggleOffer = (label) => this.setState(s => {
+    const on = s.offers.includes(label);
+    const focuses = Object.assign({}, s.focuses);
+    if (on) delete focuses['offer:'+label]; else if (!focuses['offer:'+label]) focuses['offer:'+label] = [];
+    return { offers: on ? s.offers.filter(x => x!==label) : [...s.offers, label], focuses };
+  });
+  openCustomOffer = () => this.setState({ addingCustomOffer:true });
+  setCustomOfferInput = (e) => this.setState({ customOfferInput: e.target.value });
+  addCustomOffer = () => {
+    const label = this.state.customOfferInput.trim();
+    if (!label) { this.setState({ addingCustomOffer:false }); return; }
+    this.setState(s => {
+      const dupe = [...this.OFFERS, ...s.customOffers].some(l => l.toLowerCase()===label.toLowerCase());
+      const customOffers = dupe ? s.customOffers : [...s.customOffers, label];
+      const focuses = Object.assign({}, s.focuses);
+      if (!focuses['offer:'+label]) focuses['offer:'+label] = [];
+      return { customOffers, offers: s.offers.includes(label) ? s.offers : [...s.offers, label], focuses, addingCustomOffer:false, customOfferInput:'' };
+    });
+  };
+  toggleNeed = (label) => this.setState(s => {
+    const on = s.needs.includes(label);
+    const focuses = Object.assign({}, s.focuses);
+    if (on) delete focuses['need:'+label]; else if (!focuses['need:'+label]) focuses['need:'+label] = [];
+    return { needs: on ? s.needs.filter(x => x!==label) : [...s.needs, label], focuses };
+  });
+  openCustomNeed = () => this.setState({ addingCustomNeed:true });
+  setCustomNeedInput = (e) => this.setState({ customNeedInput: e.target.value });
+  addCustomNeed = () => {
+    const label = this.state.customNeedInput.trim();
+    if (!label) { this.setState({ addingCustomNeed:false }); return; }
+    this.setState(s => {
+      const dupe = [...this.NEEDS, ...s.customNeeds].some(l => l.toLowerCase()===label.toLowerCase());
+      const customNeeds = dupe ? s.customNeeds : [...s.customNeeds, label];
+      const focuses = Object.assign({}, s.focuses);
+      if (!focuses['need:'+label]) focuses['need:'+label] = [];
+      return { customNeeds, needs: s.needs.includes(label) ? s.needs : [...s.needs, label], focuses, addingCustomNeed:false, customNeedInput:'' };
+    });
+  };
+
+  // ---------- offer/need edit sheet (in room) ----------
+  openOffer = () => this.setState({ activeSheet:'offer' });
+  doneOffer = () => { this.setState({ activeSheet:null }); this.scheduleMatch(); };
+
+  // ---------- match timer ----------
+  scheduleMatch = () => {
+    clearTimeout(this._mt);
+    this._mt = setTimeout(() => {
+      const s = this.state;
+      if (s.step==='room' && s.offers.length && !this.hasOfferFocus() && !this.hasNeedFocus() && !s.activeSheet && !s.bannerDismissed.match) {
+        this.setState({ matchReady:true });
+      }
+    }, this.reduced() ? 1 : 900);
+  };
+  dismissMatch = () => this.setState(s => ({ matchReady:false, bannerDismissed:Object.assign({}, s.bannerDismissed, { match:true }) }));
+  dismissNoOffers = () => this.setState(s => ({ bannerDismissed:Object.assign({}, s.bannerDismissed, { noOffers:true }) }));
+
+  // ---------- focus sheet (offers, in room) ----------
+  openFocus = () => {
+    if (this.state.offers.length === 0 && this.state.needs.length === 0) { this.setState({ activeSheet:'offer' }); return; }
+    this.setState({ activeSheet:'focus', matchReady:false });
+  };
+  setFocusInput = (key, e) => { const v = e.target ? e.target.value : ''; this.setState(s => ({ focusInputs:Object.assign({}, s.focusInputs, { [key]:v }) })); };
+  addTag = (key, raw) => {
+    const t = (raw||'').trim().replace(/,$/,'').trim();
+    if (!t) return;
+    this.setState(s => {
+      const cur = s.focuses[key] || [];
+      if (cur.length >= this.MAX_DETAIL) return { focusInputs:Object.assign({}, s.focusInputs, { [key]:'' }) };
+      if (cur.map(x=>x.toLowerCase()).includes(t.toLowerCase())) return { focusInputs:Object.assign({}, s.focusInputs, { [key]:'' }) };
+      return {
+        focuses: Object.assign({}, s.focuses, { [key]:[...cur, t] }),
+        focusInputs: Object.assign({}, s.focusInputs, { [key]:'' }),
+      };
+    });
+  };
+  removeTag = (key, i) => this.setState(s => {
+    const cur = (s.focuses[key]||[]).slice(); cur.splice(i,1);
+    return { focuses: Object.assign({}, s.focuses, { [key]:cur }) };
+  });
+  onFocusKey = (key, e) => {
+    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); this.addTag(key, (e.target && e.target.value) || ''); }
+    else if (e.key === 'Backspace' && (!e.target || !e.target.value)) {
+      const cur = this.state.focuses[key] || [];
+      if (cur.length) this.removeTag(key, cur.length - 1);
+    }
+  };
+  saveFocus = () => {
+    if (!this.hasOfferFocus() && !this.hasNeedFocus()) return;
+    this.setState({ activeSheet:null, matchReady:false });
+    this.showToast('Card updated — your matches just got sharper');
+  };
+  skipFocus = () => this.setState({ activeSheet:null });
+  closeSheet = () => this.setState({ activeSheet:null });
+
+  // ---------- toast ----------
+  showToast = (msg, onUndo) => {
+    clearTimeout(this._toastT);
+    this.setState({ toast:msg, toastUndo:onUndo || null });
+    this._toastT = setTimeout(() => this.setState({ toast:null, toastUndo:null }), this.reduced() ? 1 : (onUndo ? 4200 : 2600));
+  };
+  doUndo = () => { const fn = this.state.toastUndo; clearTimeout(this._toastT); this.setState({ toast:null, toastUndo:null }); if (fn) fn(); };
+
+  restart = () => {
+    clearTimeout(this._mt); clearTimeout(this._toastT); clearTimeout(this._codeT); clearTimeout(this._splashT); clearTimeout(this._nudgeT);
+    this.setState({ step:'email', email:'', code:'', name:'', business:'', role:'', affiliation:'company', customRoles:[], addingCustomRole:false, customRoleInput:'', offers:[], needs:[], focuses:{}, focusInputs:{}, customOffers:[], customNeeds:[], addingCustomOffer:false, addingCustomNeed:false, customOfferInput:'', customNeedInput:'', focusCoachSeen:false, focusCoachSkipped:false, activeSheet:null, bannerDismissed:{ noOffers:false, match:false }, matchReady:false, toast:null, toastUndo:null });
+  };
+
+  // ---------- match computation ----------
+  matchPair(){
+    const offers = this.state.offers;
+    for (const p of this.PRESENT){ const shared = offers.find(o => p.offers.includes(o)); if (shared) return { person:p, offer:shared }; }
+    if (offers.length) return { person:this.PRESENT[0], offer:offers[0] };
+    return null;
+  }
+
+  renderVals(){
+    const s = this.state;
+    const hasOffers = s.offers.length > 0;
+    const hasNeeds = s.needs.length > 0;
+    const hasOfferFocus = this.hasOfferFocus();
+    const name = s.name.trim() || this.nameFromEmail();
+    const roleLine = [s.role, s.business].filter(Boolean).join(' · ');
+    const profileOk = this.profileOk();
+    const emailOk = this.emailOk();
+    const entryOk = this.entryOk();
+    const greetName = this.cap(this.first(s.name)) || this.nameFromEmail();
+
+    const codeCells = Array.from({length:6}).map((_, i) => ({
+      d: s.code[i] || '', border: (i === s.code.length) ? 'var(--accent)' : 'var(--border-strong)'
+    }));
+
+    const offerChips = [...this.OFFERS, ...s.customOffers].map(label => {
+      const sel = s.offers.includes(label);
+      return { label, toggle:() => this.toggleOffer(label), mark: sel ? '✓' : '+',
+        bg: sel ? 'var(--accent)' : 'var(--surface-2)', border: sel ? 'var(--accent)' : 'var(--border-strong)',
+        color: sel ? 'var(--on-accent)' : 'var(--text-secondary)' };
+    });
+    const needChips = [...this.NEEDS, ...s.customNeeds].map(label => {
+      const sel = s.needs.includes(label);
+      return { label, toggle:() => this.toggleNeed(label), mark: sel ? '✓' : '+',
+        bg: sel ? 'var(--accent)' : 'var(--surface-2)', border: sel ? 'var(--accent)' : 'var(--border-strong)',
+        color: sel ? 'var(--on-accent)' : 'var(--text-secondary)' };
+    });
+    const addingCustomOffer = s.addingCustomOffer, addingCustomNeed = s.addingCustomNeed;
+    const customOfferInput = s.customOfferInput, customNeedInput = s.customNeedInput;
+
+    const focusOfferRows = s.offers.map(l => this.detailRow('offer', l));
+    const focusNeedRows = s.needs.map(l => this.detailRow('need', l));
+    const hasFocusOfferRows = focusOfferRows.length > 0, hasFocusNeedRows = focusNeedRows.length > 0;
+    const profileOfferRows = s.offers.map(l => this.detailRow('offer', l));
+    const profileNeedRows = s.needs.map(l => this.detailRow('need', l));
+
+    const present = this.PRESENT.map(p => ({
+      name:p.name, role:p.role, color:p.color, offerLabel: p.offers[0],
+      isMatch: hasOffers && s.offers.some(o => p.offers.includes(o)),
+    }));
+
+    const matchP = this.matchPair();
+    const hasAnyDetailFocus = hasOfferFocus || this.hasNeedFocus();
+    const matchShow = s.step==='room' && s.matchReady && hasOffers && !hasAnyDetailFocus && !s.activeSheet && !s.bannerDismissed.match;
+    const matchText = matchP
+      ? (matchP.person.offers.includes(matchP.offer)
+          ? 'You and ' + this.first(matchP.person.name) + ' both offer ' + matchP.offer + '. Add a focus or two so the room knows exactly where.'
+          : 'You offer ' + matchP.offer + '. Add a focus so the room knows exactly where.')
+      : '';
+    const noOffersShow = s.step==='room' && !hasOffers && !s.activeSheet && !s.bannerDismissed.noOffers;
+
+    const cardOfferPills = s.offers.map(o => { const f = s.focuses['offer:'+o] || []; return { text: f.length ? (o + ' · ' + f.join(', ')) : o }; });
+    const cardNeedPills = s.needs.map(n => { const f = s.focuses['need:'+n] || []; return { text: f.length ? (n + ' · ' + f.join(', ')) : n }; });
+    let nudgeText = '', showNudge = false;
+    if (hasOffers && !hasAnyDetailFocus) { showNudge = true; nudgeText = 'Add a focus to your offers or needs and the room can act on it, not just see it.'; }
+
+    return {
+      isEmail: s.step==='email', isCode: s.step==='code', isCard: s.step==='card',
+      isOffer: s.step==='offer', isNeed: s.step==='need', isSplash: s.step==='splash', isRoom: s.step==='room',
+      restart:this.restart, roomCount:'19', name,
+
+      // email
+      email:s.email, setEmail:this.setEmail, submitEmail:this.submitEmail,
+      emailInvalid: !entryOk, emailCursor: entryOk ? 'pointer' : 'not-allowed',
+      emailBorder: 'var(--border-strong)', emailBtnBg: entryOk ? 'var(--accent)' : 'var(--surface-2)', emailBtnColor: entryOk ? 'var(--on-accent)' : 'var(--text-faint)',
+      greetName,
+
+      // code
+      code:s.code, setCode:this.setCode, codeCells, resendCode:this.resendCode, backToEmail:this.backToEmail,
+
+      // card
+      profileName:s.name, profileBusiness:s.business, profileRole:s.role,
+      setName:this.setName, setBusiness:this.setBusiness, setRole:this.setRole,
+      roleChips: [...this.ROLES, ...s.customRoles].map(label => {
+        const on = s.role === label;
+        return { label, set: () => this.selectRole(label),
+          bg: on ? 'var(--accent)' : 'var(--surface-1)', border: on ? 'var(--accent)' : 'var(--border-strong)',
+          color: on ? 'var(--bg-canvas)' : 'var(--text-secondary)' };
+      }),
+      addingCustomRole: s.addingCustomRole, customRoleInput: s.customRoleInput,
+      openCustomRole:this.openCustomRole, setCustomRoleInput:this.setCustomRoleInput, addCustomRole:this.addCustomRole,
+      affiliationChips: this.AFFILIATIONS.map(a => {
+        const on = (s.affiliation || 'company') === a.id;
+        return {
+          label:a.label,
+          bg: on ? 'var(--accent)' : 'var(--surface-1)',
+          border: on ? 'var(--accent)' : 'var(--border-strong)',
+          color: on ? 'var(--bg-canvas)' : 'var(--text-secondary)',
+          set: () => this.setAffiliation(a.id),
+        };
+      }),
+      businessLabel: (this.AFFILIATIONS.find(a => a.id === (s.affiliation || 'company')) || this.AFFILIATIONS[0]).field,
+      businessPh: (this.AFFILIATIONS.find(a => a.id === (s.affiliation || 'company')) || this.AFFILIATIONS[0]).ph,
+      submitCard:this.submitCard, backToCode:this.backToCode,
+      profileInvalid: !profileOk, profileCursor: profileOk ? 'pointer' : 'not-allowed',
+      profileBtnBg: profileOk ? 'var(--accent)' : 'var(--surface-2)', profileBtnColor: profileOk ? 'var(--on-accent)' : 'var(--text-faint)',
+
+      // offer step
+      offerChips, profileOfferRows, submitOffer:this.submitOffer, backToCard:this.backToCard,
+      addingCustomOffer, customOfferInput, openCustomOffer:this.openCustomOffer, setCustomOfferInput:this.setCustomOfferInput, addCustomOffer:this.addCustomOffer,
+      offerStepCta: hasOffers ? 'Continue' : 'Skip for now',
+      showFocusCoach: s.step==='offer' && s.offers.length > 0 && !s.focusCoachSeen,
+      ackFocusCoach:this.ackFocusCoach, dismissFocusCoach:this.dismissFocusCoach,
+
+      // need step
+      needChips, profileNeedRows, submitNeed:this.submitNeed, backToOffer:this.backToOffer,
+      addingCustomNeed, customNeedInput, openCustomNeed:this.openCustomNeed, setCustomNeedInput:this.setCustomNeedInput, addCustomNeed:this.addCustomNeed,
+      needStepCta: hasNeeds ? "I'm in →" : "Skip · I'm in →",
+
+      // splash
+      enterRoom:this.enterRoom,
+
+      // room card
+      cardSubtitle: roleLine || 'Your card · everyone in the room can see this',
+      cardHasOffers: hasOffers, cardNoOffers: !hasOffers, cardOfferPills,
+      cardHasNeeds: hasNeeds, cardNoNeeds: !hasNeeds, cardNeedPills,
+      offerCta: (hasOffers || hasNeeds) ? 'Edit offers & needs' : 'Add offers & needs',
+      focusCta: 'Add focus', openOffer:this.openOffer, openFocus:this.openFocus,
+      showNudge, nudgeText, graduateShow: hasOffers && hasAnyDetailFocus, present,
+
+      // banners
+      matchShow, matchText, matchAction:this.openFocus, dismissMatch:this.dismissMatch,
+      noOffersShow, dismissNoOffers:this.dismissNoOffers,
+
+      // sheet
+      sheetOpen: !!s.activeSheet, sheetIsOffer: s.activeSheet==='offer', sheetIsFocus: s.activeSheet==='focus',
+      closeSheet:this.closeSheet, doneOffer:this.doneOffer,
+      offerDoneLabel: (hasOffers || hasNeeds) ? 'Done' : 'Done',
+      focusOfferRows, focusNeedRows, hasFocusOfferRows, hasFocusNeedRows, saveFocus:this.saveFocus, skipFocus:this.skipFocus,
+      saveBg: hasAnyDetailFocus ? 'var(--accent)' : 'var(--surface-2)', saveColor: hasAnyDetailFocus ? 'var(--on-accent)' : 'var(--text-faint)', saveCursor: hasAnyDetailFocus ? 'pointer' : 'not-allowed',
+
+      // toast
+      toast:s.toast, toastShow: !!s.toast, toastHasUndo: !!s.toastUndo, doUndo:this.doUndo,
+    };
+  }
+}
+</script>
+</body>
+</html>

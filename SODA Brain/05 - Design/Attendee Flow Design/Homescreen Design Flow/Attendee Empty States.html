@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>SODA, First-Time Empty States</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+  :root{
+    --canvas:#111;--card:#1a1a1a;--surface:#202220;--border:#2a2a2a;
+    --green:#3bd75c;--ink:#f5f5f5;--muted:#8a8a8a;--hint:#5a5a5a;--amber:#f59e0b;--purple:#a47bff;--red:#ef4444;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0c0c0c;color:var(--ink);font-family:'DM Sans',sans-serif;padding:24px 18px 60px;line-height:1.5}
+  .mono{font-family:'DM Mono',monospace}
+  .wrap{max-width:1180px;margin:0 auto}
+  header{margin-bottom:8px}
+  .wm{font-family:'Archivo Black';font-size:13px;color:var(--green);letter-spacing:.04em;text-transform:uppercase}
+  h1{font-family:'Archivo Black';font-size:26px;margin:6px 0 4px}
+  .sub{color:var(--muted);font-size:13.5px;max-width:760px}
+
+  .intro-note{margin:18px 0 8px;border-left:3px solid var(--purple);background:rgba(164,123,255,.06);padding:14px 18px;border-radius:0 12px 12px 0;font-size:13px;color:#d4cfe0}
+  .intro-note b{color:var(--ink)}
+  .intro-note code{font-family:'DM Mono';font-size:12px;background:var(--surface);padding:1px 6px;border-radius:5px;color:var(--purple)}
+
+  .tabs{display:flex;gap:8px;margin:22px 0 20px;flex-wrap:wrap}
+  .tab{border:1px solid var(--border);background:var(--card);border-radius:9999px;padding:9px 16px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
+  .tab.on{background:var(--green);color:#06140a;border-color:var(--green)}
+  .tab .em{font-size:10px;opacity:.7;margin-left:5px}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media (max-width:920px){.split{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .panel-head{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .panel-head .t{font-family:'Archivo Black';font-size:14px}
+  .badge{font-family:'DM Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);border:1px solid rgba(245,158,11,.4);border-radius:9999px;padding:3px 9px}
+  .badge.render{color:var(--purple);border-color:rgba(164,123,255,.4)}
+  .copy{font-family:'DM Mono';font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:5px 10px;cursor:pointer}
+  .copy:hover{color:var(--green);border-color:var(--green)}
+  .json{padding:16px 18px;overflow:auto;font-family:'DM Mono';font-size:12.5px;line-height:1.7;white-space:pre;max-height:660px}
+  .json::-webkit-scrollbar{width:8px}.json::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  .jk{color:#7ec8ff}.js{color:var(--green)}.jn{color:var(--amber)}.jb{color:var(--purple)}.jp{color:var(--hint)}
+
+  .render-pane{padding:18px;display:flex;justify-content:center;background:#0c0c0c}
+  .phone{width:340px;height:600px;background:var(--canvas);border:1px solid var(--border);border-radius:24px;overflow:hidden;display:flex;flex-direction:column}
+  .p-top{padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+  .p-top h2{font-family:'Archivo Black';font-size:18px}
+  .p-top .r{color:var(--hint);font-size:11px;font-weight:600;font-family:'DM Mono'}
+  .p-top .wmk{display:flex;align-items:center;gap:7px}
+  .p-mark{position:relative;width:22px;height:22px}.p-mark i{position:absolute;border-radius:50%;background:var(--green)}
+  .p-mark .d1{width:6px;height:6px;top:0;left:2px}.p-mark .d2{width:8px;height:8px;top:2px;right:0}.p-mark .d3{width:11px;height:11px;bottom:0;left:3px}
+  .p-mark2 .nm{font-family:'Archivo Black';font-size:15px;color:var(--green)}
+  .p-scroll{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column}
+  .p-scroll::-webkit-scrollbar{display:none}
+
+  /* empty-state shared blocks */
+  .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 18px}
+  .empty .glyph{width:72px;height:72px;border-radius:20px;background:var(--surface);border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:20px}
+  .empty h3{font-family:'Archivo Black';font-size:20px;line-height:1.15;margin-bottom:10px}
+  .empty p{color:var(--muted);font-size:13.5px;line-height:1.55;max-width:250px;margin-bottom:22px}
+  .empty .cta{background:var(--green);color:#06140a;font-weight:700;font-size:14px;padding:13px 22px;border-radius:12px;border:none}
+  .empty .cta.ghost{background:var(--surface);color:var(--muted);border:1.5px solid var(--border)}
+  .empty .ctas{display:flex;flex-direction:column;gap:10px;width:100%;max-width:250px}
+
+  /* hero (live now even for new user) */
+  .nf-hero{border-radius:16px;padding:18px;margin-bottom:16px;background:linear-gradient(135deg,#162a18,#1a1a1a);border:1.5px solid var(--green)}
+  .nf-hero .pd{display:inline-flex;align-items:center;gap:7px;margin-bottom:10px}
+  .nf-hero .pd i{width:8px;height:8px;border-radius:50%;background:var(--green)}
+  .nf-hero .pd span{font-family:'DM Mono';font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+  .nf-hero h2{font-family:'Archivo Black';font-size:19px;line-height:1.1;margin-bottom:5px}
+  .nf-hero p{color:var(--muted);font-size:12px;margin-bottom:13px}
+  .nf-hero .enter{display:inline-flex;background:var(--green);color:#06140a;font-weight:700;font-size:13px;padding:10px 16px;border-radius:9px}
+
+  /* card setup state */
+  .setup-card{background:var(--card);border:1.5px dashed var(--border);border-radius:16px;padding:20px;text-align:center;margin-bottom:8px}
+  .setup-card .ph-name{font-family:'Archivo Black';font-size:24px;color:var(--hint);margin-bottom:6px}
+  .setup-card .ph-line{height:9px;background:var(--surface);border-radius:5px;margin:7px auto;}
+  .setup-card .l1{width:60%}.setup-card .l2{width:40%}
+  .setup-card .build-btn{margin-top:16px;background:var(--green);color:#06140a;font-weight:700;font-size:14px;padding:12px 20px;border-radius:11px;border:none;width:100%}
+
+  .mini-sec{font-family:'Archivo Black';font-size:13px;margin:4px 0 11px;color:var(--muted)}
+
+  .p-nav{display:flex;border-top:1px solid var(--border);flex-shrink:0}
+  .p-nav .ni{flex:1;text-align:center;padding:9px 0;font-size:8px;font-weight:600;color:var(--muted)}
+  .p-nav .ni.on{color:var(--green)}.p-nav .ni .ic{font-size:15px;margin-bottom:3px}
+
+  .note{margin-top:22px;border-left:3px solid var(--green);background:rgba(59,215,92,.05);padding:15px 18px;border-radius:0 12px 12px 0;font-size:13px;color:#cfd6cf}
+  .note b{color:var(--ink)}
+  .note code{font-family:'DM Mono';font-size:12px;background:var(--surface);padding:1px 6px;border-radius:5px;color:var(--green)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="wm">✦ SODA</div>
+    <h1>First-time user, the empty states</h1>
+    <p class="sub">What every screen looks like for someone who just signed up and has done nothing yet. The important nuance: a screen can be live and empty at the same time. The hero runs on <span class="mono">event_state</span>, the body runs on <span class="mono">user_state</span>. A new user during a live event gets a live hero over an empty body, and that is correct.</p>
+  </header>
+
+  <div class="intro-note">
+    <b>The rule that makes this clean:</b> an empty state is not a separate screen. It is the same contract carrying <code>state: "empty"</code> and empty arrays. The server decides emptiness, the client swaps the body for an invitation. One renderer, two outcomes. Build the screen once, it handles full and empty.
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="split">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="t" id="json-name">home.json</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge" id="state-badge">Empty state</span>
+          <button class="copy" onclick="copyJSON()">Copy</button>
+        </div>
+      </div>
+      <div class="json" id="json"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><span class="t">What it renders</span><span class="badge render">Client renders this</span></div>
+      <div class="render-pane"><div class="phone" id="phone"></div></div>
+    </div>
+  </div>
+
+  <div class="note" id="screen-note"></div>
+</div>
+
+<script>
+// Every screen, first-time-user empty state. Same shapes as the full contracts,
+// but state:"empty" and empty arrays. Copy fields carry the invitation.
+const SCREENS = {
+  home:{
+    json:{
+      screen:"home",
+      event_state:"live",          // driven by the event: is a room live right now
+      user_state:"new",            // driven by the user: have they done anything yet
+      user:{ name:"Brent", initials:"BM", is_new:true },
+      hero:{
+        state:"live",              // matches event_state, never empty while a room is live
+        eyebrow:"Event live",
+        title:"Latinos-N-Tech is live right now.",
+        subtitle:"You are registered. Walk in and the room starts working for you.",
+        cta:"Tap to enter",
+        action:{ type:"enter_room", event_id:"evt_lnt_live" }
+      },
+      card:{ state:"empty", prompt:"Build your card to show up in the room." },
+      rooms:{ state:"empty", items:[], prompt:"Your rooms show up here after your first event." },
+      connections:{ state:"empty", items:[], prompt:"The people you meet land here." },
+      nav:{ active:"home", items:["home","rooms","card","people","you"] }
+    },
+    note:"<b>This is the key distinction: the hero and the body run on two different state machines.</b> The <code>event_state</code> drives the hero (is a room live right now), the <code>user_state</code> drives the body (has the user built a card, attended a room, made a connection). A new user during a live event sees a {live hero} and an {empty body} at the same time, and that is correct, not a conflict. This screen is not empty, it is <code>event_state: live</code> with <code>user_state: new</code>. The live hero is real; only the card, rooms, and connections below it are empty.",
+    render:renderHome
+  },
+  card:{
+    json:{
+      screen:"card",
+      state:"empty",
+      header:{ title:"Your card", action:"" },
+      card:{ state:"empty" },
+      prompt:{
+        glyph:"▭",
+        title:"Build your card",
+        body:"Your card is how the room sees you. Add your name, what you offer, and what you need. Two minutes.",
+        cta:"Build my card"
+      },
+      nav:{ active:"card" }
+    },
+    note:"<b>The card empty state is the most important one.</b> Without a card, the user is invisible in the room, so this state is a direct invitation, not a placeholder. One glyph, one promise, one button. The copy names the payoff (the room sees you) before the cost (two minutes).",
+    render:renderEmpty
+  },
+  rooms:{
+    json:{
+      screen:"rooms",
+      state:"partial",
+      header:{ title:"Rooms", action:"" },
+      live_room:{ id:"evt_lnt_live", name:"Latinos-N-Tech", count:19, cta:"Tap to enter" },
+      past_rooms:{ state:"empty", items:[], prompt:"Your past rooms and the connections you made show up here." },
+      nav:{ active:"rooms" }
+    },
+    note:"<b>Rooms is a partial state, not fully empty.</b> A live room exists to enter, but there is no history yet. So the top shows the live room and the past-rooms section carries its own <code>state: \"empty\"</code> with a prompt. This is why empty state lives per-section, not per-screen: one screen can be half-full.",
+    render:renderRooms
+  },
+  people:{
+    json:{
+      screen:"people",
+      state:"empty",
+      header:{ title:"People", action:"" },
+      filters:[],
+      people:{ state:"empty", items:[] },
+      prompt:{
+        glyph:"⚇",
+        title:"No connections yet",
+        body:"When you meet someone in a room, they land here. SODA keeps them warm so the connection does not fade.",
+        cta:"Find a live room"
+      },
+      nav:{ active:"people" }
+    },
+    note:"<b>People teaches the Equalpoint promise before there is any data.</b> The empty copy explains what the screen is for (the people you meet stay warm here), so the value is understood before the first connection exists. The filters array is empty too, no point showing warmth filters with nobody to filter.",
+    render:renderEmpty
+  },
+  you:{
+    json:{
+      screen:"you",
+      state:"partial",
+      header:{ title:"You", action:"" },
+      profile:{ name:"Brent Montgomery", email:"brent@northbound.studio", initials:"BM" },
+      stats:{ rooms:0, connections:0, cards:0 },
+      setup_checklist:[
+        { id:"card", label:"Build your card", done:false },
+        { id:"first_room", label:"Walk into your first room", done:false },
+        { id:"first_connection", label:"Make your first connection", done:false }
+      ],
+      settings:[
+        { id:"profile", label:"Edit profile", icon:"person" },
+        { id:"notifications", label:"Notifications", icon:"bell" },
+        { id:"privacy", label:"Privacy and data", icon:"lock" }
+      ],
+      equalpoint_handoff:{ state:"locked", title:"Equalpoint unlocks after your first room", body:"Make a connection and your relationships start living here." },
+      nav:{ active:"you" }
+    },
+    note:"<b>You uses a setup checklist instead of an empty state.</b> The profile exists (they signed up), the stats are honest zeros, and a three-step checklist turns the emptiness into a path: build card, enter room, make a connection. The Equalpoint handoff is shown but <code>locked</code>, so the new user sees what is coming without it feeling broken.",
+    render:renderYou
+  },
+  recap:{
+    json:{
+      screen:"recap",
+      state:"empty",
+      header:{ title:"Room recap", action:"" },
+      prompt:{
+        glyph:"✦",
+        title:"No rooms to recap yet",
+        body:"After your first event, this is where your night lives: who you met, why the room paired you, and what you can chase next.",
+        cta:"Find a live room"
+      },
+      nav:{ active:"rooms" }
+    },
+    note:"<b>Even the recap has an empty state.</b> Before the first event there is nothing to recap, so the screen previews what a recap will hold (who you met, why, what is next). This makes the first recap feel earned rather than sudden, the user already knows what to expect.",
+    render:renderEmpty
+  }
+};
+
+const NAVICON={ home:"⌂", rooms:"▦", card:"▭", people:"⚇", you:"◉" };
+const NAVLABEL={ home:"Home", rooms:"Rooms", card:"Card", people:"People", you:"You" };
+
+let current='home';
+
+function highlight(obj){
+  let j=JSON.stringify(obj,null,2).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  j=j.replace(/"([^"]+)":/g,'<span class="jk">"$1"</span><span class="jp">:</span>');
+  j=j.replace(/: "([^"]*)"/g,': <span class="js">"$1"</span>');
+  j=j.replace(/: (-?\d+\.?\d*)/g,': <span class="jn">$1</span>');
+  j=j.replace(/: (true|false)/g,': <span class="jb">$1</span>');
+  j=j.replace(/([{}\[\],])/g,'<span class="jp">$1</span>');
+  return j;
+}
+function topBar(title,action,withMark){
+  if(withMark){
+    return `<div class="p-top"><div class="wmk p-mark2"><div class="p-mark"><i class="d1"></i><i class="d2"></i><i class="d3"></i></div><span class="nm">SODA</span></div><div style="width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700;font-size:11px">BM</div></div>`;
+  }
+  return `<div class="p-top"><h2>${title}</h2><span class="r">${action||''}</span></div>`;
+}
+function navHTML(active){
+  return `<div class="p-nav">${['home','rooms','card','people','you'].map(i=>`<div class="ni ${i===active?'on':''}"><div class="ic">${NAVICON[i]}</div>${NAVLABEL[i]}</div>`).join('')}</div>`;
+}
+
+function renderHome(s){
+  const j=s.json;
+  return topBar('','',true)+`
+    <div class="p-scroll">
+      <div class="nf-hero">
+        <div class="pd"><i></i><span>${j.hero.eyebrow}</span></div>
+        <h2>${j.hero.title}</h2><p>${j.hero.subtitle}</p>
+        <span class="enter">${j.hero.cta} →</span>
+      </div>
+      <div class="mini-sec">Your card</div>
+      <div class="setup-card">
+        <div class="ph-name">YOUR NAME</div>
+        <div class="ph-line l1"></div><div class="ph-line l2"></div>
+        <button class="build-btn">${j.card.prompt}</button>
+      </div>
+      <div class="mini-sec" style="margin-top:16px">Your rooms</div>
+      <div style="background:var(--card);border:1.5px dashed var(--border);border-radius:13px;padding:18px;text-align:center;color:var(--muted);font-size:12.5px">${j.rooms.prompt}</div>
+      <div class="mini-sec" style="margin-top:16px">Stay warm</div>
+      <div style="background:var(--card);border:1.5px dashed var(--border);border-radius:13px;padding:18px;text-align:center;color:var(--muted);font-size:12.5px">${j.connections.prompt}</div>
+    </div>`+navHTML(j.nav.active);
+}
+
+function renderEmpty(s){
+  const j=s.json; const p=j.prompt;
+  return topBar(j.header.title,j.header.action)+`
+    <div class="p-scroll">
+      <div class="empty">
+        <div class="glyph">${p.glyph}</div>
+        <h3>${p.title}</h3>
+        <p>${p.body}</p>
+        <div class="ctas"><button class="cta">${p.cta}</button></div>
+      </div>
+    </div>`+navHTML(j.nav.active);
+}
+
+function renderRooms(s){
+  const j=s.json;
+  return topBar(j.header.title,j.header.action)+`
+    <div class="p-scroll">
+      <div class="nf-hero">
+        <div class="pd"><i></i><span>Live now</span></div>
+        <h2>${j.live_room.name}</h2><p>${j.live_room.count} people in the room. Walk in as your card.</p>
+        <span class="enter">${j.live_room.cta} →</span>
+      </div>
+      <div class="mini-sec">Past rooms</div>
+      <div style="background:var(--card);border:1.5px dashed var(--border);border-radius:13px;padding:22px 18px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.5">${j.past_rooms.prompt}</div>
+    </div>`+navHTML(j.nav.active);
+}
+
+function renderYou(s){
+  const j=s.json;
+  return topBar(j.header.title,j.header.action)+`
+    <div class="p-scroll">
+      <div class="you-h" style="display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:16px">
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;color:#06140a;font-family:'Archivo Black';font-size:18px">${j.profile.initials}</div>
+        <div><div style="font-family:'Archivo Black';font-size:18px">${j.profile.name}</div><div style="color:var(--muted);font-size:12px;margin-top:2px">${j.profile.email}</div></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:18px">
+        <div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center"><div style="font-family:'Archivo Black';font-size:20px;color:var(--hint)">${j.stats.rooms}</div><div style="color:var(--muted);font-size:10px;margin-top:4px">Rooms</div></div>
+        <div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center"><div style="font-family:'Archivo Black';font-size:20px;color:var(--hint)">${j.stats.connections}</div><div style="color:var(--muted);font-size:10px;margin-top:4px">Connections</div></div>
+        <div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center"><div style="font-family:'Archivo Black';font-size:20px;color:var(--hint)">${j.stats.cards}</div><div style="color:var(--muted);font-size:10px;margin-top:4px">Cards</div></div>
+      </div>
+      <div class="mini-sec">Get started</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:6px 14px;margin-bottom:16px">
+        ${j.setup_checklist.map(c=>`<div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid rgba(42,42,42,.5)">
+          <div style="width:20px;height:20px;border-radius:6px;border:2px solid var(--hint);flex-shrink:0"></div>
+          <span style="font-size:13.5px;font-weight:500">${c.label}</span></div>`).join('')}
+      </div>
+      <div style="background:linear-gradient(135deg,#1e1530,#1a1a1a);border:1px solid rgba(164,123,255,.3);border-radius:14px;padding:15px;opacity:.75">
+        <div style="color:var(--purple);font-family:'DM Mono';font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">🔒 ${j.equalpoint_handoff.title}</div>
+        <p style="color:var(--muted);font-size:11px">${j.equalpoint_handoff.body}</p>
+      </div>
+    </div>`+navHTML(j.nav.active);
+}
+
+function renderJSON(){
+  document.getElementById('json').innerHTML=highlight(SCREENS[current].json);
+  document.getElementById('json-name').textContent=current+'.json';
+  const labels={home:'Live event · new user',card:'Empty state',rooms:'Partial state',people:'Empty state',you:'Partial state',recap:'Empty state'};
+  document.getElementById('state-badge').textContent=labels[current]||'Empty state';
+}
+function renderPhone(){ document.getElementById('phone').innerHTML=SCREENS[current].render(SCREENS[current]); }
+function renderNote(){ document.getElementById('screen-note').innerHTML=SCREENS[current].note; }
+
+function renderTabs(){
+  const labels={home:'Home',card:'Card',rooms:'Rooms',people:'People',you:'You',recap:'Recap'};
+  // home and rooms are not fully empty for a new user during a live event, so they get a truer tag
+  const subtag={home:'live + new',card:'empty',rooms:'partial',people:'empty',you:'partial',recap:'empty'};
+  document.getElementById('tabs').innerHTML=Object.keys(SCREENS).map(k=>`<div class="tab ${k===current?'on':''}" onclick="setScreen('${k}')">${labels[k]}<span class="em">${subtag[k]}</span></div>`).join('');
+}
+function setScreen(k){ current=k; renderTabs(); renderJSON(); renderPhone(); renderNote(); }
+function copyJSON(){ navigator.clipboard.writeText(JSON.stringify(SCREENS[current].json,null,2)).then(()=>{const b=document.querySelector('.copy');const o=b.textContent;b.textContent='Copied';b.style.color='#3bd75c';setTimeout(()=>{b.textContent=o;b.style.color='';},1200);}); }
+
+renderTabs(); renderJSON(); renderPhone(); renderNote();
+</script>
+</body>
+</html>

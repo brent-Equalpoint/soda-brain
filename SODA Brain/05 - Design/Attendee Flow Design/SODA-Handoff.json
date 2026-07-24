@@ -1,0 +1,264 @@
+{
+  "handoff": {
+    "title": "SODA Live-Fire, full state handoff",
+    "purpose": "Single source of truth to resume SODA build in a new chat. Carries product tokens, locked decisions, every screen contract, and the live-fire app data model.",
+    "dated": "2026-06-26",
+    "company": { "product": "SODA", "engine": "Equalpoint", "pilot_client": "Futureland Inc.", "owner": "Alysha Ellis Montgomery (Future)", "cto": "Brent Montgomery", "lead_engineer": "Nelson Foster", "domain": "grabsoda.app" },
+    "one_liner": "A name tag knows you showed up. SODA knows who you became to the room.",
+    "positioning": "SODA is the room. Equalpoint is the memory of every room.",
+    "events": { "LNT": "Latinos-N-Tech, imminent", "BTW": "Black Tech Week Cincinnati, Jul 14-16", "launch": "Sept 14" }
+  },
+
+  "house_rules": {
+    "no_em_dashes": true,
+    "no_skinny_arrows_in_buttons": true,
+    "no_it_is_not_x_it_is_y_contrast": true,
+    "me_face_has_no_chips": "Me face is identity only (name + show_up + signature). Chips live on Offers and Needs faces.",
+    "equalpoint_not_named_as_destination_yet": "Until Equalpoint platform is built, connections live in SODA People tab, kept warm. Add-connection destination = 'people'. Swap to 'equalpoint' later, one field.",
+    "two_call_gate": "AI/intros: /api/draft generates, /api/draft/approve writes. Nothing sends without explicit confirm. Marked in contracts as gated:true.",
+    "grid_uses_tabs_list_uses_clean": "Room: Grid layout shows Tabs pills (count Offers/Needs). List layout shows Clean rows (Matches you only). Layout drives density."
+  },
+
+  "design_tokens": {
+    "mode": "dark only",
+    "colors": {
+      "canvas": "#111111", "card": "#1a1a1a", "surface": "#202220", "border": "#2a2a2a",
+      "ink": "#f5f5f5", "muted": "#8a8a8a", "hint": "#5a5a5a",
+      "green": "#3bd75c", "green_deep": "#203229", "amber": "#f59e0b",
+      "purple": "#a47bff", "red": "#ef4444", "gold": "#e8c468"
+    },
+    "color_usage": { "green": "interactive/confirm only", "amber": "timers/cooling", "purple": "nudge/match", "gold": "achievement" },
+    "fonts": { "display": "Archivo Black", "ui": "DM Sans", "eyebrow_mono": "DM Mono", "signature": "Caveat" },
+    "mark": "four-dot SODA mark (d1/d2/d3 green dots)",
+    "warmth_formula": "max(0, round(base * Math.exp(-0.01 * days)))",
+    "warmth_enum": {
+      "in_rhythm": { "label": "In rhythm", "color": "#3bd75c" },
+      "cooling": { "label": "Cooling", "color": "#f59e0b" },
+      "been_a_while": { "label": "Been a while", "color": "#5a5a5a" }
+    }
+  },
+
+  "stack": {
+    "frontend": "Next.js 16 App Router, React 19.2, Turbopack, PWA, Vercel",
+    "backend": "Supabase (Postgres, RLS, Realtime, pg_cron)",
+    "auth": "Clerk for attendee front door (SODA-038) via Supabase Third-Party Auth; host/ops on Supabase Auth",
+    "email": "Resend", "errors": "Sentry", "ai": "claude-sonnet-4-6 for drafts",
+    "state": "Zustand four-store (useEventStore, useAttendeeStore, useAuthStore, useOpsStore)",
+    "rate_limiting": "Upstash", "ops_layer": "Airtable (one-way)",
+    "secrets_conflict": "SODA-030 says Vercel env vars; ops manual says Doppler. UNRESOLVED, needs Brent."
+  },
+
+  "open_p0_security": [
+    { "id": "SODA-042", "title": "Ops login pre-authorization gate", "issue": "Ops login issues OTP to any email", "fix": "server-side check vs ops_authorized_emails, neutral response either way, log attempts", "owner": "Kennis + Brent", "due": "pre-LNT" },
+    { "id": "OTP-ENUM", "title": "Attendee front-door OTP enumeration", "fix": "separate attendee and ops entry points, server-side role enforcement", "due": "pre-LNT" }
+  ],
+
+  "data_model": {
+    "me": {
+      "initials": "BM",
+      "active_card_id": "founder",
+      "cards": [
+        { "id": "founder", "role": "Founder", "name": "BRENT", "agency": "GILCHRIST", "agency_type": "Creative Agency", "show_up": "Building the room you walk into",
+          "offers": [ { "label": "Advice", "focus": ["fundraising"] }, { "label": "Mentorship", "focus": ["design"] } ],
+          "needs": [ { "label": "Collaboration", "focus": ["product design"] }, { "label": "Work", "focus": [] } ],
+          "signature": "Brent Montgomery" },
+        { "id": "designer", "role": "Designer", "name": "BRENT", "agency": "GILCHRIST", "agency_type": "Creative Agency", "show_up": "I make the thing feel like something",
+          "offers": [ { "label": "Design", "focus": ["product"] }, { "label": "Branding", "focus": ["identity"] } ],
+          "needs": [ { "label": "Collaboration", "focus": ["founders"] }, { "label": "Clients", "focus": ["startups"] } ],
+          "signature": "Brent Montgomery" },
+        { "id": "engineer", "role": "Engineer", "name": "BRENT", "agency": "GILCHRIST", "agency_type": "Creative Agency", "show_up": "I build what the design promises",
+          "offers": [ { "label": "Expertise", "focus": ["full-stack"] }, { "label": "Code review", "focus": ["mentorship"] } ],
+          "needs": [ { "label": "Co-founder", "focus": ["technical"] }, { "label": "Projects", "focus": ["contract"] } ],
+          "signature": "Brent Montgomery" }
+      ]
+    },
+    "room": {
+      "event_id": "evt_lnt_live", "event_name": "Latinos-N-Tech", "live": true,
+      "count_fix_note": "Roster expanded to 19 so hero reads a fuller, truthful number. Hero count = people.length.",
+      "people": [
+        { "id": "maya", "name": "Maya Okafor", "role": "Founder", "agency": "NORTHBOUND", "agency_type": "Studio", "color": "#3bd75c", "you": false,
+          "offers": [ { "label": "Mentorship", "focus": ["design"] }, { "label": "Introductions", "focus": ["investors"] } ],
+          "needs": [ { "label": "Collaboration", "focus": ["product design"] }, { "label": "Funding", "focus": ["pre-seed"] } ],
+          "match": { "is_match": true, "reason": "You both work in product design" } },
+        { "id": "devin", "name": "Devin Park", "role": "Fractional CFO", "agency": "LEDGERLINE", "agency_type": "Advisory", "color": "#f59e0b", "you": false,
+          "offers": [ { "label": "Advice", "focus": ["fundraising"] }, { "label": "Investment", "focus": ["pre-seed"] } ],
+          "needs": [ { "label": "Introductions", "focus": ["founders"] } ],
+          "match": { "is_match": true, "reason": "He funds what you are raising for" } },
+        { "id": "ife", "name": "Ife Adeyemi", "role": "Design lead", "agency": "FORM AND CO", "agency_type": "Product Studio", "color": "#3bd75c", "you": false,
+          "offers": [ { "label": "Feedback", "focus": ["product"] }, { "label": "Mentorship", "focus": ["design"] } ],
+          "needs": [ { "label": "Collaboration", "focus": ["gaming"] } ],
+          "match": { "is_match": true, "reason": "You both want to collaborate on gaming" } },
+        { "id": "tomas", "name": "Tomas Rivera", "role": "Just exited", "agency": "", "agency_type": "", "color": "#a47bff", "you": false,
+          "offers": [ { "label": "Investment", "focus": ["seed"] }, { "label": "Advice", "focus": ["go-to-market"] } ],
+          "needs": [ { "label": "Introductions", "focus": ["operators"] } ], "match": { "is_match": false } },
+        { "id": "nikki", "name": "Nikki Cho", "role": "Engineer", "agency": "", "agency_type": "", "color": "#60a5fa", "you": false,
+          "offers": [ { "label": "Collaboration", "focus": ["web", "3D"] } ],
+          "needs": [ { "label": "Work", "focus": ["design"] }, { "label": "Mentorship", "focus": ["engineering"] } ], "match": { "is_match": false } },
+        { "id": "lorena", "name": "Lorena Medina", "role": "Founder, creative", "agency": "MEDINA", "agency_type": "Creative", "color": "#f472b6", "you": false,
+          "offers": [ { "label": "Mentorship", "focus": ["brand"] }, { "label": "Introductions", "focus": ["press"] }, { "label": "Collaboration", "focus": ["brand"] } ],
+          "needs": [ { "label": "Advice", "focus": ["fundraising"] } ], "match": { "is_match": false } },
+        { "id": "toast", "name": "Toast", "role": "Engineer", "agency": "", "agency_type": "", "color": "#3bd75c", "you": false,
+          "offers": [ { "label": "Collaboration", "focus": ["web"] }, { "label": "Feedback", "focus": ["product"] } ],
+          "needs": [ { "label": "Mentorship", "focus": ["engineering"] }, { "label": "Work", "focus": [] } ], "match": { "is_match": false } },
+        { "id": "rosa", "name": "Rosa Kim", "role": "Founder", "agency": "BRIGHTSEED", "agency_type": "Startup", "color": "#3bd75c", "you": false,
+          "offers": [ { "label": "Partnerships", "focus": ["b2b"] } ],
+          "needs": [ { "label": "Funding", "focus": ["seed"] }, { "label": "Talent", "focus": ["engineering"] } ],
+          "match": { "is_match": true, "reason": "She needs the funding you can introduce" } },
+        { "id": "amara", "name": "Amara Obi", "role": "Product manager", "agency": "", "agency_type": "", "color": "#a47bff", "you": false,
+          "offers": [ { "label": "Feedback", "focus": ["product"] } ],
+          "needs": [ { "label": "Mentorship", "focus": ["leadership"] } ], "match": { "is_match": false } },
+        { "id": "jordan", "name": "Jordan Tate", "role": "Investor", "agency": "TATE CAPITAL", "agency_type": "Fund", "color": "#f59e0b", "you": false,
+          "offers": [ { "label": "Investment", "focus": ["pre-seed", "seed"] }, { "label": "Introductions", "focus": ["LPs"] } ],
+          "needs": [ { "label": "Dealflow", "focus": ["fintech"] } ],
+          "match": { "is_match": true, "reason": "He invests at your stage" } },
+        { "id": "kemi", "name": "Kemi Bello", "role": "Brand strategist", "agency": "FOLD", "agency_type": "Studio", "color": "#f472b6", "you": false,
+          "offers": [ { "label": "Branding", "focus": ["identity"] }, { "label": "Mentorship", "focus": ["brand"] } ],
+          "needs": [ { "label": "Collaboration", "focus": ["product"] } ], "match": { "is_match": false } },
+        { "id": "leo", "name": "Leo Park", "role": "Engineer", "agency": "", "agency_type": "", "color": "#60a5fa", "you": false,
+          "offers": [ { "label": "Code review", "focus": ["frontend"] } ],
+          "needs": [ { "label": "Co-founder", "focus": ["technical"] } ],
+          "match": { "is_match": true, "reason": "You both want a technical co-founder" } },
+        { "id": "sana", "name": "Sana Idris", "role": "Designer", "agency": "", "agency_type": "", "color": "#3bd75c", "you": false,
+          "offers": [ { "label": "Design", "focus": ["UX"] } ],
+          "needs": [ { "label": "Work", "focus": ["product"] } ], "match": { "is_match": false } },
+        { "id": "marco", "name": "Marco Diaz", "role": "Growth lead", "agency": "LIFTOFF", "agency_type": "Agency", "color": "#a47bff", "you": false,
+          "offers": [ { "label": "Advice", "focus": ["go-to-market"] }, { "label": "Introductions", "focus": ["press"] } ],
+          "needs": [ { "label": "Clients", "focus": ["b2b"] } ], "match": { "is_match": false } },
+        { "id": "priya", "name": "Priya Nair", "role": "Founder", "agency": "NESTED", "agency_type": "Startup", "color": "#3bd75c", "you": false,
+          "offers": [ { "label": "Mentorship", "focus": ["ops"] } ],
+          "needs": [ { "label": "Funding", "focus": ["pre-seed"] }, { "label": "Advice", "focus": ["hiring"] } ],
+          "match": { "is_match": true, "reason": "She is raising at the stage you advise" } },
+        { "id": "deon", "name": "Deon Carter", "role": "Just exited", "agency": "", "agency_type": "", "color": "#f59e0b", "you": false,
+          "offers": [ { "label": "Investment", "focus": ["seed"] }, { "label": "Advice", "focus": ["scaling"] } ],
+          "needs": [ { "label": "Introductions", "focus": ["operators"] } ], "match": { "is_match": false } },
+        { "id": "yuki", "name": "Yuki Sato", "role": "Engineer", "agency": "", "agency_type": "", "color": "#60a5fa", "you": false,
+          "offers": [ { "label": "Collaboration", "focus": ["3D", "web"] } ],
+          "needs": [ { "label": "Mentorship", "focus": ["engineering"] } ], "match": { "is_match": false } },
+        { "id": "bria", "name": "Bria Wells", "role": "Founder, creative", "agency": "WELLS AND CO", "agency_type": "Creative", "color": "#f472b6", "you": false,
+          "offers": [ { "label": "Introductions", "focus": ["press"] }, { "label": "Branding", "focus": ["identity"] } ],
+          "needs": [ { "label": "Advice", "focus": ["fundraising"] } ],
+          "match": { "is_match": true, "reason": "You both build creative brands" } },
+        { "id": "omar", "name": "Omar Haddad", "role": "Product designer", "agency": "", "agency_type": "", "color": "#3bd75c", "you": false,
+          "offers": [ { "label": "Feedback", "focus": ["UX"] }, { "label": "Mentorship", "focus": ["design"] } ],
+          "needs": [ { "label": "Collaboration", "focus": ["gaming"] } ], "match": { "is_match": false } }
+      ]
+    },
+    "connections_seed": [
+      { "id": "past_maya", "initials": "MO", "color": "#3bd75c", "name": "Maya Okafor", "role": "Founder, Coffee Connect", "warmth": "in_rhythm" },
+      { "id": "past_devin", "initials": "DP", "color": "#a47bff", "name": "Devin Park", "role": "Fractional CFO, Founder Mixer", "warmth": "cooling" }
+    ]
+  },
+
+  "screen_contracts": {
+    "_shared": {
+      "pattern": "{ screen|modal, state|variant, ...payload, primary, secondary }",
+      "principle": "Server writes JSON, client renders. Server decides, client reflects.",
+      "common_fields": ["state", "variant", "face_rule", "gated", "destination", "view.layout", "view.density"]
+    },
+
+    "home": {
+      "screen": "home", "event_state": "live", "user_state": "returning",
+      "hero": { "state": "live", "eyebrow": "Event live", "title": "Latinos-N-Tech is live right now.", "subtitle": "The room is open and {room_count} people are already in. Walk in as your card.", "cta": "Tap to enter", "cta_has_arrow": false, "action": { "type": "enter_room", "event_id": "evt_lnt_live" } },
+      "cards": { "active_card_id": "founder", "editable_card_id": "founder", "face_rule": "me_face_has_no_chips", "items_ref": "data_model.me.cards" },
+      "rooms_ref": "live room + past rooms", "connections_ref": "data_model.connections", "nav": { "active": "home", "items": ["home", "rooms", "card", "people", "you"] },
+      "notes": "Hero eyebrow is GREEN. Headline white 26px. Button no arrow. Deck: highlighted = editable, swipe to switch."
+    },
+
+    "room": {
+      "screen": "room",
+      "context": { "event_id": "evt_lnt_live", "event_name": "Latinos-N-Tech", "room_live": true, "room_count": 19 },
+      "view": { "layout": "grid", "density": "tabs", "rule": "grid_uses_tabs_list_uses_clean", "default_landing": "grid" },
+      "grid_tabs": "each card: identity + offers_count + needs_count + match. corner dot if match.",
+      "list_clean": "each row: identity + match.is_match ('Matches you'). No counts.",
+      "tap_action": { "type": "open_card", "opens": "expand_payload" },
+      "pill_action": { "type": "open_card_to_face", "faces": ["offers", "needs"] }
+    },
+
+    "card_expanded": {
+      "modal": "card_expanded", "trigger": "open_card",
+      "active_face": "me", "faces": ["offers", "me", "needs"], "face_rule": "me_face_has_no_chips",
+      "offers_needs_ref": "person.offers / person.needs with {label, focus[]}",
+      "match": { "is_match": true, "reason": "..." },
+      "actions": [
+        { "label": "Add connection", "action": "add_connection", "destination": "people", "added_label": "Added" },
+        { "label": "Start an intro", "action": "open_intro_starter", "gated": true }
+      ],
+      "spacing_rule": "match-strip and action buttons each have padding; nothing touches."
+    },
+
+    "chip_detail": {
+      "modal": "chip_detail", "trigger": "tap_or_hover_chip", "slides_from": "bottom",
+      "kind": "offer | need", "label": "Mentorship", "focus": ["design"],
+      "owner": "Maya", "owner_line": "{owner} offers this to the room | is looking for this",
+      "no_focus_copy": "No focus added. Just {label}, broadly.",
+      "actions": [ { "label": "Start an intro about this", "action": "open_intro_starter", "gated": true, "carries_chip_context": true }, { "label": "Close", "action": "dismiss" } ],
+      "hover": "desktop lift + glow cue; tap opens sheet (mobile + desktop)"
+    },
+
+    "intro_starter": {
+      "modal": "intro_starter", "trigger": "chip_tapped | card_action", "slides_from": "bottom",
+      "target": { "id": "usr_maya", "name": "Maya", "context": "Founder, in the room now" },
+      "based_on": { "kind": "offer", "label": "Mentorship", "focus": "design" },
+      "openers": { "Warm": "...", "Simple": "...", "Direct": "..." }, "selected_tone": "Warm", "editable": true,
+      "add_connection": { "offered": true, "default_on": true, "label": "Add to your connections", "destination": "people", "locks_on_if_already_connected": true },
+      "primary": { "label": "Send intro", "action": "send_intro", "gated": true },
+      "secondary": { "label": "Cancel", "action": "dismiss" },
+      "trust_line": "SODA drafts it. You send it. Nothing goes out on its own.",
+      "send_result": "intro_sent true; if add toggle on and not connected, connection_added true; toast 'Intro sent, {name} added to connections'"
+    },
+
+    "moment_event_left": {
+      "modal": "event_left", "variant": "summary | quiet", "trigger": "user_left_room",
+      "headline": { "value": "{connections_made}", "label": "connections made" },
+      "people_strip": "first 4 avatars + overflow count",
+      "body": "You walked in as {role} and left with {n} people worth knowing. They are warm now. Keep them that way.",
+      "primary": { "label": "See my connections", "action": "open_people" },
+      "secondary": { "label": "Back to {tab}", "action": "go_tab" },
+      "zero_state": "No connections this time. Room still live, offer return.",
+      "no_equalpoint_naming": true
+    },
+
+    "other_moment_modals_built": {
+      "match": ["mutual", "complement"], "connection_count": ["milestone", "pace"], "top_connector": ["achieved (podium, is_you)", "missed (leaderboard + you + gap + progress)"],
+      "note": "All carry gated flag on intro actions; gold for achievement; built in SODA-Moment-Modals(.html/-JSON.html)"
+    },
+
+    "condition_states_built": {
+      "families": ["error (offline banner, server 500, action_failed inline, not_found)", "loading (skeleton, processing)", "decision (confirm_send, confirm_destructive, permission)", "locked (locked, closed/window_expired, countdown)", "restricted (wrong_role neutral, rate_limited, at_capacity)", "success (toast)"],
+      "file": "SODA-Condition-States.html",
+      "key": "wrong_role carries reveals_nothing:true + log_attempt:true (SODA-042 posture)"
+    },
+
+    "people": { "screen": "people", "framing": "Kept warm in SODA", "items_ref": "connections", "warmth_enum_ref": "design_tokens.warmth_enum" },
+    "you": { "screen": "you", "stats": ["connections", "cards", "rooms"], "walking_in_as": "active card" },
+    "nav": { "items": ["home", "rooms", "card", "people", "you"], "in_room_leaving_via_nav": "triggers event_left moment, then routes to chosen tab" }
+  },
+
+  "live_fire_flow": {
+    "file": "SODA-Live-Fire.html",
+    "happy_path": ["Home (live hero)", "Tap to enter -> Room", "grid Tabs / list Clean", "tap card -> full card", "flip faces (Me no chips)", "tap chip -> chip detail sheet", "Start an intro -> intro sheet (tones + add toggle, gated send)", "or Add connection on card", "leave via nav -> event_left moment", "See my connections -> People", "state persists to Home + You stat"],
+    "state_persistence": "A connection added in room flows to: wrap-up count -> People -> Home Stay-warm -> You stat. One shared state object.",
+    "known_tradeoffs": ["intro openers are templates not live AI (v1 ok)", "scroll-snap deck best on touch/trackpad"]
+  },
+
+  "deliverables_in_outputs": [
+    "SODA-Live-Fire.html (the full interactive app)",
+    "SODA-Home-JSON.html", "SODA-Room-MicroCards.html", "SODA-Room-JSON.html",
+    "SODA-Intro-Starter-Mock.html", "SODA-Intro-Starter-JSON.html",
+    "SODA-Moment-Modals.html", "SODA-Moment-Modals-JSON.html",
+    "SODA-Condition-States.html", "SODA-Empty-States.html",
+    "SODA-Card-Deck-Mock.html", "SODA-Home-Card-Deck.html", "SODA-Nav-Mock.html",
+    "SODA-Recap-JSON.html", "SODA-Survey-Mock.html",
+    "SODA-DECISIONS.md", "SODA-BUILD-CHECKLIST.md", "SODA-Risky-Ten-Best-Practices(.md/.docx)",
+    "SODA-Ops-Manual-Gap-Analysis(.md/.docx)", "Equalpoint-Ops-Manual.md", "bank.ts (86 chips, 7 contexts)"
+  ],
+
+  "next_steps": [
+    "Write PIPELINE.md: consolidate every contract above into one buildable spec (warmth enum, {token} emphasis, state/variant/face_rule fields, gated flag, view.layout+density).",
+    "Resolve Doppler vs Vercel secrets conflict (SODA-030) with Brent.",
+    "Fold SODA-042 into risky-ten as unit 11.",
+    "Write 3 chip gate tests (migration RLS, cross-user PATCH, bank capital-need surfaces only capital-focus).",
+    "Dark-theme restyle of uploaded chip components (currently Equalpoint light theme).",
+    "Optional: add Drop and Chance act reveals firing inside the live room."
+  ]
+}

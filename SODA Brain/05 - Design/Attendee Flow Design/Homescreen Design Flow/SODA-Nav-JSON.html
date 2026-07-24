@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>SODA, Nav JSON</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+  :root{
+    --canvas:#111;--card:#1a1a1a;--surface:#202220;--border:#2a2a2a;
+    --green:#3bd75c;--ink:#f5f5f5;--muted:#8a8a8a;--hint:#5a5a5a;--amber:#f59e0b;--purple:#a47bff;--red:#ef4444;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0c0c0c;color:var(--ink);font-family:'DM Sans',sans-serif;padding:24px 18px 60px;line-height:1.5}
+  .mono{font-family:'DM Mono',monospace}
+  .wrap{max-width:1180px;margin:0 auto}
+  header{margin-bottom:8px}
+  .wm{font-family:'Archivo Black';font-size:13px;color:var(--green);letter-spacing:.04em;text-transform:uppercase}
+  h1{font-family:'Archivo Black';font-size:26px;margin:6px 0 4px}
+  .sub{color:var(--muted);font-size:13.5px;max-width:720px}
+  .tabs{display:flex;gap:8px;margin:22px 0 20px;flex-wrap:wrap}
+  .tab{border:1px solid var(--border);background:var(--card);border-radius:9999px;padding:9px 16px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
+  .tab.on{background:var(--green);color:#06140a;border-color:var(--green)}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media (max-width:920px){.split{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .panel-head{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .panel-head .t{font-family:'Archivo Black';font-size:14px}
+  .badge{font-family:'DM Mono';font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);border:1px solid rgba(59,215,92,.4);border-radius:9999px;padding:3px 9px}
+  .badge.render{color:var(--purple);border-color:rgba(164,123,255,.4)}
+  .copy{font-family:'DM Mono';font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:5px 10px;cursor:pointer}
+  .copy:hover{color:var(--green);border-color:var(--green)}
+  .json{padding:16px 18px;overflow:auto;font-family:'DM Mono';font-size:12.5px;line-height:1.7;white-space:pre;max-height:720px}
+  .json::-webkit-scrollbar{width:8px}.json::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  .jk{color:#7ec8ff}.js{color:var(--green)}.jn{color:var(--amber)}.jb{color:var(--purple)}.jp{color:var(--hint)}
+
+  .render-pane{padding:18px;display:flex;justify-content:center;background:#0c0c0c}
+  .phone{width:340px;height:600px;background:var(--canvas);border:1px solid var(--border);border-radius:24px;overflow:hidden;display:flex;flex-direction:column}
+  .p-top{padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .p-top h2{font-family:'Archivo Black';font-size:18px}
+  .p-top .r{color:var(--green);font-size:11px;font-weight:600;font-family:'DM Mono'}
+  .p-scroll{flex:1;overflow-y:auto;padding:16px}
+  .p-scroll::-webkit-scrollbar{display:none}
+
+  /* generic render bits */
+  .live-room{background:linear-gradient(135deg,#162a18,#1a1a1a);border:1.5px solid var(--green);border-radius:14px;padding:16px;margin-bottom:16px}
+  .live-room .tag{display:inline-flex;align-items:center;gap:6px;margin-bottom:9px}
+  .live-room .tag i{width:7px;height:7px;border-radius:50%;background:var(--green)}
+  .live-room .tag span{font-family:'DM Mono';font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+  .live-room h3{font-family:'Archivo Black';font-size:17px;margin-bottom:5px}
+  .live-room p{color:var(--muted);font-size:12px;margin-bottom:11px}
+  .live-room .enter{display:inline-flex;background:var(--green);color:#06140a;font-weight:700;font-size:12px;padding:9px 14px;border-radius:8px}
+  .sec-t{font-family:'Archivo Black';font-size:13px;margin:4px 0 11px;color:var(--muted)}
+  .row{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid rgba(42,42,42,.5)}
+  .row:last-child{border-bottom:none}
+  .row .thumb{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#202220,#161616);display:flex;align-items:center;justify-content:center;font-family:'Archivo Black';font-size:8px;color:var(--muted);text-align:center;line-height:1;flex-shrink:0;padding:3px}
+  .row .av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#06140a;flex-shrink:0}
+  .row .info{flex:1;min-width:0}.row .info .n{font-weight:700;font-size:14px}.row .info .d{color:var(--muted);font-size:11px;font-family:'DM Mono';margin-top:1px}.row .info .d2{color:var(--muted);font-size:11px;margin-top:1px}
+  .row .stat{text-align:right}.row .stat .b{font-family:'Archivo Black';font-size:16px;color:var(--green);line-height:1}.row .stat .l{color:var(--muted);font-size:9px;margin-top:2px}
+  .row .w{display:flex;flex-direction:column;align-items:flex-end;gap:3px}.row .w .dot{width:8px;height:8px;border-radius:50%}.row .w span{font-size:8px;font-family:'DM Mono';text-transform:uppercase;color:var(--muted)}
+  /* card face */
+  .fc{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:12px}
+  .fc .nm{font-family:'Archivo Black';font-size:26px;margin-bottom:4px}
+  .fc .sh{color:var(--muted);font-size:13px;font-style:italic;margin-bottom:3px}
+  .fc .ro{color:var(--hint);font-size:10px;font-family:'DM Mono';text-transform:uppercase}
+  .fc .tabs2{display:flex;gap:14px;border-top:1px solid var(--border);margin-top:14px;padding-top:12px}
+  .fc .tabs2 span{font-family:'Archivo Black';font-size:13px;color:var(--muted)}
+  .fc .tabs2 span.on{color:var(--green)}
+  /* you */
+  .you-h{display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:16px}
+  .you-av{width:56px;height:56px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;color:#06140a;font-family:'Archivo Black';font-size:18px}
+  .you-h .nm{font-family:'Archivo Black';font-size:18px}.you-h .em{color:var(--muted);font-size:12px;margin-top:2px}
+  .you-stats{display:flex;gap:8px;margin-bottom:18px}
+  .ys{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center}
+  .ys .b{font-family:'Archivo Black';font-size:20px;color:var(--green)}.ys .l{color:var(--muted);font-size:10px;margin-top:4px}
+  .set{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid rgba(42,42,42,.5);font-size:14px;font-weight:500}
+  .set:last-child{border-bottom:none}
+  .set .ic{width:30px;height:30px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;color:var(--green);font-size:14px}
+  .set .ch{margin-left:auto;color:var(--hint)}
+  .ep{margin-top:16px;background:linear-gradient(135deg,#1e1530,#1a1a1a);border:1px solid rgba(164,123,255,.4);border-radius:14px;padding:15px}
+  .ep .l{color:var(--purple);font-family:'DM Mono';font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+  .ep h4{font-family:'Archivo Black';font-size:14px;margin-bottom:4px}.ep p{color:var(--muted);font-size:11px}
+  .fpills{display:flex;gap:7px;margin-bottom:14px;overflow-x:auto}.fpills::-webkit-scrollbar{display:none}
+  .fp{flex:0 0 auto;border:1.5px solid var(--border);border-radius:9999px;padding:6px 12px;font-size:12px;color:var(--muted)}
+  .fp.on{background:var(--green);color:#06140a;border-color:var(--green);font-weight:600}
+
+  .p-nav{display:flex;border-top:1px solid var(--border)}
+  .p-nav .ni{flex:1;text-align:center;padding:9px 0;font-size:8px;font-weight:600;color:var(--muted)}
+  .p-nav .ni.on{color:var(--green)}.p-nav .ni .ic{font-size:15px;margin-bottom:3px}
+
+  .note{margin-top:22px;border-left:3px solid var(--green);background:rgba(59,215,92,.05);padding:15px 18px;border-radius:0 12px 12px 0;font-size:13px;color:#cfd6cf}
+  .note b{color:var(--ink)}
+  .note code{font-family:'DM Mono';font-size:12px;background:var(--surface);padding:1px 6px;border-radius:5px;color:var(--green)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="wm">✦ SODA</div>
+    <h1>Nav screens, the data contract</h1>
+    <p class="sub">Each of the four nav tabs is its own JSON object. Switch tabs to see the contract for Rooms, Card, People, and You, and the screen each one renders. Every screen is a projection of server data, the client only paints what it receives.</p>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="split">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="t" id="json-name">rooms.json</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge">Server writes this</span>
+          <button class="copy" onclick="copyJSON()">Copy</button>
+        </div>
+      </div>
+      <div class="json" id="json"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><span class="t">What it renders</span><span class="badge render">Client renders this</span></div>
+      <div class="render-pane"><div class="phone" id="phone"></div></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Four tabs, one pattern.</b> Each screen declares a <code>screen</code> name, a <code>header</code>, and a typed body: Rooms sends a <code>live_room</code> plus a <code>past_rooms</code> array, Card sends the <code>card</code> object, People sends <code>filters</code> plus a <code>people</code> array, You sends <code>profile</code>, <code>stats</code>, <code>settings</code>, and the <code>equalpoint_handoff</code>. The warmth values stay enums so the client owns the styling. Same discipline as the recap: the server decides, the screen renders.
+  </div>
+</div>
+
+<script>
+const SCREENS = {
+  rooms:{
+    screen:"rooms",
+    header:{ title:"Rooms", action:"See all" },
+    live_room:{ id:"evt_lnt_live", name:"Latinos-N-Tech", count:19, cta:"Tap to enter" },
+    past_rooms:[
+      { id:"evt_coffee",  name:"Coffee Connect", date:"2026-06-17", connections:7 },
+      { id:"evt_founder", name:"Founder Mixer",  date:"2026-05-30", connections:12 },
+      { id:"evt_btw",     name:"Black Tech Week", date:"2026-04-12", connections:23 }
+    ],
+    nav:{ active:"rooms" }
+  },
+  card:{
+    screen:"card",
+    header:{ title:"Your card", action:"History" },
+    card:{
+      name:"BRENT", show_up:"Building the room you walk into", role:"Founder · Northbound Studio",
+      active_face:"me", faces:["offers","me","needs"],
+      offers:[{label:"Mentorship",focus:"early-stage"},{label:"Introductions",focus:"investors"}],
+      needs:[{label:"Funding",focus:"pre-seed"},{label:"Talent",focus:"engineering"}],
+      signature_url:"sig/brent.svg"
+    },
+    card_history:[
+      { role:"Founder", used_count:4, most_used:true },
+      { role:"Designer", used_count:1, most_used:false }
+    ],
+    nav:{ active:"card" }
+  },
+  people:{
+    screen:"people",
+    header:{ title:"People", action:"Filter" },
+    filters:["all","in_rhythm","cooling","been_a_while"],
+    active_filter:"all",
+    people:[
+      { id:"usr_maya",   initials:"MO", color:"#3bd75c", name:"Maya Okafor",   role:"Founder · Coffee Connect", warmth:"in_rhythm" },
+      { id:"usr_devin",  initials:"DP", color:"#a47bff", name:"Devin Park",    role:"Fractional CFO · Founder Mixer", warmth:"cooling" },
+      { id:"usr_ife",    initials:"IA", color:"#f59e0b", name:"Ife Adeyemi",   role:"Designer · Black Tech Week", warmth:"been_a_while" },
+      { id:"usr_lorena", initials:"LM", color:"#3bd75c", name:"Lorena Medina", role:"Community Lead · Coffee Connect", warmth:"in_rhythm" }
+    ],
+    nav:{ active:"people" }
+  },
+  you:{
+    screen:"you",
+    header:{ title:"You", action:"" },
+    profile:{ name:"Brent Montgomery", email:"brent@northbound.studio", initials:"BM" },
+    stats:{ rooms:8, connections:42, cards:3 },
+    settings:[
+      { id:"profile", label:"Edit profile", icon:"person" },
+      { id:"cards", label:"Manage cards", icon:"card" },
+      { id:"notifications", label:"Notifications", icon:"bell" },
+      { id:"privacy", label:"Privacy and data", icon:"lock" }
+    ],
+    equalpoint_handoff:{ title:"Keep every connection warm", body:"Your rooms live in SODA. Your relationships live in Equalpoint." },
+    nav:{ active:"you" }
+  }
+};
+const WARMTH={ in_rhythm:{color:"#3bd75c",label:"In rhythm"}, cooling:{color:"#f59e0b",label:"Cooling"}, been_a_while:{color:"#5a5a5a",label:"Been a while"} };
+const NAVICON={ rooms:"▦", card:"▭", people:"⚇", you:"◉" };
+const NAVLABEL={ rooms:"Rooms", card:"Card", people:"People", you:"You" };
+const SETICON={ person:"◉", card:"▭", bell:"◔", lock:"⚿" };
+const FLABEL={ all:"All", in_rhythm:"In rhythm", cooling:"Cooling", been_a_while:"Been a while" };
+
+let current='rooms';
+
+function highlight(obj){
+  let j=JSON.stringify(obj,null,2).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  j=j.replace(/"([^"]+)":/g,'<span class="jk">"$1"</span><span class="jp">:</span>');
+  j=j.replace(/: "([^"]*)"/g,': <span class="js">"$1"</span>');
+  j=j.replace(/: (-?\d+\.?\d*)/g,': <span class="jn">$1</span>');
+  j=j.replace(/: (true|false)/g,': <span class="jb">$1</span>');
+  j=j.replace(/([{}\[\],])/g,'<span class="jp">$1</span>');
+  return j;
+}
+function renderJSON(){ document.getElementById('json').innerHTML=highlight(SCREENS[current]); document.getElementById('json-name').textContent=current+'.json'; }
+function fmtDate(iso){ const[y,m,d]=iso.split('-');const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return `${mo[+m-1]} ${+d}, ${y}`; }
+
+function navHTML(active){
+  return `<div class="p-nav">${['rooms','card','people','you'].map(i=>`<div class="ni ${i===active?'on':''}"><div class="ic">${NAVICON[i]}</div>${NAVLABEL[i]}</div>`).join('')}</div>`;
+}
+
+function renderPhone(){
+  const s=SCREENS[current];
+  let body='';
+  if(s.screen==='rooms'){
+    body=`
+      <div class="live-room"><div class="tag"><i></i><span>Live now</span></div><h3>${s.live_room.name}</h3><p>${s.live_room.count} people in the room. Walk in as your card.</p><span class="enter">${s.live_room.cta} →</span></div>
+      <div class="sec-t">Past rooms</div>
+      ${s.past_rooms.map(r=>`<div class="row"><div class="thumb">${r.name.toUpperCase().replace(/ /g,'<br>')}</div><div class="info"><div class="n">${r.name}</div><div class="d">${fmtDate(r.date)}</div></div><div class="stat"><div class="b">${r.connections}</div><div class="l">connections</div></div></div>`).join('')}`;
+  }
+  if(s.screen==='card'){
+    const c=s.card;
+    body=`
+      <div class="fc"><div class="nm">${c.name}</div><div class="sh">${c.show_up}</div><div class="ro">${c.role}</div>
+      <div class="tabs2">${c.faces.map(f=>`<span class="${f===c.active_face?'on':''}">${f[0].toUpperCase()+f.slice(1)}</span>`).join('')}</div></div>
+      <div class="sec-t">How you showed up</div>
+      ${s.card_history.map(h=>`<div class="row"><div class="thumb" style="color:${h.most_used?'var(--green)':'var(--muted)'}">${h.role.slice(0,4).toUpperCase()}</div><div class="info"><div class="n">${h.role}</div><div class="d2">Used at ${h.used_count} room${h.used_count>1?'s':''}</div></div><div class="stat"><div class="b">${h.most_used?'★':'·'}</div><div class="l">${h.most_used?'most used':' '}</div></div></div>`).join('')}`;
+  }
+  if(s.screen==='people'){
+    body=`
+      <div class="fpills">${s.filters.map(f=>`<span class="fp ${f===s.active_filter?'on':''}">${FLABEL[f]}</span>`).join('')}</div>
+      ${s.people.map(p=>{const w=WARMTH[p.warmth];return `<div class="row"><div class="av" style="background:${p.color}">${p.initials}</div><div class="info"><div class="n">${p.name}</div><div class="d2">${p.role}</div></div><div class="w"><div class="dot" style="background:${w.color}"></div><span>${w.label}</span></div></div>`;}).join('')}`;
+  }
+  if(s.screen==='you'){
+    body=`
+      <div class="you-h"><div class="you-av">${s.profile.initials}</div><div><div class="nm">${s.profile.name}</div><div class="em">${s.profile.email}</div></div></div>
+      <div class="you-stats"><div class="ys"><div class="b">${s.stats.rooms}</div><div class="l">Rooms</div></div><div class="ys"><div class="b">${s.stats.connections}</div><div class="l">Connections</div></div><div class="ys"><div class="b">${s.stats.cards}</div><div class="l">Cards</div></div></div>
+      ${s.settings.map(st=>`<div class="set"><div class="ic">${SETICON[st.icon]||'•'}</div>${st.label}<span class="ch">›</span></div>`).join('')}
+      <div class="ep"><div class="l">Powered by Equalpoint</div><h4>${s.equalpoint_handoff.title}</h4><p>${s.equalpoint_handoff.body}</p></div>`;
+  }
+  document.getElementById('phone').innerHTML=`
+    <div class="p-top"><h2>${s.header.title}</h2><span class="r">${s.header.action}</span></div>
+    <div class="p-scroll">${body}</div>
+    ${navHTML(s.nav.active)}`;
+}
+
+function renderTabs(){
+  const labels={rooms:'Rooms',card:'Card',people:'People',you:'You'};
+  document.getElementById('tabs').innerHTML=Object.keys(SCREENS).map(k=>`<div class="tab ${k===current?'on':''}" onclick="setTab('${k}')">${labels[k]}</div>`).join('');
+}
+function setTab(k){ current=k; renderTabs(); renderJSON(); renderPhone(); }
+function copyJSON(){ navigator.clipboard.writeText(JSON.stringify(SCREENS[current],null,2)).then(()=>{const b=document.querySelector('.copy');const o=b.textContent;b.textContent='Copied';b.style.color='#3bd75c';setTimeout(()=>{b.textContent=o;b.style.color='';},1200);}); }
+
+renderTabs(); renderJSON(); renderPhone();
+</script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>SODA, Intro Starter</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Caveat:wght@600&display=swap');
+  :root{
+    --canvas:#111;--card:#1a1a1a;--surface:#202220;--border:#2a2a2a;
+    --green:#3bd75c;--ink:#f5f5f5;--muted:#8a8a8a;--hint:#5a5a5a;--purple:#a47bff;
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:#000;color:var(--ink);font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:20px;overflow:hidden}
+  .mono{font-family:'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase}
+  .display{font-family:'Archivo Black',sans-serif;text-transform:uppercase;letter-spacing:-.02em;line-height:1.04}
+  .device{width:392px;height:800px;max-height:calc(100dvh - 40px);background:var(--canvas);border-radius:30px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px var(--border),0 40px 80px rgba(0,0,0,.65)}
+  @media (max-width:430px){body{padding:0}.device{width:100vw;height:100dvh;max-height:none;border-radius:0}}
+
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+  .live{display:flex;align-items:center;gap:7px;color:var(--green);font-size:10px}
+  .live i{width:7px;height:7px;border-radius:50%;background:var(--green)}
+
+  /* head: title block + add-connection action */
+  .head{padding:16px 20px 6px;flex-shrink:0;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .head .titles{flex:1;min-width:0}
+  .head .eyebrow{color:var(--green);font-size:11px;font-family:'DM Mono';letter-spacing:.14em;text-transform:uppercase;margin-bottom:5px}
+  .head h2{font-size:24px}
+  .head p{color:var(--muted);font-size:13px;margin-top:4px}
+  .add-btn{flex-shrink:0;margin-top:2px;background:transparent;border:1.5px solid var(--green);color:var(--green);border-radius:9999px;padding:9px 14px;font-family:'DM Sans';font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:transform .12s,background .15s,border-color .15s,color .15s}
+  .add-btn:active{transform:scale(.95)}
+  .add-btn.added{background:rgba(59,215,92,.12);border-color:rgba(59,215,92,.3)}
+  .add-btn .ic{font-size:14px;line-height:1}
+
+  /* the open card */
+  .cardwrap{flex:1;overflow-y:auto;padding:14px 18px calc(var(--safe-bottom) + 18px)}
+  .biz{background:var(--card);border:1px solid var(--border);border-radius:22px;display:flex;flex-direction:column;overflow:hidden;min-height:520px}
+  .biz.match{border-color:rgba(164,123,255,.4)}
+  .biz-head{display:flex;justify-content:space-between;align-items:flex-start;padding:20px 22px 0}
+  .soda-mark{position:relative;width:30px;height:30px;flex-shrink:0}
+  .soda-mark i{position:absolute;border-radius:50%;background:var(--green)}
+  .soda-mark .d1{width:9px;height:9px;top:0;left:2px}.soda-mark .d2{width:11px;height:11px;top:3px;right:0}.soda-mark .d3{width:15px;height:15px;bottom:0;left:5px}
+  .agency{text-align:right;line-height:1}
+  .agency .nm{color:var(--green);font-size:20px;font-weight:600}
+  .agency .ty{color:var(--muted);font-size:10px;font-style:italic;letter-spacing:.1em;margin-top:3px}
+
+  .biz-body{flex:1;padding:14px 22px;display:flex;flex-direction:column}
+  .face-name{color:var(--green);font-family:'Archivo Black';font-size:30px;margin:0 0 2px}
+  .face-role{color:var(--muted);font-size:14px;font-style:italic;margin-bottom:18px}
+
+  .section-lbl{color:var(--muted);font-size:13px;font-style:italic;margin:14px 0 10px}
+  .biz-chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{border-radius:9999px;padding:9px 15px;font-size:13px;font-weight:600;cursor:pointer;transition:transform .12s,box-shadow .15s;position:relative;border:1px solid transparent}
+  .chip:active{transform:scale(.96)}
+  .chip.offer{background:var(--green);color:#06140a}
+  .chip.need{background:transparent;border-color:rgba(59,215,92,.4);color:var(--green)}
+  .chip .foc{font-weight:500;opacity:.8}
+  .chip.tappable::after{content:"";position:absolute;inset:-3px;border-radius:9999px;border:1.5px solid transparent;transition:border-color .2s}
+  .chip.pulse::after{border-color:rgba(59,215,92,.5);animation:ring 1.8s infinite}
+  @keyframes ring{0%{transform:scale(1);opacity:.7}70%{transform:scale(1.12);opacity:0}100%{opacity:0}}
+
+  .tap-hint{margin-top:auto;padding-top:18px;color:var(--hint);font-size:11px;font-family:'DM Mono';letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:7px}
+  .tap-hint .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+  .biz-toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 22px 18px;flex-shrink:0;gap:8px;border-top:1px solid var(--border)}
+  .biz-toggle button{background:none;border:none;cursor:pointer;font-family:'Archivo Black';font-size:22px;color:var(--green);padding:6px 4px}
+  .biz-toggle button.active{background:var(--green);color:#06140a;border-radius:11px;padding:6px 14px}
+
+  /* intro sheet */
+  .scrim{position:absolute;inset:0;z-index:60;background:rgba(0,0,0,.66);opacity:0;pointer-events:none;transition:opacity .24s}
+  .scrim.open{opacity:1;pointer-events:auto}
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:70;background:var(--card);border-top:1px solid var(--border);border-radius:24px 24px 0 0;transform:translateY(100%);transition:transform .34s cubic-bezier(.22,1,.36,1);box-shadow:0 -16px 40px rgba(0,0,0,.5);padding:12px 20px calc(var(--safe-bottom) + 20px);display:flex;flex-direction:column;max-height:90%}
+  .sheet.open{transform:translateY(0)}
+  .handle{width:38px;height:5px;border-radius:3px;background:var(--border);margin:0 auto 14px;flex-shrink:0}
+  .sheet .who{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+  .sheet .who .av{width:42px;height:42px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;color:#06140a;font-weight:700;font-size:15px}
+  .sheet .who .nm{font-weight:700;font-size:16px}
+  .sheet .who .ctx{color:var(--muted);font-size:12px;margin-top:1px}
+  .sheet .based{background:rgba(59,215,92,.08);border:1px solid rgba(59,215,92,.25);border-radius:12px;padding:10px 13px;margin-bottom:14px;font-size:13px;color:var(--green);display:flex;align-items:center;gap:8px}
+  .sheet h3{font-family:'DM Mono';font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .msg{width:100%;background:var(--canvas);border:1px solid var(--border);border-radius:14px;color:var(--ink);font-family:'DM Sans';font-size:15px;line-height:1.5;padding:14px;outline:none;resize:none;min-height:96px;transition:border-color .15s}
+  .msg:focus{border-color:var(--green)}
+  .alts{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}
+  .alt{background:transparent;border:1px solid var(--border);border-radius:9999px;padding:7px 13px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'DM Sans';transition:all .12s}
+  .alt.on{border-color:var(--green);color:var(--green);background:rgba(59,215,92,.08)}
+
+  /* add-connection toggle inside sheet */
+  .addrow{display:flex;align-items:center;justify-content:space-between;background:var(--canvas);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:14px;cursor:pointer;gap:12px}
+  .addrow .lbl{font-size:13.5px;font-weight:600}
+  .addrow .lbl small{display:block;color:var(--muted);font-size:11px;font-weight:400;margin-top:2px}
+  .switch{width:44px;height:25px;border-radius:9999px;background:var(--surface);border:1px solid var(--border);position:relative;transition:all .2s;flex-shrink:0}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;background:var(--muted);transition:all .2s}
+  .switch.on{background:var(--green);border-color:var(--green)}
+  .switch.on::after{background:#06140a;transform:translateX(19px)}
+  .addrow.locked{opacity:.7;cursor:default}
+  .addrow.locked .lbl small{color:var(--green)}
+
+  .row{display:flex;gap:10px;margin-top:16px}
+  .btn{min-height:52px;border:none;border-radius:12px;font-family:'DM Sans';font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn-primary{background:var(--green);color:#06140a;flex:2}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);flex:1;font-weight:600}
+  .trust{text-align:center;color:var(--hint);font-size:10px;font-family:'DM Mono';letter-spacing:.06em;margin-top:12px}
+
+  /* sent toast */
+  .toast{position:absolute;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);z-index:90;background:#1d2a1f;border:1px solid rgba(59,215,92,.4);border-radius:9999px;padding:13px 20px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:9px;opacity:0;pointer-events:none;transition:all .3s;white-space:nowrap;box-shadow:0 12px 32px rgba(0,0,0,.5)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast .c{color:var(--green)}
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="topbar">
+    <span class="mono" style="font-size:10px;color:var(--muted)">FUTURELAND</span>
+    <span class="live mono"><i></i> 19 here</span>
+  </div>
+  <div class="head">
+    <div class="titles">
+      <div class="eyebrow">Viewing a card</div>
+      <h2 class="display">Maya's card</h2>
+      <p>Tap any chip to start an intro. The room writes the opener, you send it.</p>
+    </div>
+    <button class="add-btn" id="add-btn" onclick="addConnection()"><span class="ic">+</span> Add</button>
+  </div>
+
+  <div class="cardwrap">
+    <div class="biz match">
+      <div class="biz-head">
+        <div class="soda-mark"><i class="d1"></i><i class="d2"></i><i class="d3"></i></div>
+        <div class="agency"><div class="nm">NORTHBOUND</div><div class="ty">Studio</div></div>
+      </div>
+      <div class="biz-body" id="body"></div>
+      <div class="biz-toggle">
+        <button id="t-offers" class="active" onclick="flip('offers')">Offers</button>
+        <button id="t-me" onclick="flip('me')">Me</button>
+        <button id="t-needs" onclick="flip('needs')">Needs</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- intro sheet -->
+  <div class="scrim" id="scrim" onclick="closeSheet()"></div>
+  <div class="sheet" id="sheet">
+    <div class="handle"></div>
+    <div class="who">
+      <div class="av">MO</div>
+      <div><div class="nm">Maya Okafor</div><div class="ctx">Founder · in the room now</div></div>
+    </div>
+    <div class="based" id="based">Based on the chip you tapped</div>
+    <h3>Suggested opener</h3>
+    <textarea class="msg" id="msg"></textarea>
+    <div class="alts" id="alts"></div>
+
+    <div class="addrow" id="addrow" onclick="toggleAdd()">
+      <div class="lbl">Add Maya to your connections<small id="addsub">Keep them warm after the room</small></div>
+      <div class="switch on" id="addtoggle"></div>
+    </div>
+
+    <div class="row">
+      <button class="btn btn-ghost" onclick="closeSheet()">Cancel</button>
+      <button class="btn btn-primary" onclick="send()">Send intro</button>
+    </div>
+    <div class="trust">SODA drafts it. You send it. Nothing goes out on its own.</div>
+  </div>
+
+  <div class="toast" id="toast"><span class="c">✓</span> <span id="toast-txt">Intro sent to Maya</span></div>
+</div>
+
+<script>
+const MAYA = {
+  name:"Maya", full:"Maya Okafor", role:"Founder",
+  offers:[["Mentorship",["design","early-stage"]],["Introductions",["investors"]]],
+  needs:[["Collaboration",["product design"]],["Funding",["pre-seed"]]],
+};
+
+/* opener templates per chip kind */
+function openers(kind, cat, focus){
+  const f = focus && focus.length ? focus[0] : null;
+  if(kind==='offer'){
+    // they offer X, you want it
+    return [
+      f ? `Hey Maya, saw you offer ${cat} in ${f}. I'd love to hear more, can we connect?`
+        : `Hey Maya, saw you offer ${cat}. I'd love to hear more, can we connect?`,
+      `Tell me more, I'd like to connect!`,
+      f ? `${cat} in ${f} is exactly what I'm looking for. Free to chat here?`
+        : `${cat} is exactly what I'm looking for. Free to chat here?`,
+    ];
+  } else {
+    // they need X, maybe you can help
+    return [
+      f ? `Hey Maya, you're looking for ${cat} in ${f}. I might be able to help, want to connect?`
+        : `Hey Maya, you're looking for ${cat}. I might be able to help, want to connect?`,
+      `I think I can help with this. Let's connect!`,
+      f ? `Saw you need ${cat} in ${f}. Happy to talk while we're both here.`
+        : `Saw you need ${cat}. Happy to talk while we're both here.`,
+    ];
+  }
+}
+
+let alts=[], chosen=0, face='offers';
+let isConnected=false;   // is Maya in your connections yet
+let addOnSend=true;      // the in-sheet toggle
+
+function flip(f){
+  face=f;
+  ['offers','me','needs'].forEach(x=>document.getElementById('t-'+x).className=(x===f?'active':''));
+  const body=document.getElementById('body');
+  if(f==='me'){
+    body.innerHTML=`
+      <div class="face-name">MAYA</div>
+      <div class="face-role">Founder</div>
+      <div style="flex:1"></div>
+      <div style="border-bottom:2px solid var(--green);padding-bottom:2px">
+        <span style="color:var(--green);font-family:'Caveat',cursive;font-size:30px">Maya Okafor</span>
+      </div>
+      <div style="color:var(--green);font-size:10px;margin-top:4px;font-family:'DM Mono'">Signature</div>
+      <div class="tap-hint" style="margin-top:18px"><span class="dot"></span> Flip to Offers or Needs to start an intro</div>`;
+    return;
+  }
+  const isOffer=f==='offers';
+  const list=isOffer?MAYA.offers:MAYA.needs;
+  body.innerHTML=`
+    <div class="face-name">MAYA</div>
+    <div class="face-role">Founder</div>
+    <div class="section-lbl">${isOffer?'Offers:':'Needs:'}</div>
+    <div class="biz-chips">
+      ${list.map((c,i)=>{
+        const cat=c[0], focus=c[1];
+        const label = focus.length ? `${cat} <span class="foc">in ${focus[0]}</span>` : cat;
+        return `<button class="chip ${isOffer?'offer':'need'} tappable ${i===0?'pulse':''}"
+          onclick="openIntro('${isOffer?'offer':'need'}','${cat}','${focus.join(',')}')">${label}</button>`;
+      }).join('')}
+    </div>
+    <div class="tap-hint"><span class="dot"></span> Tap a chip to start an intro</div>`;
+}
+
+function openIntro(kind, cat, focusCsv){
+  const focus = focusCsv ? focusCsv.split(',') : [];
+  alts = openers(kind, cat, focus);
+  chosen = 0;
+  const f = focus.length ? focus[0] : null;
+  document.getElementById('based').innerHTML =
+    `<span>✦</span> Based on <b style="color:var(--ink);font-weight:600">${cat}${f?' in '+f:''}</b>`;
+  document.getElementById('msg').value = alts[0];
+  const altWrap=document.getElementById('alts');
+  altWrap.innerHTML = alts.map((a,i)=>
+    `<button class="alt ${i===0?'on':''}" onclick="pickAlt(${i})">${i===0?'Warm':i===1?'Simple':'Direct'}</button>`
+  ).join('');
+  syncAddRow();
+  document.getElementById('scrim').classList.add('open');
+  document.getElementById('sheet').classList.add('open');
+}
+function pickAlt(i){
+  chosen=i;
+  document.querySelectorAll('.alt').forEach((b,j)=>b.classList.toggle('on',j===i));
+  document.getElementById('msg').value=alts[i];
+}
+
+/* add-connection logic */
+function updateAddBtn(){
+  const b=document.getElementById('add-btn');
+  if(isConnected){ b.classList.add('added'); b.innerHTML='<span class="ic">✓</span> Added'; }
+  else { b.classList.remove('added'); b.innerHTML='<span class="ic">+</span> Add'; }
+}
+function addConnection(){
+  if(isConnected) return;
+  isConnected=true;
+  updateAddBtn();
+  toast('Maya added to your connections');
+}
+function toggleAdd(){
+  if(isConnected) return;            // already connected, toggle is locked on
+  addOnSend=!addOnSend;
+  document.getElementById('addtoggle').classList.toggle('on',addOnSend);
+}
+function syncAddRow(){
+  const row=document.getElementById('addrow');
+  const sub=document.getElementById('addsub');
+  const tog=document.getElementById('addtoggle');
+  if(isConnected){
+    row.classList.add('locked');
+    sub.textContent='Already in your connections';
+    tog.classList.add('on');
+  } else {
+    row.classList.remove('locked');
+    sub.textContent='Keep them warm after the room';
+    tog.classList.toggle('on',addOnSend);
+  }
+}
+
+function closeSheet(){
+  document.getElementById('scrim').classList.remove('open');
+  document.getElementById('sheet').classList.remove('open');
+}
+function send(){
+  closeSheet();
+  let msg='Intro sent to Maya';
+  if(addOnSend && !isConnected){
+    isConnected=true; updateAddBtn();
+    msg='Intro sent · Maya added to connections';
+  }
+  toast(msg);
+}
+
+let toastTimer;
+function toast(text){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-txt').textContent=text;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+flip('offers');
+updateAddBtn();
+</script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+{
+  "_meta": {
+    "name": "SODA design tokens",
+    "version": "1.3.0",
+    "mode": "dark",
+    "principle": "Values are platform neutral. Behavior is applied per platform from these primitives.",
+    "compiles_to": ["web: CSS custom properties via Style Dictionary or a small script", "native: TypeScript theme imported by Expo"],
+    "rule": "If a value appears in CSS or a React Native style and does not trace here, that is drift."
+  },
+
+  "_changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-06-26",
+      "change": "Baseline tokens established from the Live-Fire build. Responsive layer added: tapMin 44, gridMin 150, fluid gutter and fluid type.",
+      "by": "design system handoff"
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-06-26",
+      "change": "Grid system. Spacing snapped to a 4px base grid. Type set to a base 16 minor third 1.2 scale in rem. Leading locked so each line-height resolves to a multiple of 4. Tracking moved to em. Radius snapped to the 8 12 16 20 24 ladder. Fluid clamp type retired in favor of fixed rem sizes so text sits on the baseline.",
+      "by": "design system"
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-06-29",
+      "change": "Font families retired. display, ui, mono, signature set to TBD (Archivo Black, DM Sans, DM Mono, Caveat killed). Roles and the type scale are unchanged; new families are chosen later and set only here. Applies to web and native equally: Expo loads the same families via expo-font, with no browser fallback.",
+      "by": "Brent"
+    },
+    {
+      "version": "1.3.0",
+      "date": "2026-07-06",
+      "change": "Fonts CHOSEN: display and ui are Be Vietnam Pro (weight carries the display role, 800-900 vs 300-600), mono is DM Mono. Per the attendee-rebuild decision: the Onboarding handoff's direction wins over the attendee file's Archivo/Hanken Grotesk/Space Mono. signature stays retired (no script font in the new system). Both families are Google Fonts, Expo-loadable.",
+      "by": "Brent"
+    }
+  ],
+  "_versioning": "Patch for a value tweak, minor for a new token, major for a change that breaks a contract. Bump version and add a changelog entry on every change.",
+  "_naming": {
+    "source": "Keys here are canonical, camelCase for multi-word names.",
+    "css": "The compiler emits kebab-case custom properties. greenDeep becomes --green-deep.",
+    "js": "The compiler emits camelCase theme keys, identical to the keys here.",
+    "docs": "SODA-Handoff.json and the inventory write the same tokens in snake_case for reading, for example green_deep. Same token, reader-facing spelling."
+  },
+
+  "color": {
+    "canvas": "#111111", "card": "#1a1a1a", "surface": "#202220", "border": "#2a2a2a",
+    "ink": "#f5f5f5", "muted": "#8a8a8a", "hint": "#5a5a5a",
+    "green": "#3bd75c", "greenDeep": "#203229", "amber": "#f59e0b",
+    "purple": "#a47bff", "red": "#ef4444", "gold": "#e8c468"
+  },
+
+  "colorUsage": {
+    "interactive": "green", "confirm": "green", "cooling": "amber", "match": "purple", "achievement": "gold",
+    "_note": "avatar color is per person and is separate from these cues"
+  },
+
+  "font": {
+    "display": "Be Vietnam Pro", "ui": "Be Vietnam Pro", "mono": "DM Mono", "signature": null,
+    "_status": "Chosen 2026-07-06 (attendee rebuild). One family, two roles: display = Be Vietnam Pro 800/900, ui = Be Vietnam Pro 300-600. signature retired.",
+    "_load": "web via next/font, native via expo-font, same family names. Native has NO browser fallback, so the chosen family must ship as a loadable font in Expo (a bundled .ttf/.otf or an @expo-google-fonts package)."
+  },
+
+  "grid": {
+    "base": 4,
+    "_note": "Everything resolves to a multiple of 4. Spacing, radius, and the baseline that leading locks to."
+  },
+
+  "type": {
+    "_model": "Base 16, minor third ratio 1.2. Sizes in rem so iOS Dynamic Type scales the whole grid together. Leading is unitless and resolves to a multiple of 4 at base size, which locks text to the baseline. Tracking is em so it scales with the size.",
+    "_apply": "web: font-size rem, line-height unitless, letter-spacing em. native: fontSize = rem*16, lineHeight = round(size*leading), letterSpacing = size*tracking.",
+    "scale": {
+      "eyebrow": { "px": 11, "rem": 0.6875, "leading": 1.4545, "baseline": 16, "tracking": 0.1, "font": "mono", "case": "upper" },
+      "caption": { "px": 13, "rem": 0.8125, "leading": 1.2308, "baseline": 16, "tracking": 0, "font": "ui" },
+      "body": { "px": 16, "rem": 1.0, "leading": 1.5, "baseline": 24, "tracking": 0, "font": "ui" },
+      "titleSm": { "px": 20, "rem": 1.25, "leading": 1.2, "baseline": 24, "tracking": -0.01, "font": "display" },
+      "title": { "px": 24, "rem": 1.5, "leading": 1.1667, "baseline": 28, "tracking": -0.01, "font": "display" },
+      "hero": { "px": 28, "rem": 1.75, "leading": 1.1429, "baseline": 32, "tracking": -0.01, "font": "display" },
+      "display": { "px": 33, "rem": 2.0625, "leading": 1.0909, "baseline": 36, "tracking": -0.01, "font": "display" },
+      "numeral": { "px": 72, "rem": 4.5, "leading": 1.0, "baseline": 72, "tracking": -0.01, "font": "display" }
+    },
+    "tracking": { "_unit": "em", "tight": -0.01, "normal": 0, "wide": 0.02, "eyebrow": 0.1 },
+    "leading": { "solid": 1, "_note": "per-size leading lives in scale.*.leading; solid is for large numerals" },
+    "signature": { "font": "signature", "px": 26, "_note": "Caveat is decorative and intentionally exempt from the baseline grid" }
+  },
+
+  "space": {
+    "_unit": "dp on the 4px base grid",
+    "scale": { "1": 4, "2": 8, "3": 12, "4": 16, "5": 20, "6": 24, "8": 32, "10": 40, "12": 48 },
+    "gutter": { "fluid": true, "min": 16, "vw": 5, "max": 24, "_note": "the only spacing token that flexes; min and max are both on the grid" }
+  },
+
+  "radius": { "_unit": "dp on the 4px grid", "r1": 8, "r2": 12, "r3": 16, "r4": 20, "r5": 24, "bezel": 36, "pill": 999 },
+
+  "border": { "width": 1, "color": "border" },
+
+  "motion": {
+    "_durationUnit": "ms",
+    "press": { "scale": 0.985, "duration": 120 },
+    "sheet": { "property": "translateY", "duration": 320, "easing": [0.22, 1, 0.36, 1] },
+    "scrim": { "property": "opacity", "duration": 250 },
+    "pulse": { "duration": 1800, "loop": true },
+    "toast": { "dwell": 2600, "duration": 250 },
+    "reduceMotion": "drop all durations to 0 when the OS requests reduced motion"
+  },
+
+  "responsive": {
+    "tapMin": 44,
+    "gridMin": 150,
+    "gridGap": 12,
+    "_helpers": {
+      "cardColumns": "Math.max(1, Math.floor((width - 2*gutter + gridGap) / (gridMin + gridGap)))",
+      "gutter": "clamp(min, width*vw/100, max) on web via CSS clamp, same formula on native"
+    }
+  },
+
+  "warmth": {
+    "formula": "max(0, round(base * exp(-0.01 * days)))",
+    "surface": "language only, never a number",
+    "enum": {
+      "in_rhythm": { "label": "In rhythm", "color": "green" },
+      "cooling": { "label": "Cooling", "color": "amber" },
+      "been_a_while": { "label": "Been a while", "color": "hint" }
+    }
+  },
+
+  "z": { "roomhead": 5, "nav": 15, "scrim": 20, "sheet": 30, "toast": 60 }
+}

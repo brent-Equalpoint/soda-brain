@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>SODA, Condition States</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+  :root{
+    --canvas:#111;--card:#1a1a1a;--surface:#202220;--border:#2a2a2a;
+    --green:#3bd75c;--ink:#f5f5f5;--muted:#8a8a8a;--hint:#5a5a5a;--amber:#f59e0b;--purple:#a47bff;--red:#ef4444;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0c0c0c;color:var(--ink);font-family:'DM Sans',sans-serif;padding:24px 18px 60px;line-height:1.5}
+  .mono{font-family:'DM Mono',monospace}
+  .wrap{max-width:1180px;margin:0 auto}
+  header{margin-bottom:8px}
+  .wm{font-family:'Archivo Black';font-size:13px;color:var(--green);letter-spacing:.04em;text-transform:uppercase}
+  h1{font-family:'Archivo Black';font-size:26px;margin:6px 0 4px}
+  .sub{color:var(--muted);font-size:13.5px;max-width:760px}
+
+  .families{display:flex;flex-wrap:wrap;gap:6px;margin:20px 0 6px}
+  .fam{font-family:'DM Mono';font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:7px;border:1px solid var(--border);color:var(--muted)}
+  .fam.error{color:#ff8585;border-color:rgba(239,68,68,.4)}
+  .fam.loading{color:#7ec8ff;border-color:rgba(126,200,255,.4)}
+  .fam.decision{color:var(--green);border-color:rgba(59,215,92,.4)}
+  .fam.locked{color:var(--amber);border-color:rgba(245,158,11,.4)}
+  .fam.restricted{color:var(--purple);border-color:rgba(164,123,255,.4)}
+  .fam.success{color:var(--green);border-color:rgba(59,215,92,.4)}
+
+  .tabs{display:flex;gap:7px;margin:16px 0 20px;flex-wrap:wrap}
+  .tab{border:1px solid var(--border);background:var(--card);border-radius:9999px;padding:8px 14px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
+  .tab.on{background:var(--green);color:#06140a;border-color:var(--green)}
+  .tab .fm{font-size:9px;opacity:.7;margin-left:5px;text-transform:uppercase;font-family:'DM Mono'}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media (max-width:920px){.split{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .panel-head{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .panel-head .t{font-family:'Archivo Black';font-size:14px}
+  .badge{font-family:'DM Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;border-radius:9999px;padding:3px 9px}
+  .badge.render{color:var(--purple);border:1px solid rgba(164,123,255,.4)}
+  .copy{font-family:'DM Mono';font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:5px 10px;cursor:pointer}
+  .copy:hover{color:var(--green);border-color:var(--green)}
+  .json{padding:16px 18px;overflow:auto;font-family:'DM Mono';font-size:12.5px;line-height:1.7;white-space:pre;max-height:640px}
+  .json::-webkit-scrollbar{width:8px}.json::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  .jk{color:#7ec8ff}.js{color:var(--green)}.jn{color:var(--amber)}.jb{color:var(--purple)}.jp{color:var(--hint)}
+
+  .render-pane{padding:18px;display:flex;justify-content:center;background:#0c0c0c}
+  .phone{width:340px;height:600px;background:var(--canvas);border:1px solid var(--border);border-radius:24px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .p-top{padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+  .p-top h2{font-family:'Archivo Black';font-size:17px}
+  .p-top .r{color:var(--hint);font-size:11px;font-family:'DM Mono'}
+  .p-body{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+  .p-body::-webkit-scrollbar{display:none}
+
+  /* centered message block */
+  .msg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 22px}
+  .msg .glyph{width:70px;height:70px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px}
+  .msg .glyph.err{background:rgba(239,68,68,.12);border:1.5px solid rgba(239,68,68,.4)}
+  .msg .glyph.lock{background:rgba(245,158,11,.12);border:1.5px solid rgba(245,158,11,.4)}
+  .msg .glyph.ok{background:rgba(59,215,92,.12);border:1.5px solid rgba(59,215,92,.4)}
+  .msg .glyph.warn{background:rgba(164,123,255,.12);border:1.5px solid rgba(164,123,255,.4)}
+  .msg h3{font-family:'Archivo Black';font-size:20px;line-height:1.15;margin-bottom:10px}
+  .msg p{color:var(--muted);font-size:13.5px;line-height:1.55;max-width:260px;margin-bottom:22px}
+  .msg .ctas{display:flex;flex-direction:column;gap:10px;width:100%;max-width:250px}
+  .msg .btn{min-height:48px;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+  .msg .btn.primary{background:var(--green);color:#06140a}
+  .msg .btn.danger{background:var(--red);color:#fff}
+  .msg .btn.ghost{background:var(--surface);color:var(--muted);border:1.5px solid var(--border)}
+  .msg .meta{margin-top:14px;color:var(--hint);font-size:11px;font-family:'DM Mono';letter-spacing:.04em}
+
+  /* inline banner (offline/stale) on top of content */
+  .banner{padding:11px 16px;display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:500}
+  .banner.offline{background:rgba(239,68,68,.12);color:#ff9c9c;border-bottom:1px solid rgba(239,68,68,.3)}
+  .banner.stale{background:rgba(245,158,11,.1);color:var(--amber);border-bottom:1px solid rgba(245,158,11,.3)}
+  .banner .b-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .banner.offline .b-dot{background:var(--red);animation:blink 1.4s infinite}
+  @keyframes blink{50%{opacity:.3}}
+  .dim-content{padding:16px;opacity:.4;pointer-events:none}
+  .dim-content .row{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid rgba(42,42,42,.5)}
+  .dim-content .av{width:40px;height:40px;border-radius:50%;background:var(--surface);flex-shrink:0}
+  .dim-content .ln{height:11px;background:var(--surface);border-radius:5px}
+
+  /* skeleton loading */
+  .skeleton{padding:18px}
+  .sk{background:linear-gradient(90deg,var(--surface) 25%,#262826 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:10px}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .sk-hero{height:96px;margin-bottom:18px}
+  .sk-row{display:flex;gap:12px;align-items:center;margin-bottom:16px}
+  .sk-av{width:46px;height:46px;border-radius:50%;flex-shrink:0}
+  .sk-lines{flex:1}
+  .sk-l{height:12px;margin-bottom:7px}
+  .sk-l.w70{width:70%}.sk-l.w40{width:40%}
+
+  /* processing spinner */
+  .spin{width:46px;height:46px;border:4px solid var(--surface);border-top-color:var(--green);border-radius:50%;animation:rot .8s linear infinite;margin-bottom:20px}
+  @keyframes rot{to{transform:rotate(360deg)}}
+
+  /* decision sheet (confirm) */
+  .sheet-demo{flex:1;position:relative;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(0,0,0,.4)}
+  .sheet{background:var(--card);border-top:1px solid var(--border);border-radius:22px 22px 0 0;padding:22px 20px 26px}
+  .sheet h3{font-family:'Archivo Black';font-size:19px;margin-bottom:8px}
+  .sheet p{color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:18px}
+  .sheet .row2{display:flex;gap:10px}
+  .sheet .btn{flex:1;min-height:50px;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer}
+  .sheet .btn.primary{background:var(--green);color:#06140a}
+  .sheet .btn.danger{background:var(--red);color:#fff}
+  .sheet .btn.ghost{background:var(--surface);color:var(--muted);border:1.5px solid var(--border)}
+
+  /* toast (success) */
+  .toast-demo{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);background:#1d2a1f;border:1px solid rgba(59,215,92,.4);border-radius:9999px;padding:13px 20px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:9px;white-space:nowrap}
+  .toast-demo .c{color:var(--green)}
+
+  .note{margin-top:22px;border-left:3px solid var(--green);background:rgba(59,215,92,.05);padding:15px 18px;border-radius:0 12px 12px 0;font-size:13px;color:#cfd6cf}
+  .note b{color:var(--ink)}
+  .note code{font-family:'DM Mono';font-size:12px;background:var(--surface);padding:1px 6px;border-radius:5px;color:var(--green)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="wm">✦ SODA</div>
+    <h1>Condition states, the data contracts</h1>
+    <p class="sub">The states that are about what is true right now, not how much data there is. Error, loading, decision, locked, restricted, and success. Each is the same idea as the empty states: the server sets a state and the client renders the matching screen. Switch states with the tabs.</p>
+  </header>
+
+  <div class="families">
+    <span class="fam error">Error</span>
+    <span class="fam loading">Loading</span>
+    <span class="fam decision">Decision</span>
+    <span class="fam locked">Locked</span>
+    <span class="fam restricted">Restricted</span>
+    <span class="fam success">Success</span>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="split">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="t" id="json-name">state.json</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge" id="state-badge">State</span>
+          <button class="copy" onclick="copyJSON()">Copy</button>
+        </div>
+      </div>
+      <div class="json" id="json"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><span class="t">What it renders</span><span class="badge render">Client renders this</span></div>
+      <div class="render-pane"><div class="phone" id="phone"></div></div>
+    </div>
+  </div>
+
+  <div class="note" id="screen-note"></div>
+</div>
+
+<script>
+const STATES = {
+  // ── ERROR FAMILY ──
+  offline:{
+    family:'error', badge:'Error · connection lost',
+    json:{
+      screen:"room", state:"error", error:{
+        type:"connection_lost", severity:"banner",
+        title:"The room dropped", message:"You are offline. Reconnecting...",
+        retry:{ auto:true, interval_ms:3000, attempt:2 }, recoverable:true
+      },
+      stale_content_visible:true
+    },
+    note:"<b>Connection lost is the scariest failure in SODA, because you are live in a room.</b> It is a <code>banner</code> severity, not a full takeover, the last-known room stays visible but dimmed underneath while it auto-retries. The contract carries <code>recoverable:true</code> and a retry block, so the client knows to reconnect on its own rather than dumping the user out.",
+    render:renderOffline
+  },
+  server_error:{
+    family:'error', badge:'Error · server',
+    json:{
+      screen:"home", state:"error", error:{
+        type:"server_error", severity:"full", code:500,
+        title:"Something on our end", message:"This one is on us, not you. Give it another try.",
+        retry:{ auto:false }, recoverable:true, support_ref:"err_8f3a"
+      }
+    },
+    note:"<b>A server error owns the screen but never blames the user.</b> Severity is <code>full</code> so it takes over, but the copy is plain and the <code>support_ref</code> gives a code the user can quote if it persists. The retry is manual here, the server failed, so hammering it automatically would not help.",
+    render:renderMessage
+  },
+  action_failed:{
+    family:'error', badge:'Error · action failed',
+    json:{
+      screen:"card", state:"error", error:{
+        type:"action_failed", severity:"inline", action:"send_intro",
+        title:"That did not send", message:"Your intro to Maya did not go through. Try again.",
+        retry:{ auto:false }, recoverable:true
+      },
+      screen_otherwise_ok:true
+    },
+    note:"<b>Action failed is the most common error and the most overlooked.</b> The whole screen is fine, only the thing you just tapped failed. Severity <code>inline</code> means the error attaches to the action, not the page. This matters most for the two-call gate: a nudge or intro that silently fails to send would break trust, so the failure has to be loud and local.",
+    render:renderActionFailed
+  },
+  not_found:{
+    family:'error', badge:'Error · not found',
+    json:{
+      screen:"room", state:"error", error:{
+        type:"not_found", severity:"full",
+        title:"This link does not point to a room", message:"The event link or QR code is expired or wrong. Check with the host.",
+        retry:{ auto:false }, recoverable:false
+      }
+    },
+    note:"<b>A dead link gets a holding page, not an error scream.</b> This is the ops manual's <code>No Event Context</code> case. It is <code>recoverable:false</code>, there is nothing to retry, so the screen calmly tells the user the link is wrong and points them to the host instead of offering a useless retry button.",
+    render:renderMessage
+  },
+
+  // ── LOADING FAMILY ──
+  loading:{
+    family:'loading', badge:'Loading · first fetch',
+    json:{
+      screen:"rooms", state:"loading", loading:{ type:"initial", skeleton:true }
+    },
+    note:"<b>First load shows a skeleton, never a blank screen or a bare spinner.</b> The contract just says <code>state:\"loading\"</code> with <code>skeleton:true</code>. The client paints the shape of what is coming, hero block, rows, so the wait feels like the screen assembling rather than nothing happening.",
+    render:renderSkeleton
+  },
+  processing:{
+    family:'loading', badge:'Loading · processing',
+    json:{
+      screen:"card", state:"processing", processing:{ action:"save_card", message:"Saving your card...", blocking:true }
+    },
+    note:"<b>Processing is a tap being worked on.</b> Different from loading, the screen already has data, but an action is in flight. <code>blocking:true</code> means the user waits for this one, so it shows a spinner and a label naming exactly what is happening. The act anticipation loaders (the Drop, the Chance drumroll) are this same state with their own styling.",
+    render:renderProcessing
+  },
+
+  // ── DECISION FAMILY ──
+  confirm_send:{
+    family:'decision', badge:'Decision · confirm',
+    json:{
+      screen:"card", state:"decision", decision:{
+        type:"confirm_send", title:"Send this intro to Maya?",
+        body:"SODA drafts it. You send it. Nothing goes out on its own.",
+        confirm:{ label:"Send intro", style:"primary", action:"send_intro" },
+        cancel:{ label:"Not yet", style:"ghost" }, destructive:false
+      }
+    },
+    note:"<b>The decision state is the two-call gate made visible.</b> Every nudge and intro pauses here: the server has the draft ready but will not write until the confirm action fires. <code>destructive:false</code> keeps the confirm green. This is not an interruption bolted on, it is the trust posture expressed as a required state.",
+    render:renderSheet
+  },
+  confirm_destructive:{
+    family:'decision', badge:'Decision · destructive',
+    json:{
+      screen:"people", state:"decision", decision:{
+        type:"confirm_destructive", title:"Remove Devin from your people?",
+        body:"This clears the connection and its warmth history. You cannot undo this.",
+        confirm:{ label:"Remove", style:"danger", action:"delete_connection" },
+        cancel:{ label:"Keep", style:"ghost" }, destructive:true
+      }
+    },
+    note:"<b>Destructive decisions look different on purpose.</b> Same shape as a normal confirm, but <code>destructive:true</code> turns the confirm button red and the copy names what is lost and that it cannot be undone. The client reads the flag and styles the danger, the server never sends a color.",
+    render:renderSheet
+  },
+  permission:{
+    family:'decision', badge:'Decision · permission',
+    json:{
+      screen:"join", state:"decision", decision:{
+        type:"permission_request", permission:"camera",
+        title:"Let SODA use your camera", body:"You will scan the room QR to check in. That is the only thing the camera is for.",
+        confirm:{ label:"Allow camera", style:"primary", action:"request_os_permission" },
+        cancel:{ label:"Not now", style:"ghost" }, destructive:false
+      }
+    },
+    note:"<b>Permission asks are decision states the OS forces, so frame them before the system dialog.</b> The contract carries a plain reason (scan the room QR, nothing else) so SODA explains why before the scary OS prompt appears. How you frame this changes whether people say yes.",
+    render:renderSheet
+  },
+
+  // ── LOCKED FAMILY ──
+  locked:{
+    family:'locked', badge:'Locked · not yet',
+    json:{
+      screen:"people", state:"locked", lock:{
+        type:"not_yet", title:"Equalpoint unlocks after your first room",
+        body:"Make a connection and your relationships start living here.",
+        unlock_condition:"first_connection", cta:{ label:"Find a live room", action:"open_rooms" }
+      }
+    },
+    note:"<b>Locked means it exists but is not yours yet.</b> The new-user Equalpoint handoff is this state. The contract names the <code>unlock_condition</code> so the client can show what earns it. Visible but gated builds anticipation instead of hiding the feature entirely.",
+    render:renderMessage
+  },
+  closed:{
+    family:'locked', badge:'Locked · closed',
+    json:{
+      screen:"survey", state:"closed", closed:{
+        type:"window_expired", title:"The survey window closed", body:"It closed on Jun 19 at 8:00pm. Your matches are still waiting in Equalpoint.",
+        closed_at:"2026-06-19T20:00:00Z", cta:{ label:"See your connections", action:"open_people" }
+      }
+    },
+    note:"<b>Closed is the survey window after 48 hours, and it is removed, not hidden.</b> This is the ops manual rule: when a window closes, the form is gone from the API response entirely. The contract sends <code>state:\"closed\"</code> and the client never even has the form to render. It offers the next step instead of a dead end.",
+    render:renderMessage
+  },
+  countdown:{
+    family:'locked', badge:'Locked · not started',
+    json:{
+      screen:"join", state:"countdown", countdown:{
+        type:"not_started", title:"Doors open at 7:00pm", body:"You are registered. The room goes live when the host opens it.",
+        opens_at:"2026-06-26T19:00:00Z", show_timer:true
+      }
+    },
+    note:"<b>Not started is the pre-event countdown.</b> The ops manual's <code>Event Not Started</code> case. The contract carries <code>opens_at</code> and <code>show_timer</code>, so the client renders a live countdown from server time, not a static message. The room is coming, the screen makes the wait feel intentional.",
+    render:renderMessage
+  },
+
+  // ── RESTRICTED FAMILY ──
+  wrong_role:{
+    family:'restricted', badge:'Restricted · wrong role',
+    json:{
+      screen:"ops_login", state:"restricted", restricted:{
+        type:"wrong_role", severity:"neutral",
+        title:"If that address is authorized, you will hear from us",
+        body:"", log_attempt:true, reveals_nothing:true
+      }
+    },
+    note:"<b>Wrong role uses the neutral response from your security work.</b> An attendee email at the ops door gets the exact same message as an authorized one, the screen reveals nothing about whether the email is allowed. <code>reveals_nothing:true</code> and <code>log_attempt:true</code> are the contract enforcing the SODA-042 posture: same words, logged silently.",
+    render:renderMessage
+  },
+  rate_limited:{
+    family:'restricted', badge:'Restricted · rate limited',
+    json:{
+      screen:"join", state:"restricted", restricted:{
+        type:"rate_limited", severity:"full",
+        title:"Too many tries", body:"Give it a few minutes and try again.",
+        retry_after_s:900, log_attempt:true
+      }
+    },
+    note:"<b>Rate limited is the Upstash limit made visible.</b> Six-plus attempts trips it. The contract sends <code>retry_after_s</code> so the client can show a real cooldown rather than a vague wall. It is deliberately vague on the reason, telling an attacker exactly why they are blocked would help them.",
+    render:renderMessage
+  },
+  at_capacity:{
+    family:'restricted', badge:'Restricted · capacity',
+    json:{
+      screen:"join", state:"restricted", restricted:{
+        type:"at_capacity", severity:"full",
+        title:"The room is full", body:"This event hit its limit. Check with the host if you think this is a mistake.",
+        log_attempt:false
+      }
+    },
+    note:"<b>Capacity is an honest wall.</b> The room is full or a plan limit is hit. No retry, because trying again will not change it, so the contract omits a retry block entirely and points the user to the host. The shape stays the same as other restricted states, only the type and copy change.",
+    render:renderMessage
+  },
+
+  // ── SUCCESS FAMILY ──
+  success:{
+    family:'success', badge:'Success · confirmed',
+    json:{
+      screen:"card", state:"success", success:{
+        type:"action_complete", action:"send_intro", message:"Intro sent to Maya",
+        style:"toast", duration_ms:2400, next:null
+      }
+    },
+    note:"<b>Success is the quiet state that makes the app feel responsive.</b> A nudge sent, a card saved. Style <code>toast</code> means it confirms and fades, it does not take over. Skipping this state is what makes an app feel uncertain, the user taps and wonders if it worked. The contract makes the confirmation a first-class thing the server declares.",
+    render:renderToast
+  }
+};
+
+let current='offline';
+
+function highlight(obj){
+  let j=JSON.stringify(obj,null,2).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  j=j.replace(/"([^"]+)":/g,'<span class="jk">"$1"</span><span class="jp">:</span>');
+  j=j.replace(/: "([^"]*)"/g,': <span class="js">"$1"</span>');
+  j=j.replace(/: (-?\d+\.?\d*)/g,': <span class="jn">$1</span>');
+  j=j.replace(/: (true|false|null)/g,': <span class="jb">$1</span>');
+  j=j.replace(/([{}\[\],])/g,'<span class="jp">$1</span>');
+  return j;
+}
+
+function topBar(title,action){ return `<div class="p-top"><h2>${title||'SODA'}</h2><span class="r">${action||''}</span></div>`; }
+
+function renderMessage(s){
+  const j=s.json;
+  const e = j.error||j.lock||j.closed||j.countdown||j.restricted;
+  const fam=s.family;
+  const glyph = fam==='error'?'⚠':fam==='locked'?(j.countdown?'◷':'🔒'):fam==='restricted'?'⊘':'✓';
+  const gclass = fam==='error'?'err':fam==='restricted'?'warn':'lock';
+  const cta = e.cta;
+  const recoverable = j.error && j.error.recoverable;
+  let buttons='';
+  if(cta){ buttons=`<button class="btn primary">${cta.label}</button>`; }
+  else if(recoverable && j.error.retry && !j.error.retry.auto){ buttons=`<button class="btn primary">Try again</button>`; }
+  else if(j.countdown){ buttons=`<div class="meta">Opens ${fmtTime(j.countdown.opens_at)}</div>`; }
+  let metaLine='';
+  if(j.error && j.error.support_ref) metaLine=`<div class="meta">Reference ${j.error.support_ref}</div>`;
+  if(j.restricted && j.restricted.retry_after_s) metaLine=`<div class="meta">Try again in ${Math.round(j.restricted.retry_after_s/60)} min</div>`;
+  return topBar(cap(j.screen),'')+`
+    <div class="p-body"><div class="msg">
+      <div class="glyph ${gclass}">${glyph}</div>
+      <h3>${e.title}</h3>
+      ${e.body||e.message?`<p>${e.body||e.message}</p>`:''}
+      ${buttons?`<div class="ctas">${buttons}</div>`:''}
+      ${metaLine}
+    </div></div>`;
+}
+
+function renderOffline(s){
+  return topBar('Latinos-N-Tech','')+`
+    <div class="banner offline"><span class="b-dot"></span> The room dropped. Reconnecting...</div>
+    <div class="p-body"><div class="dim-content">
+      ${[1,2,3,4].map(()=>`<div class="row"><div class="av"></div><div style="flex:1"><div class="ln" style="width:60%;margin-bottom:6px"></div><div class="ln" style="width:35%"></div></div></div>`).join('')}
+    </div></div>`;
+}
+
+function renderActionFailed(s){
+  return topBar('Your card','')+`
+    <div class="p-body" style="padding:16px">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px">
+        <div style="font-family:'Archivo Black';font-size:20px">MAYA OKAFOR</div>
+        <div style="color:var(--muted);font-size:12px;font-style:italic;margin-top:2px">Founder</div>
+      </div>
+      <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:12px;padding:14px;display:flex;align-items:flex-start;gap:11px">
+        <div style="color:#ff8585;font-size:18px;flex-shrink:0">⚠</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:13.5px;margin-bottom:3px">That did not send</div>
+          <div style="color:var(--muted);font-size:12.5px;margin-bottom:11px">Your intro to Maya did not go through.</div>
+          <button style="background:var(--red);color:#fff;border:none;border-radius:9px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer">Try again</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderSkeleton(s){
+  return topBar('Rooms','')+`
+    <div class="p-body"><div class="skeleton">
+      <div class="sk sk-hero"></div>
+      ${[1,2,3].map(()=>`<div class="sk-row"><div class="sk sk-av"></div><div class="sk-lines"><div class="sk sk-l w70"></div><div class="sk sk-l w40"></div></div></div>`).join('')}
+    </div></div>`;
+}
+
+function renderProcessing(s){
+  const j=s.json;
+  return topBar('Your card','')+`
+    <div class="p-body"><div class="msg">
+      <div class="spin"></div>
+      <p style="color:var(--ink);font-weight:600;font-size:15px;max-width:200px">${j.processing.message}</p>
+    </div></div>`;
+}
+
+function renderSheet(s){
+  const d=s.json.decision;
+  const confirmClass = d.destructive ? 'danger' : 'primary';
+  return topBar(cap(s.json.screen),'')+`
+    <div class="p-body" style="padding:0">
+      <div class="sheet-demo">
+        <div class="sheet">
+          <h3>${d.title}</h3>
+          <p>${d.body}</p>
+          <div class="row2">
+            <button class="btn ghost">${d.cancel.label}</button>
+            <button class="btn ${confirmClass}">${d.confirm.label}</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderToast(s){
+  const j=s.json.success;
+  return topBar('Your card','')+`
+    <div class="p-body" style="padding:16px;position:relative">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px">
+        <div style="font-family:'Archivo Black';font-size:20px;color:var(--hint)">MAYA OKAFOR</div>
+        <div style="color:var(--hint);font-size:12px;font-style:italic;margin-top:2px">Founder</div>
+      </div>
+      <div class="toast-demo"><span class="c">✓</span> ${j.message}</div>
+    </div>`;
+}
+
+function cap(s){ return (s||'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
+function fmtTime(iso){ const d=new Date(iso); return d.toLocaleString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}); }
+
+function renderJSON(){
+  document.getElementById('json').innerHTML=highlight(STATES[current].json);
+  document.getElementById('json-name').textContent=(STATES[current].json.screen||'state')+'.json';
+  const fam=STATES[current].family;
+  const colors={error:'#ff8585',loading:'#7ec8ff',decision:'#3bd75c',locked:'#f59e0b',restricted:'#a47bff',success:'#3bd75c'};
+  const b=document.getElementById('state-badge');
+  b.textContent=STATES[current].badge; b.style.color=colors[fam]; b.style.border='1px solid '+colors[fam]+'55';
+}
+function renderPhone(){ document.getElementById('phone').innerHTML=STATES[current].render(STATES[current]); }
+function renderNote(){ document.getElementById('screen-note').innerHTML=STATES[current].note; }
+
+function renderTabs(){
+  const order=['offline','server_error','action_failed','not_found','loading','processing','confirm_send','confirm_destructive','permission','locked','closed','countdown','wrong_role','rate_limited','at_capacity','success'];
+  const labels={offline:'Connection lost',server_error:'Server error',action_failed:'Action failed',not_found:'Not found',loading:'Loading',processing:'Processing',confirm_send:'Confirm send',confirm_destructive:'Confirm delete',permission:'Permission',locked:'Locked',closed:'Closed',countdown:'Countdown',wrong_role:'Wrong role',rate_limited:'Rate limited',at_capacity:'At capacity',success:'Success'};
+  document.getElementById('tabs').innerHTML=order.map(k=>`<div class="tab ${k===current?'on':''}" onclick="setState('${k}')">${labels[k]}<span class="fm">${STATES[k].family}</span></div>`).join('');
+}
+function setState(k){ current=k; renderTabs(); renderJSON(); renderPhone(); renderNote(); }
+function copyJSON(){ navigator.clipboard.writeText(JSON.stringify(STATES[current].json,null,2)).then(()=>{const b=document.querySelector('.copy');const o=b.textContent;b.textContent='Copied';b.style.color='#3bd75c';setTimeout(()=>{b.textContent=o;b.style.color='';},1200);}); }
+
+renderTabs(); renderJSON(); renderPhone(); renderNote();
+</script>
+</body>
+</html>

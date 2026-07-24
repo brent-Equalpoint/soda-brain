@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>SODA, Room Recap</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+  :root{
+    --canvas:#111;--card:#1a1a1a;--surface:#202220;--border:#2a2a2a;
+    --green:#3bd75c;--green-deep:#203229;--ink:#f5f5f5;--muted:#8a8a8a;--hint:#5a5a5a;
+    --amber:#f59e0b;--purple:#a47bff;--red:#ef4444;
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:#000;color:var(--ink);font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:20px}
+  .mono{font-family:'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase}
+  .device{width:392px;height:840px;max-height:calc(100dvh - 40px);background:var(--canvas);border-radius:30px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1px var(--border),0 40px 80px rgba(0,0,0,.65)}
+  @media (max-width:430px){body{padding:0}.device{width:100vw;height:100dvh;max-height:none;border-radius:0}}
+
+  .screen{flex:1;overflow-y:auto;position:relative}
+  .screen::-webkit-scrollbar{display:none}
+  .view{display:none}
+  .view.on{display:block;animation:fade .3s}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+
+  /* ===== LIST VIEW ===== */
+  .list-wrap{padding:22px 20px calc(var(--safe-bottom) + 20px)}
+  .list-wrap h1{font-family:'Archivo Black';font-size:26px;margin-bottom:20px}
+  .room-row{display:flex;gap:14px;align-items:center;padding:16px 0;border-bottom:1px solid rgba(42,42,42,.6);cursor:pointer;transition:opacity .15s}
+  .room-row:active{opacity:.6}
+  .room-row:last-child{border-bottom:none}
+  .room-thumb{width:58px;height:58px;border-radius:14px;background:linear-gradient(135deg,#202220,#161616);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Archivo Black';font-size:11px;color:var(--muted);text-align:center;line-height:1.05}
+  .room-info{flex:1;min-width:0}
+  .room-info .nm{font-weight:700;font-size:16px}
+  .room-info .dt{color:var(--hint);font-size:12.5px;font-family:'DM Mono';margin-top:3px}
+  .room-stat{text-align:right;flex-shrink:0}
+  .room-stat .big{font-family:'Archivo Black';font-size:22px;color:var(--green);line-height:1}
+  .room-stat .lbl{color:var(--muted);font-size:11px;margin-top:3px}
+
+  /* ===== RECAP VIEW ===== */
+  .recap-hero{padding:16px 20px 22px;background:linear-gradient(160deg,#1a2a1c,#141414);border-bottom:1px solid var(--border);position:relative}
+  .back{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:18px;background:none;border:none;font-family:'DM Sans'}
+  .back:active{color:var(--ink)}
+  .recap-eyebrow{display:inline-flex;align-items:center;gap:7px;font-family:'DM Mono';font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+  .recap-hero h1{font-family:'Archivo Black';font-size:30px;line-height:1.05;margin-bottom:6px}
+  .recap-hero .when{color:var(--muted);font-size:13px;font-family:'DM Mono'}
+
+  .recap-body{padding:22px 20px calc(var(--safe-bottom) + 24px)}
+
+  /* headline stat band */
+  .band{display:flex;gap:10px;margin-bottom:24px}
+  .bstat{flex:1;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px 12px;text-align:center}
+  .bstat .big{font-family:'Archivo Black';font-size:28px;color:var(--green);line-height:1}
+  .bstat .lbl{color:var(--muted);font-size:10.5px;margin-top:6px;line-height:1.3}
+
+  .sec{margin-bottom:26px}
+  .sec-title{font-family:'Archivo Black';font-size:16px;margin-bottom:4px}
+  .sec-sub{color:var(--muted);font-size:13px;margin-bottom:16px;line-height:1.5}
+
+  /* your night, narrative line */
+  .night-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px}
+  .night-line{display:flex;align-items:flex-start;gap:13px;padding:12px 0;border-bottom:1px solid rgba(42,42,42,.5)}
+  .night-line:last-child{border-bottom:none}
+  .night-line .ico{width:34px;height:34px;border-radius:10px;background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px}
+  .night-line .txt{flex:1;font-size:14px;line-height:1.45;padding-top:5px}
+  .night-line .txt b{color:var(--green);font-weight:700}
+
+  /* people you met */
+  .met{display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid rgba(42,42,42,.6);cursor:pointer}
+  .met:last-child{border-bottom:none}
+  .met:active{opacity:.6}
+  .met .av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;color:#06140a}
+  .met .info{flex:1;min-width:0}
+  .met .info .nm{font-weight:700;font-size:15px}
+  .met .info .why{color:var(--muted);font-size:12px;margin-top:2px}
+  .met .info .why b{color:var(--green);font-weight:600}
+  .met .warm{flex-shrink:0;display:flex;align-items:center;gap:6px}
+  .met .warm .dot{width:8px;height:8px;border-radius:50%}
+  .met .warm span{font-size:9px;font-family:'DM Mono';text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+
+  /* most wanted / gaps */
+  .gap-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(42,42,42,.5)}
+  .gap-row:last-child{border-bottom:none}
+  .gap-row .what{font-size:14px;font-weight:600}
+  .gap-row .bar-track{flex:1;height:6px;background:var(--border);border-radius:3px;margin:0 14px;overflow:hidden;max-width:130px}
+  .gap-row .bar-fill{height:100%;border-radius:3px}
+  .gap-row .num{font-family:'DM Mono';font-size:12px;color:var(--muted);min-width:54px;text-align:right}
+
+  /* top connector highlight */
+  .highlight{background:linear-gradient(135deg,#1e2a30,#1a1a1a);border:1px solid rgba(164,123,255,.35);border-radius:18px;padding:20px;display:flex;align-items:center;gap:16px}
+  .highlight .av{width:54px;height:54px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;color:#100a1a;font-weight:700;font-size:18px;flex-shrink:0}
+  .highlight .info{flex:1}
+  .highlight .lbl{font-family:'DM Mono';font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);margin-bottom:4px}
+  .highlight .nm{font-family:'Archivo Black';font-size:18px;line-height:1.05}
+  .highlight .det{color:var(--muted);font-size:12px;margin-top:3px}
+
+  /* cta */
+  .recap-cta{margin-top:8px}
+  .recap-cta .btn{width:100%;min-height:54px;border:none;border-radius:14px;background:var(--green);color:#06140a;font-weight:700;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+  .recap-cta .btn:active{transform:scale(.98)}
+  .recap-cta .sub{text-align:center;color:var(--hint);font-size:11px;font-family:'DM Mono';margin-top:12px;letter-spacing:.04em}
+
+  .toast{position:absolute;left:50%;bottom:30px;transform:translateX(-50%) translateY(14px);background:#1d2a1f;border:1px solid rgba(59,215,92,.4);border-radius:9999px;padding:12px 20px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;white-space:nowrap;z-index:80}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="screen">
+
+    <!-- ===== LIST ===== -->
+    <div class="view on" id="view-list">
+      <div class="list-wrap">
+        <h1>Past rooms</h1>
+        <div class="room-row" onclick="openRecap('coffee')">
+          <div class="room-thumb">COFFEE<br>CONNECT</div>
+          <div class="room-info"><div class="nm">Coffee Connect</div><div class="dt">Jun 17, 2026</div></div>
+          <div class="room-stat"><div class="big">7</div><div class="lbl">connections</div></div>
+        </div>
+        <div class="room-row" onclick="openRecap('founder')">
+          <div class="room-thumb">FOUNDER<br>MIXER</div>
+          <div class="room-info"><div class="nm">Founder Mixer</div><div class="dt">May 30, 2026</div></div>
+          <div class="room-stat"><div class="big">12</div><div class="lbl">connections</div></div>
+        </div>
+        <div class="room-row" onclick="openRecap('btw')">
+          <div class="room-thumb">BLACK<br>TECH WK</div>
+          <div class="room-info"><div class="nm">Black Tech Week</div><div class="dt">Apr 12, 2026</div></div>
+          <div class="room-stat"><div class="big">23</div><div class="lbl">connections</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RECAP ===== -->
+    <div class="view" id="view-recap">
+      <div class="recap-hero">
+        <button class="back" onclick="showList()">← Past rooms</button>
+        <div class="recap-eyebrow">✦ Room recap</div>
+        <h1 id="r-name">Coffee Connect</h1>
+        <div class="when" id="r-when">Jun 17, 2026 · Cleveland</div>
+      </div>
+      <div class="recap-body" id="r-body"></div>
+    </div>
+
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// Coffee Connect uses the real pilot numbers. Others are representative.
+const ROOMS = {
+  coffee:{
+    name:'Coffee Connect', when:'Jun 17, 2026 · Cleveland',
+    people:19, matches:145, mutual:62, yours:7,
+    night:[
+      {ico:'👋', html:'You checked in and showed up as <b>Founder</b>.'},
+      {ico:'🔗', html:'The room found you <b>7 strong matches</b> out of 19 people.'},
+      {ico:'🤝', html:'You made <b>4 connections</b> you kept.'},
+      {ico:'✦', html:'One match became a <b>mutual offer</b>, you both had something for each other.'},
+    ],
+    met:[
+      {ini:'LM', color:'#a47bff', nm:'Lorena Medina', why:'You both offered <b>Introductions</b>', warm:'In rhythm', wc:'#3bd75c'},
+      {ini:'MO', color:'#3bd75c', nm:'Maya Okafor', why:'She needs <b>Funding</b>, you know investors', warm:'In rhythm', wc:'#3bd75c'},
+      {ini:'DP', color:'#3bd75c', nm:'Devin Park', why:'You both work in <b>early-stage</b>', warm:'Cooling', wc:'#f59e0b'},
+      {ini:'TW', color:'#a47bff', nm:'Theo Walsh', why:'He offered <b>Engineering</b>, you need it', warm:'Cooling', wc:'#f59e0b'},
+    ],
+    gaps:[
+      {what:'Looking for work', need:5, offer:0, color:'#f59e0b'},
+      {what:'Funding', need:4, offer:0, color:'#f59e0b'},
+      {what:'Introductions', need:3, offer:6, color:'#3bd75c'},
+      {what:'Mentorship', need:2, offer:4, color:'#3bd75c'},
+    ],
+    connector:{ini:'LM', nm:'Lorena Medina', det:'18 matches in the room · most connected'},
+  },
+  founder:{
+    name:'Founder Mixer', when:'May 30, 2026 · Cleveland',
+    people:34, matches:210, mutual:88, yours:12,
+    night:[
+      {ico:'👋', html:'You checked in and showed up as <b>Founder</b>.'},
+      {ico:'🔗', html:'The room found you <b>12 strong matches</b> out of 34 people.'},
+      {ico:'🤝', html:'You made <b>9 connections</b> you kept.'},
+      {ico:'✦', html:'Three matches became <b>mutual offers</b>.'},
+    ],
+    met:[
+      {ini:'RK', color:'#3bd75c', nm:'Rosa Kim', why:'She offered <b>Investment</b>, you need it', warm:'In rhythm', wc:'#3bd75c'},
+      {ini:'JT', color:'#a47bff', nm:'Jordan Tate', why:'You both need <b>Talent</b>', warm:'Cooling', wc:'#f59e0b'},
+      {ini:'AM', color:'#3bd75c', nm:'Amara Obi', why:'You offered <b>Mentorship</b>, she needs it', warm:'Been a while', wc:'#5a5a5a'},
+    ],
+    gaps:[
+      {what:'Funding', need:9, offer:2, color:'#f59e0b'},
+      {what:'Talent', need:7, offer:3, color:'#f59e0b'},
+      {what:'Mentorship', need:3, offer:8, color:'#3bd75c'},
+      {what:'Introductions', need:4, offer:7, color:'#3bd75c'},
+    ],
+    connector:{ini:'RK', nm:'Rosa Kim', det:'26 matches in the room · most connected'},
+  },
+  btw:{
+    name:'Black Tech Week', when:'Apr 12, 2026 · Cincinnati',
+    people:61, matches:402, mutual:170, yours:23,
+    night:[
+      {ico:'👋', html:'You checked in and showed up as <b>Engineer</b>.'},
+      {ico:'🔗', html:'The room found you <b>23 strong matches</b> out of 61 people.'},
+      {ico:'🤝', html:'You made <b>16 connections</b> you kept.'},
+      {ico:'✦', html:'Six matches became <b>mutual offers</b>, your biggest room yet.'},
+    ],
+    met:[
+      {ini:'NF', color:'#3bd75c', nm:'Nelson Foster', why:'You both build <b>full-stack</b>', warm:'In rhythm', wc:'#3bd75c'},
+      {ini:'SA', color:'#a47bff', nm:'Sofia Alvarez', why:'She needs a <b>technical co-founder</b>', warm:'In rhythm', wc:'#3bd75c'},
+      {ini:'KB', color:'#3bd75c', nm:'Kai Brooks', why:'You offered <b>Code review</b>', warm:'Cooling', wc:'#f59e0b'},
+    ],
+    gaps:[
+      {what:'Co-founder', need:11, offer:3, color:'#f59e0b'},
+      {what:'Contract work', need:8, offer:5, color:'#f59e0b'},
+      {what:'Expertise', need:5, offer:14, color:'#3bd75c'},
+      {what:'Mentorship', need:4, offer:9, color:'#3bd75c'},
+    ],
+    connector:{ini:'NF', nm:'Nelson Foster', det:'41 matches in the room · most connected'},
+  },
+};
+
+function showList(){
+  document.getElementById('view-recap').classList.remove('on');
+  document.getElementById('view-list').classList.add('on');
+  document.querySelector('.screen').scrollTop = 0;
+}
+
+function openRecap(id){
+  const r = ROOMS[id];
+  document.getElementById('r-name').textContent = r.name;
+  document.getElementById('r-when').textContent = r.when;
+
+  const maxGap = Math.max(...r.gaps.map(g=>Math.max(g.need,g.offer)));
+
+  document.getElementById('r-body').innerHTML = `
+    <div class="band">
+      <div class="bstat"><div class="big">${r.people}</div><div class="lbl">in the room</div></div>
+      <div class="bstat"><div class="big">${r.yours}</div><div class="lbl">your matches</div></div>
+      <div class="bstat"><div class="big">${r.matches}</div><div class="lbl">room matches</div></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Your night</div>
+      <div class="sec-sub">How the room played out for you.</div>
+      <div class="night-card">
+        ${r.night.map(n=>`<div class="night-line"><div class="ico">${n.ico}</div><div class="txt">${n.html}</div></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Who you met</div>
+      <div class="sec-sub">The connections you made, and why the room paired you.</div>
+      ${r.met.map(m=>`
+        <div class="met" onclick="toast('Open ${m.nm.split(' ')[0]}')">
+          <div class="av" style="background:${m.color}">${m.ini}</div>
+          <div class="info"><div class="nm">${m.nm}</div><div class="why">${m.why}</div></div>
+          <div class="warm"><div class="dot" style="background:${m.wc}"></div><span>${m.warm}</span></div>
+        </div>`).join('')}
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">What the room wanted</div>
+      <div class="sec-sub">The gaps. Where need outran supply, and where it was covered.</div>
+      ${r.gaps.map(g=>{
+        const w = Math.round(Math.max(g.need,g.offer)/maxGap*100);
+        const short = g.need>g.offer;
+        return `<div class="gap-row">
+          <span class="what">${g.what}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${g.color}"></div></div>
+          <span class="num">${g.need} need / ${g.offer} offer</span>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">Top connector</div>
+      <div class="sec-sub">The person the room revolved around.</div>
+      <div class="highlight">
+        <div class="av">${r.connector.ini}</div>
+        <div class="info">
+          <div class="lbl">Most connected</div>
+          <div class="nm">${r.connector.nm}</div>
+          <div class="det">${r.connector.det}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="recap-cta">
+      <button class="btn" onclick="toast('Opening Equalpoint')">Keep these connections warm →</button>
+      <div class="sub">${r.yours} connections from this room live in Equalpoint</div>
+    </div>
+  `;
+
+  document.getElementById('view-list').classList.remove('on');
+  document.getElementById('view-recap').classList.add('on');
+  document.querySelector('.screen').scrollTop = 0;
+}
+
+let tg;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(tg); tg=setTimeout(()=>t.classList.remove('show'),1600);
+}
+</script>
+</body>
+</html>

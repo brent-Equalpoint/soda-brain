@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css" rel="stylesheet">
+<style>
+@font-face{font-family:'Be Vietnam Pro';src:url('fonts/BeVietnamPro-Regular.woff2') format('woff2');font-weight:400}
+@font-face{font-family:'Be Vietnam Pro';src:url('fonts/BeVietnamPro-Medium.woff2') format('woff2');font-weight:500}
+@font-face{font-family:'Be Vietnam Pro';src:url('fonts/BeVietnamPro-SemiBold.woff2') format('woff2');font-weight:600}
+@font-face{font-family:'Be Vietnam Pro';src:url('fonts/BeVietnamPro-Bold.woff2') format('woff2');font-weight:700}
+@font-face{font-family:'Be Vietnam Pro';src:url('fonts/BeVietnamPro-Black.woff2') format('woff2');font-weight:900}
+:root{
+  --bg:#0c0e0c; --s1:#131613; --s2:#191d19; --s3:#212621;
+  --bd:#242a24; --bd2:#2f362f;
+  --green:#3BD75C; --dg:#203229; --green-soft:rgba(59,215,92,.09); --green-bd:rgba(59,215,92,.28);
+  --t0:#f2f4f2; --t1:#c6ccc6; --t2:#7c847c; --t3:#4a524a;
+  --amber:#F59E0B; --amber-soft:rgba(245,158,11,.1);
+  --red:#EF4444; --red-soft:rgba(239,68,68,.1);
+  --fd:'Be Vietnam Pro', system-ui, sans-serif;
+  --fm:'Public Sans', system-ui, sans-serif;
+}
+body{margin:0;background:var(--bg);color:var(--t1);font-family:var(--fd)}
+a{color:var(--green)} a:hover{color:#5fe37c}
+::-webkit-scrollbar{width:0;height:0}
+@keyframes adm-pulse{0%,100%{opacity:1}50%{opacity:.35}}
+input,select{outline:none;color-scheme:dark}
+input:focus{border-color:var(--green-bd) !important}
+</style>
+</helmet>
+
+<div style="{{ appStyle }}">
+
+  <!-- ═══ MOBILE HEADER + NAV ═══ -->
+  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Mobile Header" style="flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--bd)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px">
+        <div>
+          <span style="font-weight:900;font-size:15px;letter-spacing:.04em;color:var(--green)">SODA ADMIN</span>
+          <span style="font-family:var(--fm);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-left:8px">{{ eventName }}</span>
+        </div>
+        <span style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+          <span style="width:5px;height:5px;border-radius:50%;background:var(--green);animation:adm-pulse 1.4s ease infinite"></span>
+          <span style="font-family:var(--fm);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--green)">{{ inRoomCount }} in</span>
+        </span>
+      </div>
+      <div class="soda-rail" style="display:flex;gap:6px;overflow-x:auto;padding:4px 16px 12px">
+        <sc-for list="{{ mobileNavItems }}" as="mn" hint-placeholder-count="9">
+          <button onClick="{{ mn.go }}" style="{{ mn.style }}">
+            {{ mn.label }}
+            <sc-if value="{{ mn.hasBadge }}" hint-placeholder-val="{{ false }}">
+              <span style="{{ mn.badgeStyle }}">{{ mn.badge }}</span>
+            </sc-if>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <sc-if value="{{ showSidebar }}" hint-placeholder-val="{{ true }}">
+  <div data-screen-label="Sidebar" style="background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden">
+    <div style="padding:18px 18px 14px;border-bottom:1px solid var(--bd)">
+      <div style="font-weight:900;font-size:17px;letter-spacing:.04em;color:var(--green)">SODA ADMIN</div>
+      <div style="font-family:var(--fm);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t2);margin-top:3px">Room intelligence</div>
+    </div>
+    <div style="margin:12px 12px 0;background:var(--dg);border:1px solid var(--green-bd);border-radius:10px;padding:10px 12px">
+      <div style="font-family:var(--fm);font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:3px">Tonight</div>
+      <div style="font-size:13px;font-weight:600;color:var(--t0)">{{ eventName }}</div>
+      <div style="display:flex;align-items:center;gap:5px;margin-top:4px">
+        <span style="width:5px;height:5px;border-radius:50%;background:var(--green);animation:adm-pulse 1.4s ease infinite"></span>
+        <span style="font-family:var(--fm);font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--green)">Live · {{ inRoomCount }} in room</span>
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:14px 10px;display:flex;flex-direction:column;gap:2px">
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="9">
+        <button onClick="{{ n.go }}" style="{{ n.style }}" style-hover="background:var(--s2);color:var(--t0)">
+          <i class="{{ n.icon }}" style="font-size:15px;width:20px;text-align:center"></i>
+          <span style="flex:1;text-align:left">{{ n.label }}</span>
+          <sc-if value="{{ n.hasBadge }}" hint-placeholder-val="{{ false }}">
+            <span style="{{ n.badgeStyle }}">{{ n.badge }}</span>
+          </sc-if>
+        </button>
+      </sc-for>
+    </div>
+    <div style="padding:14px;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="width:28px;height:28px;border-radius:8px;background:var(--dg);border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--green);flex-shrink:0">BM</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--t0)">Brent Montgomery</div>
+          <div style="font-family:var(--fm);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--t2)">{{ hostRole }}</div>
+        </div>
+      </div>
+      <button onClick="{{ toggleDoorMode }}" style="width:100%;background:transparent;border:1px solid var(--bd2);border-radius:8px;padding:8px;font-family:var(--fd);font-size:11.5px;font-weight:600;color:var(--t2);cursor:pointer;transition:all .15s" style-hover="color:var(--t0);border-color:var(--green-bd)">{{ doorBtnLabel }}</button>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ═══ MAIN ═══ -->
+  <div style="display:flex;flex-direction:column;overflow:hidden;min-width:0;flex:1">
+    <div style="{{ headerStyle }}">
+      <div style="min-width:0">
+        <div style="{{ viewTitleStyle }}">{{ viewTitle }}</div>
+        <div style="font-size:12.5px;color:var(--t2);margin-top:2px">{{ viewSub }}</div>
+      </div>
+      <sc-if value="{{ notMobile }}" hint-placeholder-val="{{ true }}">
+        <div style="font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);flex-shrink:0">Fri Jul 10 · 8:47 PM</div>
+      </sc-if>
+    </div>
+
+    <div style="{{ contentStyle }}">
+
+      <!-- THE ROOM -->
+      <sc-if value="{{ isRoomView }}" hint-placeholder-val="{{ true }}">
+        <div data-screen-label="The Room">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px">
+            <sc-for list="{{ roomStats }}" as="st" hint-placeholder-count="4">
+              <div style="padding:15px 17px;background:var(--s1);border:1px solid var(--bd);border-radius:12px">
+                <div style="font-weight:900;font-size:25px;color:var(--green);letter-spacing:-.02em">{{ st.n }}</div>
+                <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-top:3px">{{ st.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:14px">
+            <input value="{{ q }}" onChange="{{ setQ }}" placeholder="Search the room…" style="flex:1;min-width:0;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:11px 14px;font-family:var(--fd);font-size:13.5px;color:var(--t0)">
+            <button onClick="{{ setGrid }}" aria-label="Grid view" style="{{ gridBtnStyle }}" style-hover="color:var(--t0)"><i class="ti ti-layout-grid" style="font-size:16px"></i></button>
+            <button onClick="{{ setList }}" aria-label="List view" style="{{ listBtnStyle }}" style-hover="color:var(--t0)"><i class="ti ti-list" style="font-size:16px"></i></button>
+            <button onClick="{{ toggleSelectMode }}" style="{{ selBtnStyle }}"><i class="ti ti-speakerphone" style="font-size:15px"></i><span>Call out</span></button>
+          </div>
+
+          <!-- GRID VIEW: static square cards -->
+          <sc-if value="{{ isGrid }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:10px">
+              <sc-for list="{{ roster }}" as="p" hint-placeholder-count="12">
+                <div onClick="{{ p.open }}" style="{{ p.cardStyle }}" style-hover="border-color:var(--green-bd)">
+                  <sc-if value="{{ p.selected }}" hint-placeholder-val="{{ false }}">
+                    <span style="position:absolute;top:8px;right:8px;width:18px;height:18px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center"><i class="ti ti-check" style="font-size:12px;color:#0D1F12"></i></span>
+                  </sc-if>
+                  <div style="{{ p.sqStyle }}">{{ p.initials }}</div>
+                  <div style="min-width:0;width:100%">
+                    <div style="font-size:12.5px;font-weight:600;color:var(--t0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                    <div style="font-size:10.5px;color:var(--t2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.role }}</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:5px">
+                    <span style="{{ p.dotStyle }}"></span>
+                    <span style="font-family:var(--fm);font-size:8.5px;letter-spacing:1px;text-transform:uppercase;color:{{ p.statusColor }}">{{ p.status }}</span>
+                  </div>
+                  <sc-if value="{{ p.firstTimer }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-family:var(--fm);font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:var(--amber);background:var(--amber-soft);border-radius:100px;padding:2px 8px">First timer</span>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- LIST VIEW -->
+          <sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ roster }}" as="p" hint-placeholder-count="8">
+                <div onClick="{{ p.open }}" style="{{ p.rowStyle }}" style-hover="border-color:var(--green-bd)">
+                  <sc-if value="{{ p.selected }}" hint-placeholder-val="{{ false }}">
+                    <span style="width:18px;height:18px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-check" style="font-size:12px;color:#0D1F12"></i></span>
+                  </sc-if>
+                  <div style="{{ p.sqStyleSm }}">{{ p.initials }}</div>
+                  <div style="flex:1;min-width:130px">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="font-size:14px;font-weight:600;color:var(--t0);white-space:nowrap">{{ p.name }}</span>
+                      <sc-if value="{{ p.firstTimer }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-family:var(--fm);font-size:8.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--amber);background:var(--amber-soft);border-radius:100px;padding:2px 8px">First timer</span>
+                      </sc-if>
+                    </div>
+                    <div style="font-size:12px;color:var(--t2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.sub }}</div>
+                  </div>
+                  <sc-if value="{{ notMobile }}" hint-placeholder-val="{{ true }}">
+                    <div style="font-family:var(--fm);font-size:10px;color:var(--t2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.chips }}</div>
+                  </sc-if>
+                  <span style="{{ p.statusStyle }}">{{ p.status }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- FUNNEL -->
+      <sc-if value="{{ isFunnel }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Onboarding Funnel">
+          <sc-if value="{{ funnelAlertShow }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:10px;background:var(--red-soft);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:12px 16px;margin-bottom:14px">
+              <i class="ti ti-alert-triangle" style="font-size:16px;color:var(--red)"></i>
+              <span style="font-size:13px;font-weight:600;color:var(--t0)">{{ funnelAlertText }}</span>
+            </div>
+          </sc-if>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">
+            <sc-for list="{{ funnelPts }}" as="fp" hint-placeholder-count="7">
+              <div onClick="{{ fp.open }}" style="background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:15px 16px;cursor:pointer;transition:border-color .15s" style-hover="border-color:var(--green-bd)">
+                <div style="font-family:var(--fm);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:8px">{{ fp.stepNo }}</div>
+                <div style="display:flex;align-items:baseline;gap:7px">
+                  <span style="font-weight:900;font-size:24px;color:{{ fp.stateColor }};letter-spacing:-.02em">{{ fp.count }}</span>
+                  <sc-if value="{{ fp.hasDrop }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:11px;font-weight:500;color:{{ fp.dropFill }};opacity:.85">{{ fp.drop }}</span>
+                  </sc-if>
+                </div>
+                <div style="font-size:12px;color:var(--t2);margin-top:4px">{{ fp.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <!-- FUNNEL STEP EXPLAINER MODAL -->
+          <sc-if value="{{ fmShow }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closeFm }}" style="position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:90;display:flex;align-items:center;justify-content:center;padding:20px">
+              <div onClick="{{ fmStop }}" style="background:var(--s1);border:1px solid var(--bd2);border-radius:16px;max-width:440px;width:100%;padding:24px;box-shadow:0 24px 60px rgba(0,0,0,.5)">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+                  <span style="{{ fmPillStyle }}">{{ fmState }}</span>
+                  <span style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3)">{{ fmStepNo }}</span>
+                  <button onClick="{{ closeFm }}" aria-label="Close" style="margin-left:auto;background:transparent;border:none;color:var(--t2);font-size:18px;cursor:pointer;line-height:1;padding:4px" style-hover="color:var(--t0)">×</button>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:10px">
+                  <span style="font-weight:900;font-size:34px;color:{{ fmColor }};letter-spacing:-.02em">{{ fmCount }}</span>
+                  <span style="font-weight:700;font-size:16px;color:var(--t0)">{{ fmLabel }}</span>
+                </div>
+                <div style="font-size:13px;color:var(--t2);line-height:1.6;margin:10px 0 16px">{{ fmExplainer }}</div>
+                <div style="border-top:1px solid var(--bd)">
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--bd)">
+                    <span style="font-size:12.5px;color:var(--t2)">Made it from the previous step</span>
+                    <span style="font-weight:700;font-size:14px;color:var(--t0)">{{ fmPrevPct }}</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--bd)">
+                    <span style="font-size:12.5px;color:var(--t2)">Of everyone who landed</span>
+                    <span style="font-weight:700;font-size:14px;color:var(--t0)">{{ fmTotalPct }}</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 0">
+                    <span style="font-size:12.5px;color:var(--t2)">Dropped off at this step</span>
+                    <span style="font-weight:700;font-size:14px;color:{{ fmColor }}">{{ fmDropped }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
+            <sc-for list="{{ funnelNotes }}" as="fn" hint-placeholder-count="3">
+              <div style="background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:16px">
+                <div style="font-weight:900;font-size:22px;color:var(--t0)">{{ fn.n }}</div>
+                <div style="font-size:12px;color:var(--t2);margin-top:4px;line-height:1.5">{{ fn.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- SUPPLY VS DEMAND -->
+      <sc-if value="{{ isSupply }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Offers vs Needs">
+          <div style="{{ supplyHeadGrid }}">
+            <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2)">Chip</div>
+            <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green)">Offered</div>
+            <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber)">Needed</div>
+            <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);text-align:right">Gap</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <sc-for list="{{ supplyRows }}" as="s" hint-placeholder-count="8">
+              <div style="{{ supplyGrid }}">
+                <div style="font-size:12.5px;font-weight:600;color:var(--t0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.chip }}</div>
+                <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                  <div style="flex:1;height:16px;background:var(--s2);border-radius:4px;overflow:hidden"><div style="{{ s.oBar }}"></div></div>
+                  <span style="font-family:var(--fm);font-size:11px;color:var(--t1);width:20px;text-align:right">{{ s.offers }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                  <div style="flex:1;height:16px;background:var(--s2);border-radius:4px;overflow:hidden"><div style="{{ s.nBar }}"></div></div>
+                  <span style="font-family:var(--fm);font-size:11px;color:var(--t1);width:20px;text-align:right">{{ s.needs }}</span>
+                </div>
+                <div style="text-align:right"><span style="{{ s.gapStyle }}">{{ s.gap }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- CHIP QUEUE -->
+      <sc-if value="{{ isQueue }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Chip Queue">
+          <sc-if value="{{ queueEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:48px 20px;color:var(--t2);font-size:13.5px">Queue is clear. Custom chips land here for approval before they go live in the room.</div>
+          </sc-if>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ queueRows }}" as="c" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px;background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:14px 16px">
+                <div style="flex:1;min-width:180px">
+                  <div style="display:flex;align-items:center;gap:9px">
+                    <span style="font-size:14.5px;font-weight:700;color:var(--t0)">{{ c.label }}</span>
+                    <span style="{{ c.kindStyle }}">{{ c.kind }}</span>
+                  </div>
+                  <div style="font-size:12px;color:var(--t2);margin-top:2px">Written in by {{ c.by }} · {{ c.time }}</div>
+                </div>
+                <div style="display:flex;gap:8px">
+                  <button onClick="{{ c.reject }}" style="background:transparent;border:1px solid var(--bd2);border-radius:8px;padding:8px 14px;font-family:var(--fd);font-size:12.5px;font-weight:600;color:var(--t2);cursor:pointer" style-hover="color:var(--red);border-color:var(--red)">Reject</button>
+                  <button onClick="{{ c.approve }}" style="background:var(--green);border:none;border-radius:8px;padding:8px 16px;font-family:var(--fd);font-size:12.5px;font-weight:700;color:#0D1F12;cursor:pointer" style-hover="filter:brightness(1.1)">Approve</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- MATCHES -->
+      <sc-if value="{{ isMatches }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Matches">
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:26px">
+            <sc-for list="{{ matchRows }}" as="m" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;flex-wrap:wrap;gap:10px;background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:12px 16px">
+                <div style="flex:1;min-width:200px">
+                  <div style="font-size:14px;font-weight:600;color:var(--t0)">{{ m.pair }}</div>
+                  <div style="font-family:var(--fm);font-size:10.5px;color:var(--green);margin-top:3px">{{ m.mutual }}</div>
+                </div>
+                <span style="{{ m.statusStyle }}">{{ m.status }}</span>
+                <span style="font-family:var(--fm);font-size:10px;color:var(--t2)">{{ m.time }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-family:var(--fm);font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--green);margin-bottom:12px">Intro chains</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ chainRows }}" as="ch" hint-placeholder-count="3">
+              <div style="background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:13px 16px">
+                <div style="font-size:13.5px;color:var(--t1)"><b style="color:var(--t0)">{{ ch.via }}</b> introduced <b style="color:var(--t0)">{{ ch.a }}</b> → <b style="color:var(--t0)">{{ ch.b }}</b></div>
+                <div style="font-size:12px;color:var(--t2);margin-top:3px">{{ ch.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- LIVE MOMENTS -->
+      <sc-if value="{{ isMoments }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Live Moments">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-bottom:24px">
+            <sc-for list="{{ momentCards }}" as="mo" hint-placeholder-count="3">
+              <div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px">
+                <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.8px;text-transform:uppercase;color:{{ mo.color }}">{{ mo.eyebrow }}</div>
+                <div style="font-weight:900;font-size:19px;color:var(--t0)">{{ mo.title }}</div>
+                <div style="font-size:12.5px;color:var(--t2);line-height:1.55;flex:1">{{ mo.desc }}</div>
+                <sc-if value="{{ mo.hasNote }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:11px;color:var(--t3);line-height:1.5">{{ mo.note }}</div>
+                </sc-if>
+                <sc-if value="{{ mo.live }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <span style="width:6px;height:6px;border-radius:50%;background:{{ mo.color }};animation:adm-pulse 1.4s ease infinite"></span>
+                    <span style="font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:{{ mo.color }}">{{ mo.liveLabel }}</span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ mo.idle }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ mo.fire }}" style="background:transparent;border:1px solid {{ mo.color }};border-radius:9px;padding:10px;font-family:var(--fd);font-size:13px;font-weight:700;color:{{ mo.color }};cursor:pointer;white-space:nowrap" style-hover="background:var(--s2)">{{ mo.cta }}</button>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ dropFired }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:var(--fm);font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--green);margin-bottom:12px">Drop wall · moderation</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ dropRows }}" as="d" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:14px;background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:11px 15px">
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13.5px;color:var(--t0)">“{{ d.text }}”</div>
+                    <div style="font-family:var(--fm);font-size:10px;color:var(--t2);margin-top:3px">{{ d.by }}</div>
+                  </div>
+                  <button onClick="{{ d.hide }}" style="background:transparent;border:1px solid var(--bd2);border-radius:8px;padding:6px 12px;font-family:var(--fd);font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;flex-shrink:0" style-hover="color:var(--red);border-color:var(--red)">Hide</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ACTIVITY -->
+      <sc-if value="{{ isActivity }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Activity">
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ auditRows }}" as="a" hint-placeholder-count="4">
+              <div style="display:flex;align-items:baseline;gap:14px;padding:11px 2px;border-bottom:1px solid var(--bd)">
+                <span style="font-family:var(--fm);font-size:10px;color:var(--t3);flex-shrink:0;width:60px">{{ a.time }}</span>
+                <span style="font-size:13px;color:var(--t1);line-height:1.5">{{ a.text }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- EVENTS -->
+      <sc-if value="{{ isEvents }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Events">
+          <button onClick="{{ openEventModal }}" style="display:inline-flex;align-items:center;gap:8px;background:var(--green);border:none;border-radius:10px;padding:11px 18px;font-family:var(--fd);font-size:13px;font-weight:700;color:#0D1F12;cursor:pointer;margin-bottom:18px" style-hover="filter:brightness(1.1)"><i class="ti ti-plus" style="font-size:15px"></i>New event</button>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ eventRows }}" as="ev" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px;background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:14px 16px">
+                <div style="flex:1;min-width:200px">
+                  <div style="font-size:14.5px;font-weight:700;color:var(--t0)">{{ ev.name }}</div>
+                  <div style="font-size:12px;color:var(--t2);margin-top:2px">{{ ev.meta }}</div>
+                </div>
+                <span style="{{ ev.statusStyle }}">{{ ev.status }}</span>
+                <button onClick="{{ ev.openCodes }}" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--bd2);border-radius:9px;padding:8px 13px;font-family:var(--fd);font-size:12.5px;font-weight:600;color:var(--t1);cursor:pointer;flex-shrink:0" style-hover="border-color:var(--green-bd);color:var(--green)"><i class="ti ti-qrcode" style="font-size:14px"></i>Codes</button>
+                <sc-if value="{{ ev.canGoLive }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ ev.makeLive }}" style="background:transparent;border:1px solid var(--green-bd);border-radius:9px;padding:8px 14px;font-family:var(--fd);font-size:12.5px;font-weight:700;color:var(--green);cursor:pointer;flex-shrink:0" style-hover="background:var(--green-soft)">Make live</button>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:11.5px;color:var(--t3);margin-top:14px;line-height:1.6">Every event gets its own entry and survey codes the moment it’s created. Making an event live points check-in, acts, and codes at it.</div>
+        </div>
+      </sc-if>
+
+      <!-- EXPORT -->
+      <sc-if value="{{ isExport }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Export">
+          <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:18px;max-width:520px">The night’s data, out of the room. Downloads are generated from tonight’s live state.</div>
+          <div style="display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 2px;border-bottom:1px solid var(--bd)">
+              <i class="ti ti-users" style="font-size:17px;color:var(--green);width:24px"></i>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:600;color:var(--t0)">Attendees</div>
+                <div style="font-size:12px;color:var(--t2)">Name, role, status, offers, needs — CSV</div>
+              </div>
+              <button onClick="{{ exportAttendees }}" style="background:transparent;border:1px solid var(--green-bd);border-radius:9px;padding:8px 15px;font-family:var(--fd);font-size:12.5px;font-weight:700;color:var(--green);cursor:pointer;flex-shrink:0" style-hover="background:var(--green-soft)">Download</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 2px;border-bottom:1px solid var(--bd)">
+              <i class="ti ti-sparkles" style="font-size:17px;color:var(--green);width:24px"></i>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:600;color:var(--t0)">Matches</div>
+                <div style="font-size:12px;color:var(--t2)">Every mutual mark with status and time — CSV</div>
+              </div>
+              <button onClick="{{ exportMatches }}" style="background:transparent;border:1px solid var(--green-bd);border-radius:9px;padding:8px 15px;font-family:var(--fd);font-size:12.5px;font-weight:700;color:var(--green);cursor:pointer;flex-shrink:0" style-hover="background:var(--green-soft)">Download</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 2px;border-bottom:1px solid var(--bd)">
+              <i class="ti ti-file-code" style="font-size:17px;color:var(--green);width:24px"></i>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:600;color:var(--t0)">Full night</div>
+                <div style="font-size:12px;color:var(--t2)">Attendees, matches, intro chains, and the activity log — JSON</div>
+              </div>
+              <button onClick="{{ exportNight }}" style="background:transparent;border:1px solid var(--green-bd);border-radius:9px;padding:8px 15px;font-family:var(--fd);font-size:12.5px;font-weight:700;color:var(--green);cursor:pointer;flex-shrink:0" style-hover="background:var(--green-soft)">Download</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- MESSAGES -->
+      <sc-if value="{{ isMessages }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Messages">
+          <sc-if value="{{ msgEmpty }}" hint-placeholder-val="{{ true }}">
+            <div style="text-align:center;padding:56px 20px">
+              <div style="font-size:14px;font-weight:600;color:var(--t1);margin-bottom:6px">No threads yet</div>
+              <div style="font-size:12.5px;color:var(--t2);line-height:1.6;max-width:340px;margin:0 auto 18px">Open anyone’s card in The Room and message them directly — every thread lands here.</div>
+              <button onClick="{{ goRoom }}" style="background:transparent;border:1px solid var(--green-bd);border-radius:9px;padding:9px 16px;font-family:var(--fd);font-size:12.5px;font-weight:700;color:var(--green);cursor:pointer" style-hover="background:var(--green-soft)">Go to The Room</button>
+            </div>
+          </sc-if>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ msgThreads }}" as="t" hint-placeholder-count="0">
+              <div onClick="{{ t.open }}" style="display:flex;align-items:center;gap:13px;background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;cursor:pointer" style-hover="border-color:var(--green-bd)">
+                <div style="{{ t.avStyle }}">{{ t.initials }}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:14px;font-weight:600;color:var(--t0)">{{ t.name }}</div>
+                  <div style="font-size:12px;color:var(--t2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">You: {{ t.preview }}</div>
+                </div>
+                <div style="text-align:right;flex-shrink:0">
+                  <div style="font-family:var(--fm);font-size:10px;color:var(--t2)">{{ t.time }}</div>
+                  <div style="font-family:var(--fm);font-size:9px;color:var(--t3);margin-top:2px">{{ t.count }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- SAFETY -->
+      <sc-if value="{{ isSafety }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Safety">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ reportRows }}" as="r" hint-placeholder-count="3">
+              <div style="background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:15px 17px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                  <span style="{{ r.tagStyle }}">{{ r.tag }}</span>
+                  <span style="font-family:var(--fm);font-size:10px;color:var(--t2)">{{ r.time }}</span>
+                </div>
+                <div style="font-size:14px;color:var(--t0);font-weight:600">{{ r.by }} <span style="color:var(--t2);font-weight:400">reported</span> {{ r.against }}</div>
+                <div style="font-size:12.5px;color:var(--t2);margin-top:3px;line-height:1.5">{{ r.reason }}</div>
+                <sc-if value="{{ r.open }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+                    <button onClick="{{ r.resolve }}" style="background:var(--green);border:none;border-radius:8px;padding:8px 14px;font-family:var(--fd);font-size:12.5px;font-weight:700;color:#0D1F12;cursor:pointer" style-hover="filter:brightness(1.1)">Resolve</button>
+                    <button onClick="{{ r.remove }}" style="background:transparent;border:1px solid var(--red);border-radius:8px;padding:8px 14px;font-family:var(--fd);font-size:12.5px;font-weight:600;color:var(--red);cursor:pointer" style-hover="background:var(--red-soft)">Remove from room</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- CHECK-IN -->
+      <sc-if value="{{ isCheckin }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Check-in">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:18px">
+            <div onClick="{{ openQrEntry }}" style="display:flex;align-items:center;gap:14px;background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:13px 15px;cursor:pointer" style-hover="border-color:var(--green-bd)">
+              <div style="width:56px;height:56px;background:#fff;border-radius:8px;padding:5px;flex-shrink:0">
+                <svg viewBox="0 0 25 25" style="width:100%;height:100%;display:block"><path d="{{ qrEntryPath }}" fill="#0c0e0c"></path></svg>
+              </div>
+              <div>
+                <div style="font-size:13.5px;font-weight:700;color:var(--t0)">Entry code</div>
+                <div style="font-size:11.5px;color:var(--t2);margin-top:2px">Scan to check in · tap to enlarge</div>
+              </div>
+            </div>
+            <div onClick="{{ openQrSurvey }}" style="display:flex;align-items:center;gap:14px;background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:13px 15px;cursor:pointer" style-hover="border-color:var(--green-bd)">
+              <div style="width:56px;height:56px;background:#fff;border-radius:8px;padding:5px;flex-shrink:0">
+                <svg viewBox="0 0 25 25" style="width:100%;height:100%;display:block"><path d="{{ qrSurveyPath }}" fill="#0c0e0c"></path></svg>
+              </div>
+              <div>
+                <div style="font-size:13.5px;font-weight:700;color:var(--t0)">Survey code</div>
+                <div style="font-size:11.5px;color:var(--t2);margin-top:2px">Wrap-up on the way out · tap to enlarge</div>
+              </div>
+            </div>
+          </div>
+          <div style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:20px;margin-bottom:20px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:14px">
+              <div>
+                <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:6px">Name</div>
+                <input value="{{ mName }}" onChange="{{ setMName }}" placeholder="Full name" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:10px 13px;font-family:var(--fd);font-size:13.5px;color:var(--t0)">
+              </div>
+              <div>
+                <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:6px">Email</div>
+                <input value="{{ mEmail }}" onChange="{{ setMEmail }}" placeholder="name@email.com" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:10px 13px;font-family:var(--fd);font-size:13.5px;color:var(--t0)">
+              </div>
+            </div>
+            <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:8px">Shows up as</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;align-items:center">
+              <sc-for list="{{ mRoles }}" as="rl" hint-placeholder-count="6">
+                <button onClick="{{ rl.toggle }}" style="{{ rl.style }}">{{ rl.label }}</button>
+              </sc-for>
+              <sc-if value="{{ customRoleClosed }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ openCustomRole }}" style="{{ customChipBtn }}" style-hover="color:var(--green);border-color:var(--green-bd)">+ Custom</button>
+              </sc-if>
+              <sc-if value="{{ customRoleOpen }}" hint-placeholder-val="{{ false }}">
+                <span style="display:inline-flex;gap:6px;align-items:center">
+                  <input value="{{ customText }}" onChange="{{ setCustomText }}" onKeyDown="{{ customKey }}" placeholder="Type their own…" style="background:var(--s2);border:1px solid var(--green-bd);border-radius:100px;padding:8px 14px;font-family:var(--fd);font-size:12.5px;color:var(--t0);width:160px">
+                  <button onClick="{{ commitCustom }}" style="{{ customCommitStyle }}">Add</button>
+                </span>
+              </sc-if>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:16px">
+              <div>
+                <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:8px">Offers</div>
+                <div style="display:flex;flex-wrap:wrap;gap:7px;align-items:center">
+                  <sc-for list="{{ mOffers }}" as="oc" hint-placeholder-count="6">
+                    <button onClick="{{ oc.toggle }}" style="{{ oc.style }}">{{ oc.label }}</button>
+                  </sc-for>
+                  <sc-if value="{{ customOffersClosed }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ openCustomOffers }}" style="{{ customChipBtn }}" style-hover="color:var(--green);border-color:var(--green-bd)">+ Custom</button>
+                  </sc-if>
+                  <sc-if value="{{ customOffersOpen }}" hint-placeholder-val="{{ false }}">
+                    <span style="display:inline-flex;gap:6px;align-items:center">
+                      <input value="{{ customText }}" onChange="{{ setCustomText }}" onKeyDown="{{ customKey }}" placeholder="Their offer…" style="background:var(--s2);border:1px solid var(--green-bd);border-radius:100px;padding:8px 14px;font-family:var(--fd);font-size:12.5px;color:var(--t0);width:140px">
+                      <button onClick="{{ commitCustom }}" style="{{ customCommitStyle }}">Add</button>
+                    </span>
+                  </sc-if>
+                </div>
+              </div>
+              <div>
+                <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:8px">Needs</div>
+                <div style="display:flex;flex-wrap:wrap;gap:7px;align-items:center">
+                  <sc-for list="{{ mNeeds }}" as="nc" hint-placeholder-count="6">
+                    <button onClick="{{ nc.toggle }}" style="{{ nc.style }}">{{ nc.label }}</button>
+                  </sc-for>
+                  <sc-if value="{{ customNeedsClosed }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ openCustomNeeds }}" style="{{ customChipBtn }}" style-hover="color:var(--amber);border-color:rgba(245,158,11,.3)">+ Custom</button>
+                  </sc-if>
+                  <sc-if value="{{ customNeedsOpen }}" hint-placeholder-val="{{ false }}">
+                    <span style="display:inline-flex;gap:6px;align-items:center">
+                      <input value="{{ customText }}" onChange="{{ setCustomText }}" onKeyDown="{{ customKey }}" placeholder="Their need…" style="background:var(--s2);border:1px solid rgba(245,158,11,.3);border-radius:100px;padding:8px 14px;font-family:var(--fd);font-size:12.5px;color:var(--t0);width:140px">
+                      <button onClick="{{ commitCustom }}" style="{{ customCommitStyle }}">Add</button>
+                    </span>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+            <button onClick="{{ addManual }}" style="{{ addManualStyle }}">Check them in →</button>
+          </div>
+          <sc-if value="{{ hasRecent }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:var(--fm);font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--green);margin-bottom:10px">Checked in manually tonight</div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <sc-for list="{{ recentRows }}" as="rc" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;gap:11px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:10px 14px">
+                  <div style="width:30px;height:30px;border-radius:8px;background:var(--dg);border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--green)">{{ rc.initials }}</div>
+                  <div style="flex:1;font-size:13px;font-weight:600;color:var(--t0)">{{ rc.name }}</div>
+                  <div style="font-family:var(--fm);font-size:10px;color:var(--t2)">{{ rc.sub }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- RECAP -->
+      <sc-if value="{{ isRecap }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Recap">
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:14px;background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:18px 20px;margin-bottom:18px">
+            <div style="flex:1;min-width:220px">
+              <div style="font-weight:900;font-size:18px;color:var(--t0)">{{ recapHeadline }}</div>
+              <div style="font-size:12.5px;color:var(--t2);margin-top:3px">Each attendee gets their night: who they showed up as, matches, connections, and mutual offers.</div>
+            </div>
+            <sc-if value="{{ recapNotPushed }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ pushRecap }}" style="background:var(--green);border:none;border-radius:9px;padding:11px 18px;font-family:var(--fd);font-size:13px;font-weight:700;color:#0D1F12;cursor:pointer;flex-shrink:0" style-hover="filter:brightness(1.1)">Push recaps →</button>
+            </sc-if>
+            <sc-if value="{{ recapPushed }}" hint-placeholder-val="{{ false }}">
+              <span style="font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green)">Pushed ✓</span>
+            </sc-if>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <sc-for list="{{ recapRows }}" as="rr" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:12px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:10px 14px">
+                <div style="flex:1;min-width:0;font-size:13px;font-weight:600;color:var(--t0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ rr.name }}</div>
+                <sc-if value="{{ notMobile }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-family:var(--fm);font-size:10px;color:var(--t2)">{{ rr.sub }}</div>
+                </sc-if>
+                <span style="{{ rr.statusStyle }}">{{ rr.status }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+
+  <!-- ═══ RIGHT RAIL: PHONE PREVIEW ═══ -->
+  <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
+  <div data-screen-label="Phone Preview" style="background:var(--s1);border-left:1px solid var(--bd);display:flex;flex-direction:column;overflow-y:auto;padding:18px">
+    <div style="font-family:var(--fm);font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--t2);margin-bottom:12px">Attendee view · live</div>
+    <div style="background:#050605;border:1px solid var(--bd2);border-radius:22px;padding:16px 14px;min-height:330px;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <span style="font-weight:900;font-size:11px;letter-spacing:.05em;color:var(--green)">SODA</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:4px;height:4px;border-radius:50%;background:var(--green);animation:adm-pulse 1.4s ease infinite"></span><span style="font-family:var(--fm);font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--green)">In the room</span></span>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px">
+        <sc-if value="{{ phoneAvShow }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;margin-bottom:2px">
+            <sc-for list="{{ phoneAvatars }}" as="pa" hint-placeholder-count="0">
+              <span style="{{ pa.style }}">{{ pa.initials }}</span>
+            </sc-for>
+          </div>
+        </sc-if>
+        <div style="font-family:var(--fm);font-size:8.5px;letter-spacing:1.8px;text-transform:uppercase;color:{{ phoneEyebrowColor }}">{{ phoneEyebrow }}</div>
+        <div style="font-weight:900;font-size:19px;line-height:1.2;color:var(--t0)">{{ phoneTitle }}</div>
+        <div style="font-size:11.5px;color:var(--t2);line-height:1.55">{{ phoneSub }}</div>
+        <sc-if value="{{ phoneHasChip }}" hint-placeholder-val="{{ false }}">
+          <div style="display:inline-flex;align-self:flex-start;background:var(--green-soft);border:1px solid var(--green-bd);border-radius:100px;padding:5px 11px;font-size:11px;font-weight:600;color:var(--green);margin-top:4px">{{ phoneChip }}</div>
+        </sc-if>
+      </div>
+    </div>
+    <sc-if value="{{ phoneResettable }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ phoneReset }}" style="margin-top:10px;background:transparent;border:1px solid var(--bd2);border-radius:8px;padding:8px;font-family:var(--fd);font-size:11.5px;font-weight:600;color:var(--t2);cursor:pointer" style-hover="color:var(--t0)">Reset preview</button>
+    </sc-if>
+    <div style="margin-top:20px;border-top:1px solid var(--bd);padding-top:16px">
+      <div style="font-family:var(--fm);font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--t2);margin-bottom:10px">Tonight so far</div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <sc-for list="{{ railStats }}" as="rs" hint-placeholder-count="4">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <span style="font-size:12px;color:var(--t2)">{{ rs.label }}</span>
+            <span style="font-family:var(--fm);font-size:13px;font-weight:700;color:var(--t0)">{{ rs.n }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+</div>
+
+<!-- CALL-OUT ACTION BAR -->
+<sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;align-items:center;gap:14px;background:var(--s3);border:1px solid var(--green-bd);border-radius:100px;padding:9px 10px 9px 20px;z-index:80;box-shadow:0 12px 36px rgba(0,0,0,.5)">
+    <div style="display:flex">
+      <sc-for list="{{ selAvatars }}" as="sa" hint-placeholder-count="0">
+        <span style="{{ sa.style }}">{{ sa.initials }}</span>
+      </sc-for>
+    </div>
+    <span style="font-size:13px;font-weight:600;color:var(--t0);white-space:nowrap">{{ selCount }}</span>
+    <sc-if value="{{ blockWarnShow }}" hint-placeholder-val="{{ false }}">
+      <span style="font-size:12px;font-weight:600;color:var(--amber);white-space:nowrap">{{ blockWarnText }}</span>
+    </sc-if>
+    <button onClick="{{ callOut }}" style="{{ callOutBtnStyle }}"><i class="ti ti-speakerphone" style="font-size:14px"></i>Call out</button>
+    <button onClick="{{ clearSel }}" style="background:transparent;border:none;color:var(--t2);font-family:var(--fd);font-size:12.5px;font-weight:600;cursor:pointer;padding:6px 10px 6px 0" style-hover="color:var(--t0)">Cancel</button>
+  </div>
+</sc-if>
+
+<!-- PERSON CARD MODAL -->
+<sc-if value="{{ pmShow }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closePm }}" style="position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:90;display:flex;align-items:center;justify-content:center;padding:20px">
+    <div onClick="{{ fmStop }}" style="background:var(--s1);border:1px solid var(--bd2);border-radius:16px;max-width:420px;width:100%;padding:24px;box-shadow:0 24px 60px rgba(0,0,0,.5)">
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:18px">
+        <div style="{{ pmAvStyle }}">{{ pmInitials }}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:900;font-size:19px;color:var(--t0);letter-spacing:-.01em">{{ pmName }}</div>
+          <div style="font-size:12.5px;color:var(--t2);margin-top:2px">{{ pmRole }}</div>
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:8px">
+            <span style="{{ pmStatusStyle }}">{{ pmStatus }}</span>
+            <sc-if value="{{ pmFirstTimer }}" hint-placeholder-val="{{ false }}">
+              <span style="font-family:var(--fm);font-size:8.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--amber);background:var(--amber-soft);border-radius:100px;padding:3px 9px">First timer</span>
+            </sc-if>
+          </div>
+        </div>
+        <button onClick="{{ closePm }}" aria-label="Close" style="background:transparent;border:none;color:var(--t2);font-size:18px;cursor:pointer;line-height:1;padding:4px" style-hover="color:var(--t0)">×</button>
+      </div>
+      <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--green);margin-bottom:9px">Offers</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px">
+        <sc-for list="{{ pmOffers }}" as="po" hint-placeholder-count="3">
+          <span style="{{ po.style }}">{{ po.label }}</span>
+        </sc-for>
+      </div>
+      <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--amber);margin-bottom:9px">Needs</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px">
+        <sc-for list="{{ pmNeeds }}" as="pn" hint-placeholder-count="2">
+          <span style="{{ pn.style }}">{{ pn.label }}</span>
+        </sc-for>
+      </div>
+      <div style="border-top:1px solid var(--bd);margin-top:18px;padding-top:14px">
+        <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--t2);margin-bottom:10px">Message</div>
+        <sc-if value="{{ pmHasThread }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;max-height:160px;overflow-y:auto">
+            <sc-for list="{{ pmThread }}" as="dm" hint-placeholder-count="1">
+              <div style="align-self:flex-end;max-width:85%;background:var(--dg);border:1px solid var(--green-bd);border-radius:12px 12px 4px 12px;padding:8px 12px">
+                <div style="font-size:12.5px;color:var(--t0);line-height:1.45">{{ dm.text }}</div>
+                <div style="font-family:var(--fm);font-size:8.5px;color:var(--t2);margin-top:3px;text-align:right">Host · {{ dm.time }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <div style="display:flex;gap:8px">
+          <input value="{{ dmDraft }}" onChange="{{ setDmDraft }}" onKeyDown="{{ dmKey }}" placeholder="Message them directly…" style="flex:1;min-width:0;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:10px 13px;font-family:var(--fd);font-size:13px;color:var(--t0)">
+          <button onClick="{{ sendDm }}" style="{{ dmSendStyle }}">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- QR EXPANSION MODAL -->
+<sc-if value="{{ qrModalShow }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeQr }}" style="position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:92;display:flex;align-items:center;justify-content:center;padding:24px">
+    <div onClick="{{ fmStop }}" style="background:var(--s1);border:1px solid var(--bd2);border-radius:18px;padding:26px;max-width:380px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-weight:900;font-size:17px;color:var(--t0)">{{ qrModalTitle }}</div>
+        <button onClick="{{ closeQr }}" aria-label="Close" style="background:transparent;border:none;color:var(--t2);font-size:18px;cursor:pointer;line-height:1;padding:4px" style-hover="color:var(--t0)">×</button>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:18px;margin-bottom:14px">
+        <svg viewBox="0 0 25 25" style="width:100%;height:auto;display:block;max-width:280px;margin:0 auto"><path d="{{ qrModalPath }}" fill="#0c0e0c"></path></svg>
+      </div>
+      <div style="font-size:12.5px;color:var(--t2);line-height:1.6;margin-bottom:16px">{{ qrModalSub }}</div>
+      <button onClick="{{ downloadQr }}" style="display:inline-flex;align-items:center;gap:8px;background:var(--green);border:none;border-radius:9px;padding:11px 20px;font-family:var(--fd);font-size:13px;font-weight:700;color:#0D1F12;cursor:pointer" style-hover="filter:brightness(1.1)"><i class="ti ti-download" style="font-size:15px"></i>Download PNG</button>
+    </div>
+  </div>
+</sc-if>
+
+<!-- EVENT CODES MODAL -->
+<sc-if value="{{ ecShow }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeCodes }}" style="position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:94;display:flex;align-items:center;justify-content:center;padding:24px">
+    <div onClick="{{ fmStop }}" style="background:var(--s1);border:1px solid var(--bd2);border-radius:18px;padding:24px;max-width:400px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.5);max-height:90dvh;overflow-y:auto">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px">
+        <div style="font-weight:900;font-size:17px;color:var(--t0)">{{ ecName }}</div>
+        <button onClick="{{ closeCodes }}" aria-label="Close" style="background:transparent;border:none;color:var(--t2);font-size:18px;cursor:pointer;line-height:1;padding:4px" style-hover="color:var(--t0)">×</button>
+      </div>
+      <div style="font-size:12.5px;color:var(--t2);margin-bottom:16px">{{ ecSub }}</div>
+      <div onClick="{{ copyEcCode }}" style="background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:16px;text-align:center;cursor:pointer;margin-bottom:12px" style-hover="border-color:var(--green-bd)">
+        <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:var(--t2);margin-bottom:6px">Event code</div>
+        <div style="font-weight:900;font-size:26px;letter-spacing:.06em;color:var(--t0)">{{ ecCode }}</div>
+        <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-top:6px">Tap to copy</div>
+      </div>
+      <div style="font-size:12px;color:var(--t2);text-align:center;margin-bottom:12px">Guests scan the QR, or go to grabsoda.app and enter this code.</div>
+      <div style="display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:11px 14px;margin-bottom:12px">
+        <span style="flex:1;font-family:var(--fm);font-size:11.5px;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ecLink }}</span>
+        <button onClick="{{ copyEcLink }}" style="background:transparent;border:none;font-family:var(--fm);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--green);font-weight:700;cursor:pointer;padding:0;flex-shrink:0" style-hover="filter:brightness(1.2)">Copy link</button>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:8px">
+        <svg viewBox="0 0 25 25" style="width:100%;height:auto;display:block;max-width:240px;margin:0 auto"><path d="{{ ecQr }}" fill="#0c0e0c"></path></svg>
+      </div>
+      <div style="font-size:11.5px;color:var(--t2);text-align:center;margin-bottom:14px">Guests scan this to join.</div>
+      <button onClick="{{ downloadEventQr }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--green);border:none;border-radius:9px;padding:11px;font-family:var(--fd);font-size:13px;font-weight:700;color:#0D1F12;cursor:pointer" style-hover="filter:brightness(1.1)"><i class="ti ti-download" style="font-size:15px"></i>Download PNG</button>
+    </div>
+  </div>
+</sc-if>
+
+<!-- EVENT CREATION MODAL -->
+<sc-if value="{{ eventModalShow }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeEventModal }}" style="position:fixed;inset:0;background:rgba(0,0,0,.66);z-index:93;display:flex;align-items:center;justify-content:center;padding:24px">
+    <div onClick="{{ fmStop }}" style="background:var(--s1);border:1px solid var(--bd2);border-radius:16px;padding:24px;max-width:440px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.5)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-weight:900;font-size:18px;color:var(--t0)">{{ evModalTitle }}</div>
+        <button onClick="{{ closeEventModal }}" aria-label="Close" style="background:transparent;border:none;color:var(--t2);font-size:18px;cursor:pointer;line-height:1;padding:4px" style-hover="color:var(--t0)">×</button>
+      </div>
+
+      <!-- STEP 2: SURVEY BUILDER -->
+      <sc-if value="{{ evStepSurvey }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:12.5px;color:var(--t2);line-height:1.6;margin-bottom:14px">Attendees get this on the way out. Start from the basics, cut what you don’t need, add your own.</div>
+        <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px;max-height:220px;overflow-y:auto">
+          <sc-for list="{{ surveyRows }}" as="sq" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:10px 12px">
+              <span style="{{ sq.typeStyle }}">{{ sq.type }}</span>
+              <span style="flex:1;font-size:13px;color:var(--t0);line-height:1.4">{{ sq.text }}</span>
+              <button onClick="{{ sq.remove }}" aria-label="Remove question" style="background:transparent;border:none;color:var(--t3);font-size:15px;cursor:pointer;line-height:1;padding:2px;flex-shrink:0" style-hover="color:var(--red)">×</button>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:7px">
+          <sc-for list="{{ nsTypeBtns }}" as="nt" hint-placeholder-count="5">
+            <button onClick="{{ nt.pick }}" style="{{ nt.style }}">{{ nt.label }}</button>
+          </sc-for>
+        </div>
+        <div style="font-size:11.5px;color:var(--t3);line-height:1.5;margin-bottom:10px">{{ nsTypeDesc }}</div>
+        <div style="display:flex;gap:8px;margin-bottom:18px">
+          <input value="{{ nsText }}" onChange="{{ setNsText }}" onKeyDown="{{ nsKey }}" placeholder="Write a question…" style="flex:1;min-width:0;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:10px 13px;font-family:var(--fd);font-size:13px;color:var(--t0)">
+          <button onClick="{{ addQuestion }}" style="{{ addQBtnStyle }}">Add</button>
+        </div>
+        <div style="display:flex;gap:9px">
+          <button onClick="{{ backToDetails }}" style="background:transparent;border:1px solid var(--bd2);border-radius:10px;padding:12px 16px;font-family:var(--fd);font-size:13px;font-weight:600;color:var(--t2);cursor:pointer;flex-shrink:0" style-hover="color:var(--t0)">← Back</button>
+          <button onClick="{{ createEvent }}" style="flex:1;background:var(--green);border:none;border-radius:10px;padding:12px;font-family:var(--fd);font-size:13.5px;font-weight:700;color:#0D1F12;cursor:pointer" style-hover="filter:brightness(1.1)">{{ createSurveyCta }}</button>
+        </div>
+      </sc-if>
+
+      <!-- STEP 1: EVENT DETAILS -->
+      <sc-if value="{{ evStepDetails }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+        <div>
+          <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:6px">Event name</div>
+          <input value="{{ neName }}" onChange="{{ setNeName }}" placeholder="Creator Economy Mixer" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:10px 13px;font-family:var(--fd);font-size:13.5px;color:var(--t0)">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:6px">Date</div>
+            <input type="date" value="{{ neDate }}" onChange="{{ setNeDate }}" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:9px 13px;font-family:var(--fd);font-size:13.5px;color:var(--t0)">
+          </div>
+          <div>
+            <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:6px">Capacity</div>
+            <input type="number" value="{{ neCapacity }}" onChange="{{ setNeCapacity }}" placeholder="150" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:10px 13px;font-family:var(--fd);font-size:13.5px;color:var(--t0)">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:6px">Starts</div>
+            <input type="time" value="{{ neStart }}" onChange="{{ setNeStart }}" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:9px 13px;font-family:var(--fd);font-size:13.5px;color:var(--t0)">
+          </div>
+          <div>
+            <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:6px">Ends</div>
+            <input type="time" value="{{ neEnd }}" onChange="{{ setNeEnd }}" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:9px 13px;font-family:var(--fd);font-size:13.5px;color:var(--t0)">
+          </div>
+        </div>
+        <div>
+          <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:6px">Venue</div>
+          <input value="{{ neVenue }}" onChange="{{ setNeVenue }}" placeholder="78th Street Studios" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:10px 13px;font-family:var(--fd);font-size:13.5px;color:var(--t0)">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 110px;gap:12px">
+          <div>
+            <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:6px">City</div>
+            <input value="{{ neCity }}" onChange="{{ setNeCity }}" placeholder="Cleveland" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:10px 13px;font-family:var(--fd);font-size:13.5px;color:var(--t0)">
+          </div>
+          <div>
+            <div style="font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:6px">State</div>
+            <select value="{{ neSt }}" onChange="{{ setNeSt }}" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:10px;font-family:var(--fd);font-size:13.5px;color:var(--t0)">
+              <option value="">—</option>
+              <sc-for list="{{ stateOptions }}" as="so" hint-placeholder-count="0">
+                <option value="{{ so.code }}">{{ so.code }}</option>
+              </sc-for>
+            </select>
+          </div>
+        </div>
+      </div>
+      <button onClick="{{ goSurveyStep }}" style="{{ createEventStyle }}">{{ nextBtnLabel }}</button>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<!-- CONFIRM MODAL -->
+<sc-if value="{{ cfShow }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeConfirm }}" style="position:fixed;inset:0;background:rgba(0,0,0,.66);z-index:95;display:flex;align-items:center;justify-content:center;padding:24px">
+    <div onClick="{{ fmStop }}" style="background:var(--s1);border:1px solid var(--bd2);border-radius:16px;padding:24px;max-width:400px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.5)">
+      <div style="font-weight:900;font-size:17px;color:var(--t0);margin-bottom:8px">{{ cfTitle }}</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:18px">{{ cfBody }}</div>
+      <div style="display:flex;gap:9px;justify-content:flex-end">
+        <button onClick="{{ closeConfirm }}" style="background:transparent;border:1px solid var(--bd2);border-radius:9px;padding:10px 16px;font-family:var(--fd);font-size:13px;font-weight:600;color:var(--t2);cursor:pointer" style-hover="color:var(--t0)">Cancel</button>
+        <button onClick="{{ confirmYes }}" style="{{ cfBtnStyle }}" style-hover="filter:brightness(1.1)">{{ cfCta }}</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ADMIN TOAST -->
+<sc-if value="{{ toastShow }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);display:flex;align-items:center;gap:12px;background:var(--s3);border:1px solid var(--green-bd);border-radius:100px;padding:10px 20px;font-size:13px;font-weight:600;color:var(--t0);z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.5);max-width:86vw">
+    <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ toast }}</span>
+    <sc-if value="{{ toastUndoShow }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ undoToast }}" style="background:transparent;border:none;color:var(--green);font-family:var(--fd);font-size:13px;font-weight:700;cursor:pointer;padding:0;flex-shrink:0" style-hover="filter:brightness(1.2)">Undo</button>
+    </sc-if>
+  </div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;eventName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Latinos-N-Tech · Night Room&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Event&quot;}}">
+class Component extends DCLogic {
+  FIRST = ['Maya','Devin','Amara','Luis','Nia','Jordan','Priya','Marcus','Sofia','Andre','Tasha','Rafael','Imani','Caleb','Dana','Elena','Malik','Grace','Omar','Renee','Theo','Bianca','Sam','Lena'];
+  LAST = ['Okafor','Park','Silva','Herrera','Thompson','Blake','Raman','Bell','Reyes','Coleman','Nguyen','Ortiz','Brooks','Stone','Whitfield','Vasquez','Turner','Liu','Haddad','Walker','Marsh','Cole','Iverson','Fischer'];
+  ROLES = ['Founder · Coffee Connect','Fractional CFO · Ledgerline','Designer · Northbound','Content Creator','Community Builder','Coach · Reset Room','Consultant','Artist','Musician · Sidewalk Sons','Founder · Meridian','Agency · Castle & Co','Founder · Bloomfield'];
+  COLORS = ['#3bd75c','#f59e0b','#60a5fa','#f472b6','#34d399','#fbbf24','#a78bfa','#4ade80'];
+  MROLES = ['Founder','Creator','Artist','Coach','Consultant','Community Builder'];
+  MOFFERS = ['Introductions','Mentorship','Feedback','Hosting','Production','Content Creation'];
+  MNEEDS = ['Funding','Talent','Customers','Audience Growth','Sponsorship','Marketing'];
+
+  constructor(props){
+    super(props);
+    const statuses = ['Open to intros','Open to intros','Heads down','Open to intros'];
+    this.people = this.FIRST.map((f,i) => {
+      const nOff = 2 + (i % 3), nNeed = 1 + (i % 3);
+      const offers = Array.from({ length:nOff }, (_,j) => this.MOFFERS[(i + j) % this.MOFFERS.length]);
+      const needs = Array.from({ length:nNeed }, (_,j) => this.MNEEDS[(i * 2 + j) % this.MNEEDS.length]);
+      return {
+        id:'p'+i,
+        name: f + ' ' + this.LAST[i],
+        initials: f[0] + this.LAST[i][0],
+        color: this.COLORS[i % this.COLORS.length],
+        role: this.ROLES[i % this.ROLES.length],
+        status: statuses[i % statuses.length],
+        firstTimer: i % 5 === 3,
+        offers, needs,
+        chips: nOff + ' offers · ' + nNeed + ' needs',
+      };
+    });
+    this.people[9].status = 'Left quietly';
+    this.people[20].status = 'Left quietly';
+    this.blockedPairs = [['p17','p5']];
+    this.qrEntry = this.qrPath('soda-entry-latinos-n-tech');
+    this.qrSurvey = this.qrPath('soda-survey-latinos-n-tech');
+    this.funnel = [
+      { label:'Landed', step:'Entry', count:212 },
+      { label:'Code verified', step:'Step 1', count:198 },
+      { label:'Card built', step:'Step 2', count:186 },
+      { label:'Offers picked', step:'Step 3', count:174 },
+      { label:'Needs picked', step:'Step 4', count:169 },
+      { label:'Splash seen', step:'Step 5', count:167 },
+      { label:'In the room', step:'Done', count:166 },
+    ];
+    this.supply = [
+      { chip:'Mentorship', offers:14, needs:9 },
+      { chip:'Introductions', offers:18, needs:6 },
+      { chip:'Funding', offers:3, needs:16 },
+      { chip:'Content Creation', offers:11, needs:8 },
+      { chip:'Audience Growth', offers:2, needs:13 },
+      { chip:'Production', offers:9, needs:5 },
+      { chip:'Sponsorship', offers:1, needs:10 },
+      { chip:'Talent', offers:7, needs:11 },
+    ];
+    this.matches = [
+      { pair:'Maya Okafor ↔ Devin Park', mutual:'Mentorship ↔ Funding', status:'Connected', time:'8:31 PM' },
+      { pair:'Priya Raman ↔ Marcus Bell', mutual:'Production ↔ Content Creation', status:'Intro sent', time:'8:24 PM' },
+      { pair:'Sofia Reyes ↔ Andre Coleman', mutual:'Introductions ↔ Customers', status:'Connected', time:'8:19 PM' },
+      { pair:'Imani Brooks ↔ Grace Liu', mutual:'Feedback ↔ Audience Growth', status:'Pending', time:'8:12 PM' },
+      { pair:'Theo Marsh ↔ Lena Fischer', mutual:'Hosting ↔ Sponsorship', status:'Intro sent', time:'7:58 PM' },
+      { pair:'Omar Haddad ↔ Nia Thompson', mutual:'Mentorship ↔ Talent', status:'Connected', time:'7:46 PM' },
+    ];
+    this.chains = [
+      { via:'Maya Okafor', a:'Devin Park', b:'Sofia Reyes', note:'CFO ↔ founder raising pre-seed. Both accepted.' },
+      { via:'Brent Montgomery', a:'Priya Raman', b:'Theo Marsh', note:'Producer ↔ podcast host. Thread active.' },
+      { via:'Andre Coleman', a:'Grace Liu', b:'Imani Brooks', note:'Growth ↔ grant writing swap. Awaiting reply.' },
+    ];
+    this.state = {
+      view:'room', q:'', roomLayout:'grid', funnelModal:null, personModal:null,
+      dmDraft:'', dms:{},
+      selectMode:false, selectedIds:[], spotlightName:null,
+      confirm:null, toastUndo:null, doorMode:false, qrModal:null,
+      delivery:{},
+      audit:[
+        { time:'7:41 PM', text:'First check-in — Maya Okafor scanned the entry code' },
+        { time:'7:30 PM', text:'Doors opened · entry code went live' },
+      ],
+      events:[
+        { id:'e1', name:(props && props.eventName) || 'Latinos-N-Tech · Night Room', date:'Fri Jul 10', venue:'The Foundry, Cleveland', capacity:180, status:'Live',
+          survey:[{ id:'q1', text:'How was the night?', type:'Stars' }, { id:'q2', text:'Did you meet someone worth following up with?', type:'Yes / No' }, { id:'q3', text:'One line — what should we do differently?', type:'Text' }] },
+        { id:'e2', name:'Creator Economy Mixer', date:'Thu Jul 23', venue:'78th Street Studios', capacity:120, status:'Upcoming',
+          survey:[{ id:'q1', text:'How was the night?', type:'Stars' }, { id:'q2', text:'Would you come back?', type:'Yes / No' }] },
+      ],
+      eventModal:false, eventStep:'details', eventCodes:null,
+      newEvent:{ name:'', date:'', start:'', end:'', venue:'', city:'', st:'', capacity:'' },
+      newSurvey:[], nsText:'', nsType:'Text',
+      vw: (typeof window !== 'undefined' ? window.innerWidth : 1280),
+      queue:[
+        { id:'q1', label:'Fractional Ops', kind:'Offer', by:'Devin Park', time:'8:40 PM' },
+        { id:'q2', label:'Grant Writing', kind:'Need', by:'Imani Brooks', time:'8:33 PM' },
+        { id:'q3', label:'Podcast Producer', kind:'Shows up as', by:'Theo Marsh', time:'8:21 PM' },
+        { id:'q4', label:'Beta Users', kind:'Need', by:'Sam Iverson', time:'8:04 PM' },
+      ],
+      reports:[
+        { id:'r1', tag:'Block', by:'Grace Liu', against:'Jordan Blake', reason:'Repeated intro requests after a decline. Auto-blocked in app; flagged for host review.', time:'8:42 PM', open:true },
+        { id:'r2', tag:'Report', by:'Nia Thompson', against:'Caleb Stone', reason:'Pitching a paid service aggressively in the Drop wall.', time:'8:15 PM', open:true },
+        { id:'r3', tag:'Report', by:'Anonymous', against:'Room prompt', reason:'Suggested tonight’s Drop prompt felt exclusionary.', time:'7:52 PM', open:false },
+      ],
+      fired:{ drop:false, chance:false, nudge:false },
+      dropHidden:[],
+      phone:{ mode:'idle' },
+      manual:{ name:'', email:'', role:null, offers:[], needs:[] },
+      customInput:null, customText:'',
+      customAdded:{ role:[], offers:[], needs:[] },
+      recentManual:[],
+      recapPushed:false,
+      toast:null,
+      extraPeople:[],
+    };
+    this.state.events = this.state.events.map(e => Object.assign(e, this.evExtras(e.name)));
+  }
+  componentDidMount(){
+    this._onR = () => this.setState({ vw: window.innerWidth });
+    window.addEventListener('resize', this._onR);
+  }
+  componentWillUnmount(){ clearTimeout(this._toastT); window.removeEventListener('resize', this._onR); }
+
+  showToast(msg, onUndo){
+    clearTimeout(this._toastT);
+    this.setState({ toast:msg, toastUndo: onUndo || null });
+    this._toastT = setTimeout(() => this.setState({ toast:null, toastUndo:null }), onUndo ? 5200 : 2600);
+  }
+  undoToast = () => {
+    const fn = this.state.toastUndo;
+    clearTimeout(this._toastT);
+    this.setState({ toast:null, toastUndo:null });
+    if (fn) fn();
+  };
+  log(text){
+    const time = new Date().toLocaleTimeString([], { hour:'numeric', minute:'2-digit' });
+    this.setState(s => ({ audit:[{ time, text }, ...s.audit] }));
+  }
+  askConfirm(cfg){ this.setState({ confirm:cfg }); }
+  closeConfirm = () => this.setState({ confirm:null });
+  confirmYes = () => { const c = this.state.confirm; this.setState({ confirm:null }); if (c && c.onYes) c.onYes(); };
+  toggleDoorMode = () => this.setState(s => ({ doorMode: !s.doorMode, view: s.doorMode ? 'room' : 'checkin' }));
+  STATES = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC'];
+  fmtDate(d){
+    if (!d) return '';
+    const dt = new Date(d + 'T12:00:00');
+    if (isNaN(dt)) return d;
+    return dt.toLocaleDateString([], { weekday:'short', month:'short', day:'numeric' });
+  }
+  fmtTime(t){
+    if (!t) return '';
+    const [h, m] = t.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const hr = h % 12 === 0 ? 12 : h % 12;
+    return hr + (m ? ':' + String(m).padStart(2, '0') : '') + ' ' + ampm;
+  }
+  evExtras(seed){
+    let h = 2166136261;
+    for (let i = 0; i < seed.length; i++){ h ^= seed.charCodeAt(i); h = Math.imul(h, 16777619); }
+    const rand = () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 1000) / 1000; };
+    const token = Array.from({ length:32 }, () => '0123456789abcdef'[Math.floor(rand() * 16)]).join('');
+    const initials = seed.split(/[^A-Za-z0-9]+/).filter(Boolean).slice(0, 3).map(w => w[0].toUpperCase()).join('');
+    const code = initials + '-' + (1000 + Math.floor(rand() * 9000));
+    return { code, link:'/join?t=' + token, qr: this.qrPath(seed + '-join') };
+  }
+  copyText(text, what){
+    const fallback = () => {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      } catch (e) { /* clipboard unavailable */ }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(fallback);
+    } else {
+      fallback();
+    }
+    this.showToast(what + ' copied');
+  }
+  openCodes(id){ this.setState({ eventCodes:id }); }
+  closeCodes = () => this.setState({ eventCodes:null });
+  downloadQrPng(path, name){
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 29 29" width="1024" height="1024"><rect x="-2" y="-2" width="29" height="29" fill="#ffffff"/><path d="' + path + '" fill="#0c0e0c"/></svg>';
+    const url = URL.createObjectURL(new Blob([svg], { type:'image/svg+xml' }));
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = 1024; c.height = 1024;
+      c.getContext('2d').drawImage(img, 0, 0, 1024, 1024);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => {
+        const u = URL.createObjectURL(b);
+        const a = document.createElement('a');
+        a.href = u; a.download = name + '.png'; a.click();
+        setTimeout(() => URL.revokeObjectURL(u), 500);
+      });
+    };
+    img.src = url;
+    this.showToast('QR code downloaded as PNG');
+  }
+  downloadEventQr = () => {
+    const e = this.state.events.find(x => x.id === this.state.eventCodes);
+    if (e) this.downloadQrPng(e.qr, e.code + '-join-qr');
+  };
+  openEventModal = () => this.setState({ eventModal:true, eventStep:'details' });
+  closeEventModal = () => this.setState({ eventModal:false, eventStep:'details', newEvent:{ name:'', date:'', start:'', end:'', venue:'', city:'', st:'', capacity:'' }, newSurvey:[], nsText:'', nsType:'Text' });
+  QTYPES = {
+    'Stars':  { color:'var(--amber)', soft:'var(--amber-soft)', desc:'A 1–5 star rating. Good for “How was the night?”' },
+    'Scale':  { color:'#60a5fa', soft:'rgba(96,165,250,.1)', desc:'A row of numbers with a label at each end, e.g. Not really → Absolutely.' },
+    'Tags':   { color:'var(--green)', soft:'var(--green-soft)', desc:'Guests pick from options you set — any that apply.' },
+    'Text':   { color:'var(--t1)', soft:'var(--s3)', desc:'A short written answer in their own words.' },
+    'Yes / No':{ color:'#34d399', soft:'rgba(52,211,153,.1)', desc:'One tap, one answer.' },
+  };
+  goSurveyStep = () => {
+    if (!this.state.newEvent.name.trim()) return;
+    this.setState(s => ({
+      eventStep:'survey',
+      newSurvey: s.newSurvey.length ? s.newSurvey : [
+        { id:'sq1', text:'How was the night?', type:'Stars' },
+        { id:'sq2', text:'Did you meet someone worth following up with?', type:'Yes / No' },
+        { id:'sq3', text:'One line — what should we do differently?', type:'Text' },
+      ],
+    }));
+  };
+  backToDetails = () => this.setState({ eventStep:'details' });
+  setNsText = (e) => this.setState({ nsText: e && e.target ? e.target.value : '' });
+  setNsType(t){ this.setState({ nsType:t }); }
+  addQuestion = () => {
+    const text = this.state.nsText.trim();
+    if (!text) return;
+    this.setState(s => ({ newSurvey:[...s.newSurvey, { id:'sq' + Date.now(), text, type:s.nsType }], nsText:'' }));
+  };
+  nsKey = (e) => { if (e.key === 'Enter') this.addQuestion(); };
+  removeQuestion(id){ this.setState(s => ({ newSurvey: s.newSurvey.filter(q => q.id !== id) })); }
+  setEventField(k, e){
+    this.setState(s => ({ newEvent: Object.assign({}, s.newEvent, { [k]: e && e.target ? e.target.value : '' }) }));
+  }
+  createEvent = () => {
+    const ev = this.state.newEvent;
+    if (!ev.name.trim()) return;
+    const timeRange = ev.start && ev.end
+      ? this.fmtTime(ev.start) + ' – ' + this.fmtTime(ev.end)
+      : ev.start ? 'From ' + this.fmtTime(ev.start) : '';
+    const entry = {
+      id:'e' + Date.now(),
+      name: ev.name.trim(),
+      date: this.fmtDate(ev.date) || 'Date TBD',
+      time: timeRange,
+      venue: ev.venue.trim(),
+      place: [ev.city.trim(), ev.st].filter(Boolean).join(', '),
+      capacity: ev.capacity ? parseInt(ev.capacity, 10) : null,
+      status:'Upcoming',
+      survey: this.state.newSurvey,
+    };
+    Object.assign(entry, this.evExtras(entry.name));
+    this.setState(s => ({
+      events:[...s.events, entry], eventModal:false, eventStep:'details',
+      newEvent:{ name:'', date:'', start:'', end:'', venue:'', city:'', st:'', capacity:'' },
+      newSurvey:[], nsText:'', nsType:'Text',
+    }));
+    this.log('Created event “' + entry.name + '” with ' + entry.survey.length + ' survey questions · codes generated');
+    this.showToast('“' + entry.name + '” created — survey and codes attached');
+  };
+  makeEventLive(id){
+    const ev = this.state.events.find(e => e.id === id);
+    this.askConfirm({
+      title:'Make “' + ev.name + '” the live room?',
+      body:'The current room goes to Past. Check-in, acts, and codes all point at the new event.',
+      cta:'Make it live', danger:false,
+      onYes:() => {
+        this.setState(s => ({
+          events: s.events.map(e => e.id === id ? Object.assign({}, e, { status:'Live' }) : (e.status === 'Live' ? Object.assign({}, e, { status:'Past' }) : e)),
+        }));
+        this.log('“' + ev.name + '” is now the live room');
+        this.showToast('“' + ev.name + '” is live');
+      },
+    });
+  }
+  openQr(kind){ this.setState({ qrModal:kind }); }
+  closeQr = () => this.setState({ qrModal:null });
+  downloadQr = () => {
+    const kind = this.state.qrModal || 'entry';
+    const path = kind === 'survey' ? this.qrSurvey : this.qrEntry;
+    const name = kind === 'survey' ? 'soda-survey-qr' : 'soda-entry-qr';
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 29 29" width="1024" height="1024"><rect x="-2" y="-2" width="29" height="29" fill="#ffffff"/><path d="' + path + '" fill="#0c0e0c"/></svg>';
+    const url = URL.createObjectURL(new Blob([svg], { type:'image/svg+xml' }));
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = 1024; c.height = 1024;
+      c.getContext('2d').drawImage(img, 0, 0, 1024, 1024);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => {
+        const u = URL.createObjectURL(b);
+        const a = document.createElement('a');
+        a.href = u; a.download = name + '.png'; a.click();
+        setTimeout(() => URL.revokeObjectURL(u), 500);
+      });
+    };
+    img.src = url;
+    this.log('Downloaded ' + (kind === 'survey' ? 'survey' : 'entry') + ' QR code');
+    this.showToast('QR code downloaded as PNG');
+  };
+
+  download(filename, content, type){
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 500);
+  }
+  exportAttendees = () => {
+    const rows = [['Name','Role','Status','Offers','Needs']].concat(
+      this.people.map(p => [p.name, p.role, p.status, p.offers.join('; '), p.needs.join('; ')])
+    );
+    this.download('soda-attendees.csv', rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n'), 'text/csv');
+    this.log('Exported attendees CSV'); this.showToast('Attendees CSV downloaded');
+  };
+  exportMatches = () => {
+    const rows = [['Pair','Mutual','Status','Time']].concat(this.matches.map(m => [m.pair, m.mutual, m.status, m.time]));
+    this.download('soda-matches.csv', rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n'), 'text/csv');
+    this.log('Exported matches CSV'); this.showToast('Matches CSV downloaded');
+  };
+  exportNight = () => {
+    const data = { event:'Latinos-N-Tech · Night Room', attendees:this.people, matches:this.matches, chains:this.chains, activity:this.state.audit };
+    this.download('soda-night.json', JSON.stringify(data, null, 2), 'application/json');
+    this.log('Exported full night JSON'); this.showToast('Full night JSON downloaded');
+  };
+
+  qrPath(seed){
+    let h = 2166136261;
+    for (let i = 0; i < seed.length; i++){ h ^= seed.charCodeAt(i); h = Math.imul(h, 16777619); }
+    const rand = () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 1000) / 1000; };
+    const N = 25;
+    let d = '';
+    const mod = (x,y) => { d += 'M' + x + ' ' + y + 'h1v1h-1z'; };
+    const finder = (fx,fy) => {
+      for (let y = 0; y < 7; y++) for (let x = 0; x < 7; x++){
+        if (x===0 || x===6 || y===0 || y===6 || (x>=2 && x<=4 && y>=2 && y<=4)) mod(fx+x, fy+y);
+      }
+    };
+    finder(0,0); finder(N-7,0); finder(0,N-7);
+    for (let i = 8; i < N-8; i++){ if (i % 2 === 0){ mod(i,6); mod(6,i); } }
+    const inFinder = (x,y) => (x<8 && y<8) || (x>=N-8 && y<8) || (x<8 && y>=N-8);
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++){
+      if (inFinder(x,y) || x===6 || y===6) continue;
+      if (rand() < 0.45) mod(x,y);
+    }
+    return d;
+  }
+  setView = (v) => this.setState({ view:v });
+  setQ = (e) => this.setState({ q: e && e.target ? e.target.value : '' });
+
+  approveChip(id){
+    const c = this.state.queue.find(x => x.id===id);
+    this.setState(s => ({ queue: s.queue.filter(x => x.id!==id), phone:{ mode:'chipLive', chip:c.label } }));
+    this.log('Approved write-in chip “' + c.label + '” from ' + c.by);
+    this.showToast('“' + c.label + '” is live in the room');
+  }
+  rejectChip(id){
+    const c = this.state.queue.find(x => x.id===id);
+    const prevQueue = this.state.queue;
+    this.setState(s => ({ queue: s.queue.filter(x => x.id!==id) }));
+    this.log('Rejected write-in chip “' + c.label + '”');
+    this.showToast('Chip rejected', () => this.setState({ queue: prevQueue }));
+  }
+  fireMoment(k){
+    const total = this.people.filter(p => p.status !== 'Left quietly').length + this.state.extraPeople.length;
+    const fail = { drop:7, chance:5, nudge:2 }[k] || 0;
+    this.setState(s => ({
+      fired: Object.assign({}, s.fired, { [k]:true }),
+      phone:{ mode:k },
+      delivery: Object.assign({}, s.delivery, { [k]:{ sent: total - fail, fail, total } }),
+    }));
+    const names = { drop:'The Drop', chance:'The Chance', nudge:'The Nudge' };
+    this.log(names[k] + ' fired · ' + (total - fail) + ' of ' + total + ' phones received');
+    this.showToast(names[k] + ' fired · ' + (total - fail) + ' of ' + total + ' phones received');
+  }
+  hideDrop(i){ this.setState(s => ({ dropHidden:[...s.dropHidden, i] })); this.showToast('Hidden from the wall'); }
+  resolveReport(id){
+    const r = this.state.reports.find(x => x.id===id);
+    const prev = this.state.reports;
+    this.setState(s => ({ reports: s.reports.map(x => x.id===id ? Object.assign({}, x, { open:false, tag:'Resolved' }) : x) }));
+    this.log('Resolved report from ' + r.by + ' about ' + r.against);
+    this.showToast('Report resolved', () => this.setState({ reports: prev }));
+  }
+  removeFromRoom(id){
+    const r = this.state.reports.find(x => x.id===id);
+    this.askConfirm({
+      title:'Remove ' + r.against + ' from the room?',
+      body:'They lose the room, matches, and messages for tonight. This action is logged in Activity.',
+      cta:'Remove them', danger:true,
+      onYes:() => {
+        const prev = this.state.reports;
+        this.setState(s => ({ reports: s.reports.map(x => x.id===id ? Object.assign({}, x, { open:false, tag:'Removed' }) : x) }));
+        this.log('Removed ' + r.against + ' from the room (report by ' + r.by + ')');
+        this.showToast(r.against + ' removed from the room', () => this.setState({ reports: prev }));
+      },
+    });
+  }
+  pushRecap = () => {
+    this.askConfirm({
+      title:'Push recaps to every phone?',
+      body:'Everyone in the room gets their night — matches, connections, mutual offers. You can’t unsend it.',
+      cta:'Push recaps', danger:false,
+      onYes:() => {
+        this.setState({ recapPushed:true, phone:{ mode:'recap' } });
+        this.log('Recaps pushed to the room');
+        this.showToast('Recaps pushed to every phone');
+      },
+    });
+  };
+  phoneReset = () => this.setState({ phone:{ mode:'idle' } });
+
+  setDmDraft = (e) => this.setState({ dmDraft: e && e.target ? e.target.value : '' });
+  sendDm = () => {
+    const s = this.state;
+    const text = s.dmDraft.trim();
+    if (!text || s.personModal == null) return;
+    const p = this.people.find(x => x.id === s.personModal);
+    const time = '8:' + (47 + Object.keys(s.dms).length) + ' PM';
+    this.setState(st => ({
+      dms: Object.assign({}, st.dms, { [p.id]: [...(st.dms[p.id] || []), { text, time }] }),
+      dmDraft:'',
+      phone:{ mode:'dm', text },
+    }));
+    this.log('Messaged ' + p.name);
+    this.showToast('Message sent to ' + p.name.split(' ')[0]);
+  };
+  dmKey = (e) => { if (e.key === 'Enter') this.sendDm(); };
+
+  toggleSelectMode = () => this.setState(s => ({ selectMode: !s.selectMode, selectedIds: [] }));
+  togglePersonSel(id){
+    this.setState(s => ({
+      selectedIds: s.selectedIds.includes(id) ? s.selectedIds.filter(x => x !== id) : [...s.selectedIds, id],
+    }));
+  }
+  clearSel = () => this.setState({ selectMode:false, selectedIds:[] });
+  callOut = () => {
+    const s = this.state;
+    if (!s.selectedIds.length) return;
+    for (const [a, b] of this.blockedPairs){
+      if (s.selectedIds.includes(a) && s.selectedIds.includes(b)) return;
+    }
+    const picked = s.selectedIds.map(id => this.people.find(p => p.id === id));
+    const names = picked.map(p => p.name.split(' ')[0]);
+    this.setState({ phone:{ mode:'callout', names, people: picked.map(p => ({ initials:p.initials, color:p.color })) }, selectMode:false, selectedIds:[] });
+    this.log('Called out ' + names.join(', '));
+    this.showToast(names.length === 1 ? names[0] + ' called out' : names.length + ' people called out — their phones just lit up');
+  };
+  fireSpotlight = () => {
+    const pool = this.people.filter(p => p.status !== 'Left quietly');
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    this.log('Spotlight picked ' + pick.name);
+    this.setState({ spotlightName: pick.name, phone:{ mode:'spotlight', name: pick.name, people:[{ initials:pick.initials, color:pick.color }] } });
+    this.showToast('The room picked ' + pick.name);
+  };
+
+  setManual(k, e){ this.setState(s => ({ manual: Object.assign({}, s.manual, { [k]: e && e.target ? e.target.value : '' }) })); }
+  toggleManualChip(field, label){
+    this.setState(s => {
+      const cur = s.manual[field];
+      if (field === 'role') return { manual: Object.assign({}, s.manual, { role: cur===label ? null : label }) };
+      const next = cur.includes(label) ? cur.filter(x => x!==label) : [...cur, label];
+      return { manual: Object.assign({}, s.manual, { [field]: next }) };
+    });
+  }
+  openCustom(field){ this.setState({ customInput:field, customText:'' }); }
+  cancelCustom = () => this.setState({ customInput:null, customText:'' });
+  setCustomText = (e) => this.setState({ customText: e && e.target ? e.target.value : '' });
+  customKey = (e) => {
+    if (e.key === 'Enter') this.commitCustom();
+    if (e.key === 'Escape') this.cancelCustom();
+  };
+  commitCustom = () => {
+    const f = this.state.customInput;
+    const text = this.state.customText.trim();
+    if (!f || !text) return;
+    this.setState(s => {
+      const added = s.customAdded[f].includes(text) ? s.customAdded[f] : [...s.customAdded[f], text];
+      let manual = s.manual;
+      if (f === 'role') manual = Object.assign({}, manual, { role:text });
+      else if (!manual[f].includes(text)) manual = Object.assign({}, manual, { [f]:[...manual[f], text] });
+      return { customAdded: Object.assign({}, s.customAdded, { [f]: added }), manual, customInput:null, customText:'' };
+    });
+  };
+  addManual = () => {
+    const m = this.state.manual;
+    if (!m.name.trim()) return;
+    const parts = m.name.trim().split(' ');
+    const initials = (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+    const sub = [m.role, m.offers.length + ' offers', m.needs.length + ' needs'].filter(Boolean).join(' · ');
+    this.setState(s => ({
+      recentManual:[{ name:m.name.trim(), initials, sub }, ...s.recentManual],
+      extraPeople:[...s.extraPeople, { name:m.name.trim(), initials }],
+      manual:{ name:'', email:'', role:null, offers:[], needs:[] },
+    }));
+    this.log(m.name.trim() + ' checked in at the door');
+    this.showToast(m.name.trim() + ' checked in');
+  };
+
+  chipBtnStyle(sel, color){
+    return 'padding:8px 13px;border-radius:100px;font-family:var(--fd);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;' +
+      (sel ? 'background:' + color + ';border:1px solid ' + color + ';color:#0D1F12'
+           : 'background:transparent;border:1px solid var(--bd2);color:var(--t1)');
+  }
+  pill(text, color, soft){
+    return 'font-family:var(--fm);font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:' + color + ';background:' + soft + ';border-radius:100px;padding:3px 9px;flex-shrink:0';
+  }
+
+  renderVals(){
+    const s = this.state;
+    const vw = s.vw;
+    const mob = vw < 760;
+    const narrow = vw < 1100;
+    const total = this.people.length + s.extraPeople.length;
+    const leftCount = this.people.filter(p => p.status === 'Left quietly').length;
+    const inRoomNow = total - leftCount;
+    const openReports = s.reports.filter(r => r.open).length;
+
+    const nav = [
+      { id:'room', label:'The Room', icon:'ti ti-layout-grid', badge: total },
+      { id:'funnel', label:'Funnel', icon:'ti ti-filter' },
+      { id:'supply', label:'Offers vs Needs', icon:'ti ti-arrows-left-right' },
+      { id:'queue', label:'Chip Queue', icon:'ti ti-flag', badge: s.queue.length || null, amber:true },
+      { id:'matches', label:'Matches', icon:'ti ti-sparkles', badge: this.matches.length },
+      { id:'moments', label:'Live Moments', icon:'ti ti-bolt' },
+      { id:'messages', label:'Messages', icon:'ti ti-message-circle', badge: Object.keys(s.dms).length || null },
+      { id:'activity', label:'Activity', icon:'ti ti-history' },
+      { id:'safety', label:'Safety', icon:'ti ti-shield', badge: openReports || null, red:true },
+      { id:'checkin', label:'Check-in', icon:'ti ti-user-plus' },
+      { id:'recap', label:'Recap', icon:'ti ti-report' },
+      { id:'events', label:'Events', icon:'ti ti-calendar' },
+      { id:'export', label:'Export', icon:'ti ti-download' },
+    ];
+    const navSource = s.doorMode ? nav.filter(n => n.id === 'checkin' || n.id === 'room') : nav;
+    const badgeCss = (n) => 'font-family:var(--fm);font-size:10px;font-weight:700;border-radius:100px;padding:1px 8px;min-width:20px;text-align:center;' +
+      (n.red ? 'background:var(--red);color:#fff' : n.amber ? 'background:var(--amber);color:#0D1F12' : 'background:var(--green);color:#0D1F12');
+    const navItems = navSource.map(n => {
+      const active = s.view === n.id;
+      return {
+        label:n.label, icon:n.icon, go:() => this.setView(n.id),
+        style:'display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:10px;border:none;cursor:pointer;font-family:var(--fd);font-size:13px;font-weight:500;transition:all .15s;' +
+          (active ? 'background:var(--dg);color:var(--green)' : 'background:transparent;color:var(--t2)'),
+        hasBadge: n.badge != null, badge: n.badge, badgeStyle: badgeCss(n),
+      };
+    });
+    const mobileNavItems = navSource.map(n => {
+      const active = s.view === n.id;
+      return {
+        label:n.label, go:() => this.setView(n.id),
+        style:'display:inline-flex;align-items:center;gap:6px;flex-shrink:0;padding:8px 13px;border-radius:100px;font-family:var(--fd);font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;' +
+          (active ? 'background:var(--dg);border:1px solid var(--green-bd);color:var(--green)' : 'background:transparent;border:1px solid var(--bd2);color:var(--t2)'),
+        hasBadge: n.badge != null, badge: n.badge, badgeStyle: badgeCss(n),
+      };
+    });
+
+    const titles = {
+      room:['The Room','Everyone checked in tonight, live'],
+      funnel:['Onboarding Funnel','Where people land, verify, build, and drop'],
+      supply:['Offers vs Needs','What this room has vs what it wants'],
+      queue:['Chip Queue','Write-in chips waiting for approval'],
+      matches:['Matches','Mutual marks and intro chains, live'],
+      moments:['Live Moments','Fire the acts. Watch the phones follow.'],
+      messages:['Messages','Every thread you’ve started tonight, in one place'],
+      safety:['Safety','Blocks and reports land here first'],
+      checkin:['Manual Check-in','For walk-ups and the door codes'],
+      recap:['Recap','Their night, packaged and pushed'],
+      activity:['Activity','Everything that happened tonight, logged'],
+      events:['Events','Tonight, what’s next, and what’s done'],
+      export:['Export','Get the night out — attendees, matches, the log'],
+    };
+
+    // roster
+    const q = s.q.toLowerCase();
+    const roster = this.people
+      .filter(p => !q || p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q))
+      .map(p => {
+        const heads = p.status === 'Heads down';
+        const left = p.status === 'Left quietly';
+        const stColor = left ? 'var(--t3)' : heads ? 'var(--amber)' : 'var(--green)';
+        const stSoft = left ? 'var(--s3)' : heads ? 'var(--amber-soft)' : 'var(--green-soft)';
+        const selected = s.selectedIds.includes(p.id);
+        const selBorder = selected ? 'border:1.5px solid var(--green);background:var(--dg);' : 'border:1px solid var(--bd);background:var(--s1);';
+        return {
+          name:p.name, initials:p.initials, role:p.role, sub:p.role, chips:p.chips, firstTimer:p.firstTimer, status:p.status,
+          selected,
+          cardStyle: selBorder + 'border-radius:12px;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;cursor:pointer;position:relative;transition:border-color .15s,background .15s',
+          rowStyle: selBorder + 'display:flex;align-items:center;gap:13px;border-radius:12px;padding:11px 14px;cursor:pointer;position:relative;transition:border-color .15s,background .15s',
+          open:() => s.selectMode
+            ? (left ? this.showToast(p.name.split(' ')[0] + ' has left the room') : this.togglePersonSel(p.id))
+            : this.setState({ personModal:p.id }),
+          statusColor: stColor,
+          dotStyle:'width:6px;height:6px;border-radius:50%;background:' + stColor + ';flex-shrink:0',
+          sqStyle:'width:52px;height:52px;border-radius:12px;background:var(--dg);border:1.5px solid ' + p.color + ';display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:' + p.color + ';flex-shrink:0',
+          sqStyleSm:'width:38px;height:38px;min-width:38px;border-radius:10px;background:var(--dg);border:1.5px solid ' + p.color + ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:' + p.color + ';flex-shrink:0',
+          statusStyle: this.pill(p.status, stColor, stSoft),
+        };
+      });
+
+    const roomStats = [
+      { n: total, label:'Checked in' },
+      { n: inRoomNow, label:'In room now' },
+      { n: this.matches.length, label:'Matches' },
+      { n: this.chains.length, label:'Intros made' },
+      { n: this.people.filter(p=>p.firstTimer).length, label:'First timers' },
+    ];
+
+    // funnel chart
+    const fMax = this.funnel[0].count;
+    const fMin = this.funnel[this.funnel.length-1].count;
+    const lo = fMin - (fMax - fMin) * 0.5;
+    const chartW = 720, padX = 46, topY = 52, botY = 196;
+    const funnelPts = this.funnel.map((f,i) => {
+      const x = Math.round(padX + i * (chartW - padX*2) / (this.funnel.length - 1));
+      const y = Math.round(topY + (fMax - f.count) / (fMax - lo) * (botY - topY));
+      const prev = i>0 ? this.funnel[i-1].count : f.count;
+      const lost = prev - f.count;
+      const dropPct = i === 0 ? 0 : Math.round(lost / prev * 100);
+      let state, stateColor, stateSoft;
+      if (i === 0) { state = 'Source'; stateColor = 'var(--t0)'; stateSoft = 'var(--s3)'; }
+      else if (dropPct >= 30) { state = 'Alert'; stateColor = 'var(--red)'; stateSoft = 'var(--red-soft)'; }
+      else if (dropPct >= 15) { state = 'Worth a look'; stateColor = 'var(--amber)'; stateSoft = 'var(--amber-soft)'; }
+      else { state = 'Holding'; stateColor = 'var(--green)'; stateSoft = 'var(--green-soft)'; }
+      return {
+        count:f.count, label:f.label, stepNo:f.step, lost, prev, dropPct,
+        drop: i===0 ? '' : '−' + lost + ' · ' + dropPct + '%',
+        hasDrop: i > 0,
+        dropFill: 'var(--amber)',
+        state, stateColor,
+        pillStyle: this.pill('', stateColor, stateSoft),
+        open:() => this.setState({ funnelModal:i }),
+      };
+    });
+    const alertStep = funnelPts.find(p => p.dropPct >= 30);
+    const FM_EXPLAIN = [
+      'Everyone who opened the entry link or scanned the door code. This is the top of the spine — the room’s total reach tonight.',
+      'Typed the 6-digit code from their email. Drop-off here usually means code delivery lag or a mistyped address.',
+      'Named who they show up as and their business or affiliation. The identity that everyone else in the room sees.',
+      'Picked at least one offer chip. The longest screen — most custom write-in chips are born here.',
+      'Picked at least one need chip. People who reach this step almost always finish.',
+      'Hit the “You’re in” moment after building their card.',
+      'Live on the roster, visible to the whole room, and counted in matches.',
+    ];
+    const fmIdx = s.funnelModal;
+    const fm = fmIdx != null ? funnelPts[fmIdx] : null;
+    const pmPerson = s.personModal != null ? this.people.find(p => p.id === s.personModal) : null;
+    let selBlockedPair = null;
+    for (const [a, b] of this.blockedPairs){
+      if (s.selectedIds.includes(a) && s.selectedIds.includes(b)) selBlockedPair = [a, b];
+    }
+    const funnelNotes = [
+      { n:'78%', label:'Complete the full spine, landing to room' },
+      { n:'41%', label:'Skip focus details at check-in, add them later in the room' },
+      { n:'12', label:'Custom chips written in tonight (4 pending approval)' },
+    ];
+
+    // supply
+    const smax = Math.max(...this.supply.map(x => Math.max(x.offers, x.needs)));
+    const supplyRows = this.supply.map(x => {
+      const gap = x.needs - x.offers;
+      const short = gap >= 4;
+      return {
+        chip:x.chip, offers:x.offers, needs:x.needs,
+        oBar:'height:100%;width:' + Math.round(x.offers/smax*100) + '%;background:var(--green);border-radius:4px',
+        nBar:'height:100%;width:' + Math.round(x.needs/smax*100) + '%;background:var(--amber);border-radius:4px',
+        gap: short ? 'Short ' + gap : gap > 0 ? '+' + gap : 'Covered',
+        gapStyle: this.pill('', short ? 'var(--red)' : gap > 0 ? 'var(--amber)' : 'var(--green)', short ? 'var(--red-soft)' : gap > 0 ? 'var(--amber-soft)' : 'var(--green-soft)'),
+      };
+    });
+
+    // queue
+    const kindColors = { 'Offer':['var(--green)','var(--green-soft)'], 'Need':['var(--amber)','var(--amber-soft)'], 'Shows up as':['#60a5fa','rgba(96,165,250,.1)'] };
+    const queueRows = s.queue.map(c => ({
+      label:c.label, kind:c.kind, by:c.by, time:c.time,
+      kindStyle: this.pill('', kindColors[c.kind][0], kindColors[c.kind][1]),
+      approve:() => this.approveChip(c.id),
+      reject:() => this.rejectChip(c.id),
+    }));
+
+    // matches
+    const stColors = { 'Connected':['var(--green)','var(--green-soft)'], 'Intro sent':['#60a5fa','rgba(96,165,250,.1)'], 'Pending':['var(--amber)','var(--amber-soft)'] };
+    const matchRows = this.matches.map(m => ({
+      ...m, statusStyle: this.pill('', stColors[m.status][0], stColors[m.status][1]),
+    }));
+
+    // moments
+    const momentDefs = [
+      { k:'drop', eyebrow:'Act one', color:'var(--green)', title:'The Drop', desc:'One prompt hits every phone. Answers land on the wall, anonymous until tapped.', cta:'Fire The Drop', liveLabel:'Live · 11 answers in' },
+      { k:'chance', eyebrow:'Act two', color:'var(--amber)', title:'The Chance', desc:'Every attendee gets a random pairing and five minutes to find each other.', cta:'Spin the room', liveLabel:'Live · 4:12 left' },
+      { k:'nudge', eyebrow:'Act three', color:'#60a5fa', title:'The Nudge', desc:'Private match signals. Only the recipient sees their nudge. No public reveal.', cta:'Send nudges', liveLabel:'Sent · 9 nudges out' },
+    ];
+    const momentCards = momentDefs.map(m => {
+      const del = s.delivery[m.k];
+      return {
+        eyebrow:m.eyebrow, color:m.color, title:m.title, desc:m.desc, cta:m.cta,
+        liveLabel: del ? ('Live · ' + del.sent + ' of ' + del.total + ' phones · ' + del.fail + ' unreachable') : m.liveLabel,
+        hasNote: m.k === 'chance',
+        note: m.k === 'chance' ? (this.blockedPairs.length + ' blocked pair and ' + leftCount + ' departed guests are excluded from pairings') : '',
+        live: s.fired[m.k], idle: !s.fired[m.k],
+        fire:() => this.fireMoment(m.k),
+      };
+    });
+    momentCards.push({
+      eyebrow:'Anytime', color:'var(--green)', title:'The Spotlight',
+      desc:'The room picks one person at random. Their phone lights up; everyone else is told to go find them.',
+      cta: s.spotlightName ? 'Pick again' : 'Pick someone at random',
+      liveLabel: s.spotlightName ? (s.spotlightName + ' is up') : '',
+      hasNote:false, note:'',
+      live: !!s.spotlightName, idle: true,
+      fire: this.fireSpotlight,
+    });
+    const dropAnswers = [
+      { text:'A co-founder who actually loves spreadsheets', by:'Anonymous · 8:52 PM' },
+      { text:'Somebody to trade studio time for brand work', by:'Anonymous · 8:52 PM' },
+      { text:'One honest intro to a Cleveland grant writer', by:'Anonymous · 8:53 PM' },
+      { text:'A drummer. Seriously. A drummer.', by:'Anonymous · 8:53 PM' },
+    ];
+    const dropRows = dropAnswers.map((d,i) => ({ ...d, hide:() => this.hideDrop(i) })).filter((_,i) => !s.dropHidden.includes(i));
+
+    // safety
+    const reportRows = s.reports.map(r => ({
+      by:r.by, against:r.against, reason:r.reason, time:r.time, open:r.open, tag:r.tag,
+      tagStyle: this.pill('', r.tag==='Block' ? 'var(--red)' : r.tag==='Report' ? 'var(--amber)' : 'var(--t2)', r.tag==='Block' ? 'var(--red-soft)' : r.tag==='Report' ? 'var(--amber-soft)' : 'var(--s3)'),
+      resolve:() => this.resolveReport(r.id),
+      remove:() => this.removeFromRoom(r.id),
+    }));
+
+    // checkin
+    const m = s.manual;
+    const mRoles = [...this.MROLES, ...s.customAdded.role].map(l => ({ label:l, toggle:() => this.toggleManualChip('role', l), style:this.chipBtnStyle(m.role===l, 'var(--green)') }));
+    const mOffers = [...this.MOFFERS, ...s.customAdded.offers].map(l => ({ label:l, toggle:() => this.toggleManualChip('offers', l), style:this.chipBtnStyle(m.offers.includes(l), 'var(--green)') }));
+    const mNeeds = [...this.MNEEDS, ...s.customAdded.needs].map(l => ({ label:l, toggle:() => this.toggleManualChip('needs', l), style:this.chipBtnStyle(m.needs.includes(l), 'var(--amber)') }));
+    const canAdd = !!m.name.trim();
+    const customChipBtn = 'padding:8px 13px;border-radius:100px;border:1px dashed var(--bd2);background:transparent;color:var(--t2);font-family:var(--fd);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s';
+
+    // recap
+    const recapRows = this.people.slice(0, 8).map((p,i) => ({
+      name:p.name,
+      sub:(1 + (i % 3)) + ' matches · ' + (2 + (i % 4)) + ' connections',
+      status: i % 4 === 2 ? 'Pending' : 'Ready',
+      statusStyle: this.pill('', i % 4 === 2 ? 'var(--amber)' : 'var(--green)', i % 4 === 2 ? 'var(--amber-soft)' : 'var(--green-soft)'),
+    }));
+
+    // phone
+    const ph = s.phone;
+    const phoneStates = {
+      idle:{ ey:'Tonight', c:'var(--green)', title:'You’re in the room.', sub:'Three acts tonight. Stay close to your phone.' },
+      drop:{ ey:'Act one · The Drop', c:'var(--green)', title:'What are you hunting for tonight?', sub:'Answer in one line. It lands on the wall, anonymous until you tap it.' },
+      chance:{ ey:'Act two · The Chance', c:'var(--amber)', title:'Find Priya. You have 5:00.', sub:'Green jacket, near the bar. Your starter: “What are you both building?”' },
+      nudge:{ ey:'Act three · The Nudge', c:'#60a5fa', title:'Someone marked you.', sub:'They offer what you need. Only you can see this.' },
+      recap:{ ey:'Your night', c:'var(--green)', title:'You showed up as a Founder.', sub:'3 matches · 5 connections · 2 mutual offers. Full recap inside.' },
+      chipLive:{ ey:'New chip live', c:'var(--green)', title:'Your write-in is in the room.', sub:'It’s now pickable by everyone at check-in and in focus edits.' },
+      dm:{ ey:'From the host', c:'var(--green)', title:'“' + (ph.text || '') + '”', sub:'A direct message from tonight’s host. Reply from your inbox.' },
+      callout:{ ey:'Host callout', c:'var(--green)', title:'You’re being called out.',
+        sub: (ph.names && ph.names.length > 1)
+          ? 'You, ' + ph.names.join(', ') + ' — the host wants you together. Go find each other.'
+          : 'The host is sending the room your way. All eyes on you for a minute.' },
+      spotlight:{ ey:'The Spotlight', c:'var(--amber)', title:(ph.name || 'Someone') + ' is in the spotlight.', sub:'The room picked them at random. Go find them and say hi.' },
+    };
+    const pst = phoneStates[ph.mode] || phoneStates.idle;
+
+    const railStats = [
+      { label:'Checked in', n: total },
+      { label:'Matches', n: this.matches.length },
+      { label:'Custom chips pending', n: s.queue.length },
+      { label:'Open safety items', n: openReports },
+    ];
+
+    // responsive layout styles
+    const appStyle = mob
+      ? 'display:flex;flex-direction:column;height:100dvh;overflow:hidden'
+      : 'display:grid;grid-template-columns:' + (narrow ? '210px minmax(0,1fr)' : '224px minmax(0,1fr) 300px') + ';height:100dvh;overflow:hidden';
+    const headerStyle = 'display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-shrink:0;border-bottom:1px solid var(--bd);padding:' + (mob ? '14px 16px 11px' : '20px 26px 14px');
+    const contentStyle = 'flex:1;overflow-y:auto;padding:' + (mob ? '16px 14px 40px' : '20px 26px 40px');
+    const viewTitleStyle = 'font-weight:900;letter-spacing:-.01em;color:var(--t0);font-size:' + (mob ? '17px' : '21px');
+    const funnelGrid = 'display:grid;align-items:center;grid-template-columns:' + (mob ? '90px 1fr 76px' : '150px 1fr 96px') + ';gap:' + (mob ? '10px' : '16px');
+    const supplyCols = mob ? '84px 1fr 1fr 60px' : '130px 1fr 1fr 84px';
+    const supplyGap = mob ? '8px' : '14px';
+    const supplyGrid = 'display:grid;align-items:center;grid-template-columns:' + supplyCols + ';gap:' + supplyGap;
+    const supplyHeadGrid = 'display:grid;grid-template-columns:' + supplyCols + ';gap:' + supplyGap + ';padding:0 2px 8px;border-bottom:1px solid var(--bd);margin-bottom:12px';
+
+    const toggleBtn = (active) => 'width:42px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;' +
+      (active ? 'background:var(--dg);border:1px solid var(--green-bd);color:var(--green)' : 'background:var(--s1);border:1px solid var(--bd);color:var(--t2)');
+
+    const liveEvent = s.events.find(e => e.status === 'Live');
+    const ne = s.newEvent;
+    const ecEvent = s.eventCodes != null ? s.events.find(e => e.id === s.eventCodes) : null;
+    return {
+      eventName: liveEvent ? liveEvent.name : (this.props.eventName ?? 'Latinos-N-Tech · Night Room'),
+      isEvents: s.view === 'events',
+      eventRows: s.events.map(e => ({
+        name:e.name,
+        meta:[e.date, e.time, e.venue, e.place, e.capacity ? 'Cap ' + e.capacity : null, e.survey && e.survey.length ? e.survey.length + ' survey Qs' : null].filter(Boolean).join(' · '),
+        status:e.status,
+        statusStyle: this.pill('', e.status === 'Live' ? 'var(--green)' : e.status === 'Upcoming' ? 'var(--amber)' : 'var(--t3)', e.status === 'Live' ? 'var(--green-soft)' : e.status === 'Upcoming' ? 'var(--amber-soft)' : 'var(--s3)'),
+        canGoLive: e.status === 'Upcoming',
+        makeLive:() => this.makeEventLive(e.id),
+        openCodes:() => this.openCodes(e.id),
+      })),
+      openEventModal: this.openEventModal, closeEventModal: this.closeEventModal,
+      eventModalShow: s.eventModal,
+      neName: ne.name, neDate: ne.date, neStart: ne.start, neEnd: ne.end,
+      neVenue: ne.venue, neCity: ne.city, neSt: ne.st, neCapacity: ne.capacity,
+      setNeName:(e) => this.setEventField('name', e), setNeDate:(e) => this.setEventField('date', e),
+      setNeStart:(e) => this.setEventField('start', e), setNeEnd:(e) => this.setEventField('end', e),
+      setNeVenue:(e) => this.setEventField('venue', e), setNeCity:(e) => this.setEventField('city', e),
+      setNeSt:(e) => this.setEventField('st', e), setNeCapacity:(e) => this.setEventField('capacity', e),
+      stateOptions: this.STATES.map(code => ({ code, selected: ne.st === code })),
+      createEvent: this.createEvent,
+      createEventStyle:'width:100%;border:none;border-radius:10px;padding:12px;font-family:var(--fd);font-size:13.5px;font-weight:700;cursor:pointer;transition:all .15s;' +
+        (ne.name.trim() ? 'background:var(--green);color:#0D1F12' : 'background:var(--s2);color:var(--t3)'),
+      evStepDetails: s.eventStep === 'details',
+      evStepSurvey: s.eventStep === 'survey',
+      evModalTitle: s.eventStep === 'survey' ? 'Survey — ' + (ne.name.trim() || 'New event') : 'New event',
+      goSurveyStep: this.goSurveyStep, backToDetails: this.backToDetails,
+      nextBtnLabel:'Next — build the survey',
+      surveyRows: s.newSurvey.map(q => {
+        const qt = this.QTYPES[q.type] || this.QTYPES['Text'];
+        return {
+          text:q.text, type:q.type,
+          typeStyle: this.pill('', qt.color, qt.soft),
+          remove:() => this.removeQuestion(q.id),
+        };
+      }),
+      nsText: s.nsText, setNsText: this.setNsText, nsKey: this.nsKey, addQuestion: this.addQuestion,
+      nsTypeBtns: Object.keys(this.QTYPES).map(t => ({
+        label:t, pick:() => this.setNsType(t),
+        style:'padding:7px 12px;border-radius:100px;font-family:var(--fd);font-size:11.5px;font-weight:600;cursor:pointer;transition:all .15s;' +
+          (s.nsType === t ? 'background:var(--green);border:1px solid var(--green);color:#0D1F12' : 'background:transparent;border:1px solid var(--bd2);color:var(--t1)'),
+      })),
+      nsTypeDesc: (this.QTYPES[s.nsType] || this.QTYPES['Text']).desc,
+      addQBtnStyle:'border:none;border-radius:9px;padding:9px 15px;font-family:var(--fd);font-size:12.5px;font-weight:700;flex-shrink:0;transition:all .15s;' +
+        (s.nsText.trim() ? 'background:var(--green);color:#0D1F12;cursor:pointer' : 'background:var(--s2);color:var(--t3);cursor:default'),
+      createSurveyCta:'Create event · ' + s.newSurvey.length + (s.newSurvey.length === 1 ? ' question' : ' questions') + ' attached',
+      ecShow: !!ecEvent,
+      ecName: ecEvent ? ecEvent.name : '',
+      ecSub: ecEvent ? (ecEvent.status === 'Live' ? 'Live now — guests can join.' : 'Guests can join once you take the event live.') : '',
+      ecCode: ecEvent ? ecEvent.code : '',
+      ecLink: ecEvent ? ecEvent.link : '',
+      ecQr: ecEvent ? ecEvent.qr : '',
+      copyEcCode:() => { if (ecEvent) this.copyText(ecEvent.code, 'Event code'); },
+      copyEcLink:() => { if (ecEvent) this.copyText('grabsoda.app' + ecEvent.link, 'Join link'); },
+      closeCodes: this.closeCodes, downloadEventQr: this.downloadEventQr,
+      inRoomCount: total,
+      navItems, mobileNavItems,
+      isMobile: mob, notMobile: !mob,
+      showSidebar: !mob, showRail: !narrow,
+      appStyle, headerStyle, contentStyle, viewTitleStyle,
+      funnelGrid, supplyGrid, supplyHeadGrid,
+      viewTitle: titles[s.view][0], viewSub: titles[s.view][1],
+      isRoomView:s.view==='room', isFunnel:s.view==='funnel', isSupply:s.view==='supply',
+      isQueue:s.view==='queue', isMatches:s.view==='matches', isMoments:s.view==='moments',
+      isSafety:s.view==='safety', isCheckin:s.view==='checkin', isRecap:s.view==='recap',
+      isMessages:s.view==='messages',
+      msgThreads: Object.keys(s.dms).map(pid => {
+        const p = this.people.find(x => x.id === pid);
+        const th = s.dms[pid];
+        const last = th[th.length - 1];
+        return {
+          name:p.name, preview:last.text, time:last.time,
+          count: th.length + (th.length === 1 ? ' message' : ' messages'),
+          avStyle:'width:38px;height:38px;min-width:38px;border-radius:10px;background:var(--dg);border:1.5px solid ' + p.color + ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:' + p.color + ';flex-shrink:0',
+          initials:p.initials,
+          open:() => this.setState({ personModal:p.id }),
+        };
+      }),
+      msgEmpty: Object.keys(s.dms).length === 0,
+      goRoom:() => this.setState({ view:'room' }),
+      q:s.q, setQ:this.setQ,
+      isGrid: s.roomLayout==='grid', isList: s.roomLayout==='list',
+      setGrid:() => this.setState({ roomLayout:'grid' }),
+      setList:() => this.setState({ roomLayout:'list' }),
+      gridBtnStyle: toggleBtn(s.roomLayout==='grid'),
+      listBtnStyle: toggleBtn(s.roomLayout==='list'),
+      selectMode: s.selectMode, toggleSelectMode: this.toggleSelectMode,
+      selBtnStyle:'display:flex;align-items:center;gap:7px;padding:0 14px;border-radius:10px;cursor:pointer;font-family:var(--fd);font-size:12.5px;font-weight:600;transition:all .15s;' +
+        (s.selectMode ? 'background:var(--dg);border:1px solid var(--green-bd);color:var(--green)' : 'background:var(--s1);border:1px solid var(--bd);color:var(--t2)'),
+      hasSelection: s.selectedIds.length > 0,
+      selCount: s.selectedIds.length + ' selected',
+      callOut: this.callOut, clearSel: this.clearSel,
+      blockWarnShow: !!selBlockedPair,
+      blockWarnText: selBlockedPair
+        ? selBlockedPair.map(id => this.people.find(p => p.id === id).name.split(' ')[0]).join(' and ') + ' can’t be grouped — safety block'
+        : '',
+      callOutBtnStyle:'display:flex;align-items:center;gap:7px;border:none;border-radius:100px;padding:9px 18px;font-family:var(--fd);font-size:13px;font-weight:700;transition:all .15s;' +
+        (selBlockedPair ? 'background:var(--s2);color:var(--t3);cursor:not-allowed' : 'background:var(--green);color:#0D1F12;cursor:pointer'),
+      selAvatars: s.selectedIds.map((id, i) => {
+        const p = this.people.find(x => x.id === id);
+        return { initials:p.initials,
+          style:'width:26px;height:26px;border-radius:8px;background:var(--dg);border:1.5px solid ' + p.color + ';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:' + p.color + ';flex-shrink:0;box-shadow:0 0 0 2px var(--s3);' + (i > 0 ? 'margin-left:-9px' : '') };
+      }),
+      phoneAvShow: !!(ph.people && ph.people.length),
+      phoneAvatars: (ph.people || []).map((p, i) => ({ initials:p.initials,
+        style:'width:30px;height:30px;border-radius:9px;background:var(--dg);border:1.5px solid ' + p.color + ';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:' + p.color + ';flex-shrink:0;box-shadow:0 0 0 2px #050605;' + (i > 0 ? 'margin-left:-10px' : '') })),
+      roster, roomStats,
+      funnelPts, funnelNotes,
+      fmShow: !!fm,
+      fmState: fm ? fm.state : '', fmPillStyle: fm ? fm.pillStyle : '',
+      fmStepNo: fm ? fm.stepNo : '', fmCount: fm ? fm.count : '',
+      fmLabel: fm ? fm.label : '', fmColor: fm ? fm.stateColor : 'var(--t0)',
+      fmExplainer: fm ? FM_EXPLAIN[fmIdx] : '',
+      fmPrevPct: fm ? (fmIdx === 0 ? '—' : Math.round(fm.count / fm.prev * 100) + '%') : '',
+      fmTotalPct: fm ? Math.round(fm.count / fMax * 100) + '%' : '',
+      fmDropped: fm ? (fmIdx === 0 ? '—' : fm.lost + (fm.lost === 1 ? ' person' : ' people')) : '',
+      closeFm:() => this.setState({ funnelModal:null }),
+      fmStop:(e) => e.stopPropagation(),
+      pmShow: !!pmPerson,
+      pmName: pmPerson ? pmPerson.name : '', pmRole: pmPerson ? pmPerson.role : '',
+      pmInitials: pmPerson ? pmPerson.initials : '',
+      pmAvStyle: pmPerson ? 'width:60px;height:60px;border-radius:14px;background:var(--dg);border:1.5px solid ' + pmPerson.color + ';display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:' + pmPerson.color + ';flex-shrink:0' : '',
+      pmStatus: pmPerson ? pmPerson.status : '',
+      pmStatusStyle: pmPerson ? this.pill('', pmPerson.status === 'Heads down' ? 'var(--amber)' : 'var(--green)', pmPerson.status === 'Heads down' ? 'var(--amber-soft)' : 'var(--green-soft)') : '',
+      pmFirstTimer: !!(pmPerson && pmPerson.firstTimer),
+      pmOffers: pmPerson ? pmPerson.offers.map(l => ({ label:l, style:'padding:6px 12px;border-radius:100px;font-size:12px;font-weight:600;background:var(--green-soft);border:1px solid var(--green-bd);color:var(--green)' })) : [],
+      pmNeeds: pmPerson ? pmPerson.needs.map(l => ({ label:l, style:'padding:6px 12px;border-radius:100px;font-size:12px;font-weight:600;background:var(--amber-soft);border:1px solid rgba(245,158,11,.3);color:var(--amber)' })) : [],
+      closePm:() => this.setState({ personModal:null, dmDraft:'' }),
+      pmThread: pmPerson ? (s.dms[pmPerson.id] || []) : [],
+      pmHasThread: !!(pmPerson && (s.dms[pmPerson.id] || []).length),
+      dmDraft: s.dmDraft, setDmDraft: this.setDmDraft, sendDm: this.sendDm, dmKey: this.dmKey,
+      dmSendStyle:'border:none;border-radius:9px;padding:10px 16px;font-family:var(--fd);font-size:12.5px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .15s;' +
+        (s.dmDraft.trim() ? 'background:var(--green);color:#0D1F12' : 'background:var(--s2);color:var(--t3)'),
+      funnelAlertShow: !!alertStep,
+      funnelAlertText: alertStep ? alertStep.dropPct + '% dropped off at “' + alertStep.label + '” — something is happening on that screen.' : '',
+      supplyRows,
+      queueRows, queueEmpty: s.queue.length===0,
+      matchRows, chainRows: this.chains,
+      momentCards, dropFired: s.fired.drop, dropRows,
+      reportRows,
+      mName:m.name, mEmail:m.email,
+      setMName:(e) => this.setManual('name', e), setMEmail:(e) => this.setManual('email', e),
+      mRoles, mOffers, mNeeds,
+      customRoleOpen: s.customInput === 'role', customRoleClosed: s.customInput !== 'role',
+      customOffersOpen: s.customInput === 'offers', customOffersClosed: s.customInput !== 'offers',
+      customNeedsOpen: s.customInput === 'needs', customNeedsClosed: s.customInput !== 'needs',
+      openCustomRole:() => this.openCustom('role'),
+      openCustomOffers:() => this.openCustom('offers'),
+      openCustomNeeds:() => this.openCustom('needs'),
+      customChipBtn,
+      customText: s.customText, setCustomText: this.setCustomText, customKey: this.customKey,
+      commitCustom: this.commitCustom,
+      customCommitStyle:'border:none;border-radius:100px;padding:8px 14px;font-family:var(--fd);font-size:12px;font-weight:700;transition:all .15s;' +
+        (s.customText.trim() ? 'background:var(--green);color:#0D1F12;cursor:pointer' : 'background:var(--s2);color:var(--t3);cursor:default'),
+      addManual:this.addManual,
+      addManualStyle:'width:100%;border:none;border-radius:10px;padding:13px;font-family:var(--fd);font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;' + (canAdd ? 'background:var(--green);color:#0D1F12' : 'background:var(--s2);color:var(--t3)'),
+      hasRecent: s.recentManual.length > 0, recentRows: s.recentManual,
+      recapHeadline: (this.people.length - 2) + ' recaps ready · 2 pending',
+      recapNotPushed: !s.recapPushed, recapPushed: s.recapPushed, pushRecap:this.pushRecap,
+      recapRows,
+      phoneEyebrow:pst.ey, phoneEyebrowColor:pst.c, phoneTitle:pst.title, phoneSub:pst.sub,
+      phoneHasChip: ph.mode==='chipLive', phoneChip: ph.chip || '',
+      phoneResettable: ph.mode!=='idle', phoneReset:this.phoneReset,
+      railStats,
+      toastShow: !!s.toast, toast: s.toast,
+      toastUndoShow: !!s.toastUndo, undoToast: this.undoToast,
+      cfShow: !!s.confirm,
+      cfTitle: s.confirm ? s.confirm.title : '', cfBody: s.confirm ? s.confirm.body : '',
+      cfCta: s.confirm ? s.confirm.cta : '',
+      cfBtnStyle:'border:none;border-radius:9px;padding:10px 18px;font-family:var(--fd);font-size:13px;font-weight:700;cursor:pointer;' +
+        (s.confirm && s.confirm.danger ? 'background:var(--red);color:#fff' : 'background:var(--green);color:#0D1F12'),
+      confirmYes: this.confirmYes, closeConfirm: this.closeConfirm,
+      auditRows: s.audit,
+      isActivity: s.view === 'activity', isExport: s.view === 'export',
+      exportAttendees: this.exportAttendees, exportMatches: this.exportMatches, exportNight: this.exportNight,
+      doorMode: s.doorMode, toggleDoorMode: this.toggleDoorMode,
+      doorBtnLabel: s.doorMode ? 'Exit door mode' : 'Switch to door mode',
+      hostRole: s.doorMode ? 'Door staff' : 'Host',
+      qrEntryPath: this.qrEntry, qrSurveyPath: this.qrSurvey,
+      openQrEntry:() => this.openQr('entry'), openQrSurvey:() => this.openQr('survey'),
+      qrModalShow: !!s.qrModal,
+      qrModalPath: s.qrModal === 'survey' ? this.qrSurvey : this.qrEntry,
+      qrModalTitle: s.qrModal === 'survey' ? 'Survey code' : 'Entry code',
+      qrModalSub: s.qrModal === 'survey' ? 'Attendees scan this on the way out — wrap-up survey and recap.' : 'Attendees scan this at the door to check in and build their card.',
+      closeQr: this.closeQr, downloadQr: this.downloadQr,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

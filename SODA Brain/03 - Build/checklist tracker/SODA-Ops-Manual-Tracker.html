@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>SODA Build Tracker, Ops Manual Units</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+  :root{
+    --canvas:#111;--card:#1a1a1a;--surface:#202220;--border:#2a2a2a;
+    --green:#3bd75c;--green-deep:#203229;--ink:#f5f5f5;--muted:#8a8a8a;--hint:#5a5a5a;
+    --amber:#f59e0b;--purple:#a47bff;--red:#ef4444;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:var(--canvas);color:var(--ink);font-family:'DM Sans',sans-serif;line-height:1.5;padding:24px 16px 80px;max-width:760px;margin:0 auto}
+  .mono{font-family:'DM Mono',monospace;letter-spacing:.08em}
+
+  header{margin-bottom:8px}
+  .wordmark{font-family:'Archivo Black';font-size:13px;letter-spacing:.04em;color:var(--green);text-transform:uppercase}
+  h1{font-family:'Archivo Black';font-size:26px;letter-spacing:-.02em;margin:6px 0 4px;line-height:1.1}
+  .sub{color:var(--muted);font-size:13px;font-family:'DM Mono';text-transform:uppercase;letter-spacing:.1em}
+
+  .overall{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin:20px 0 8px;display:flex;align-items:center;gap:18px}
+  .ring{position:relative;width:62px;height:62px;flex-shrink:0}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Archivo Black';font-size:15px}
+  .overall .meta{flex:1}
+  .overall .meta .big{font-size:15px;font-weight:700;margin-bottom:2px}
+  .overall .meta .small{color:var(--muted);font-size:12.5px}
+  .reset{background:none;border:1px solid var(--border);color:var(--muted);font-family:'DM Mono';font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:8px 12px;border-radius:8px;cursor:pointer;transition:all .15s}
+  .reset:hover{border-color:var(--muted);color:var(--ink)}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 24px}
+  .tag{font-family:'DM Mono';font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:9999px;font-weight:500;border:1px solid transparent;white-space:nowrap}
+  .tag.p0{background:rgba(239,68,68,.12);color:#ff8585;border-color:rgba(239,68,68,.4)}
+  .tag.conflict{background:rgba(245,158,11,.12);color:var(--amber);border-color:rgba(245,158,11,.4)}
+  .tag.risk{background:rgba(164,123,255,.12);color:var(--purple);border-color:rgba(164,123,255,.4)}
+
+  .phase{margin-bottom:14px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--card)}
+  .phase-head{padding:16px 20px;cursor:pointer;display:flex;align-items:center;gap:14px;user-select:none}
+  .phase-head:hover{background:var(--surface)}
+  .chev{color:var(--muted);font-size:13px;transition:transform .2s;flex-shrink:0}
+  .phase.collapsed .chev{transform:rotate(-90deg)}
+  .phase-title{flex:1}
+  .phase-title .nm{font-family:'Archivo Black';font-size:15px;letter-spacing:-.01em}
+  .phase-title .when{color:var(--muted);font-size:12px;font-family:'DM Mono';text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+  .phase-prog{display:flex;align-items:center;gap:10px;flex-shrink:0}
+  .bar{width:90px;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+  .bar-fill{height:100%;background:var(--green);border-radius:3px;transition:width .35s ease}
+  .phase-prog .count{font-family:'DM Mono';font-size:12px;color:var(--muted);min-width:38px;text-align:right}
+
+  .items{padding:6px 14px 14px}
+  .phase.collapsed .items{display:none}
+
+  .item{display:flex;gap:13px;padding:13px 8px;border-bottom:1px solid rgba(42,42,42,.5);cursor:pointer;transition:background .12s;border-radius:8px}
+  .item:last-child{border-bottom:none}
+  .item:hover{background:var(--surface)}
+  .box{width:21px;height:21px;border-radius:6px;border:2px solid var(--hint);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+  .item.done .box{background:var(--green);border-color:var(--green)}
+  .box svg{opacity:0;transition:opacity .15s}
+  .item.done .box svg{opacity:1}
+  .item-body{flex:1;min-width:0}
+  .item-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
+  .item-title{font-weight:600;font-size:14.5px;transition:all .2s}
+  .item.done .item-title{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--hint)}
+  .item-desc{color:var(--muted);font-size:13px;transition:opacity .2s}
+  .item.done .item-desc{opacity:.5}
+  .item-owner{color:var(--hint);font-size:11.5px;font-family:'DM Mono';margin-top:4px;letter-spacing:.04em}
+
+  .covered{margin-top:24px;border:1px dashed var(--border);border-radius:16px;padding:18px 22px;background:rgba(32,34,32,.3)}
+  .covered h3{font-family:'DM Mono';font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .covered ul{list-style:none}
+  .covered li{font-size:13px;color:var(--muted);padding:5px 0 5px 20px;position:relative}
+  .covered li::before{content:"✓";position:absolute;left:0;color:var(--green);font-weight:700}
+  .covered li b{color:var(--ink);font-weight:600}
+
+  .notes{margin-top:18px;border-left:3px solid var(--green);background:rgba(59,215,92,.05);padding:16px 20px;border-radius:0 12px 12px 0}
+  .notes h3{font-family:'DM Mono';font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+  .notes p{font-size:13px;color:#cfd6cf;margin-bottom:9px}
+  .notes p:last-child{margin-bottom:0}
+  .notes b{color:var(--ink);font-weight:600}
+
+  footer{margin-top:28px;text-align:center;color:var(--hint);font-size:11px;font-family:'DM Mono';letter-spacing:.06em}
+  .save-note{text-align:center;color:var(--hint);font-size:11px;font-family:'DM Mono';margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wordmark">✦ SODA</div>
+  <h1>Build Tracker</h1>
+  <div class="sub">Ops Manual Units · Logged June 23, 2026</div>
+</header>
+
+<div class="overall">
+  <div class="ring">
+    <svg width="62" height="62">
+      <circle cx="31" cy="31" r="26" fill="none" stroke="#2a2a2a" stroke-width="6"/>
+      <circle id="ring-fill" cx="31" cy="31" r="26" fill="none" stroke="#3bd75c" stroke-width="6"
+              stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="163.4"/>
+    </svg>
+    <div class="pct" id="overall-pct">0%</div>
+  </div>
+  <div class="meta">
+    <div class="big" id="overall-label">0 of 19 units done</div>
+    <div class="small">Tap any row to mark it complete. Progress saves in this browser.</div>
+  </div>
+  <button class="reset" onclick="resetAll()">Reset</button>
+</div>
+
+<div class="legend">
+  <span class="tag p0">P0 live hole</span>
+  <span class="tag conflict">Conflict, needs decision</span>
+  <span class="tag risk">Risky-ten unit</span>
+</div>
+
+<div id="phases"></div>
+
+<div class="covered">
+  <h3>Already covered · do not double-build</h3>
+  <ul>
+    <li><b>SODA-039 chip migration</b> · in checklist and risky ten</li>
+    <li><b>GMW roster and five-phase process</b> · already how the team works</li>
+    <li><b>Attendee/ops entry separation</b> · overlaps Clerk work (new part is the security framing)</li>
+    <li><b>Server-decides posture</b> · already the RLS-first principle</li>
+    <li><b>Two-call gate and human-in-loop</b> · already the nudge spine</li>
+  </ul>
+</div>
+
+<div class="notes">
+  <h3>Notes</h3>
+  <p>The two <b>P0</b> items are live holes, not future features. They lead everything. SODA-042 is effectively the eleventh risky unit and the most urgent because it is exploitable right now.</p>
+  <p><b>Build order in the LNT block:</b> ops_authorized_emails table first, then the SODA-042 gate on top of it, then the neutral response, then the entry-point split. You cannot build the gate before the table it checks.</p>
+  <p><b>Doppler vs Vercel</b> is the one open contradiction. Decide it before it gets built around twice.</p>
+</div>
+
+<footer>Source: Equalpoint / SODA Engineering &amp; Product Operations Manual v1.0 · June 22, 2026 · Confidential</footer>
+<div class="save-note" id="save-note"></div>
+
+<script>
+const DATA = [
+  {
+    id:'lnt', name:'Before LNT', when:'Imminent · includes live P0 holes',
+    items:[
+      {id:'soda042', title:'SODA-042 · Ops login pre-authorization gate', tags:['p0','risk'],
+       desc:'Server-side check against ops_authorized_emails before any OTP is generated. Neutral response either way. Used OTP cannot reuse, expired rejected, all attempts logged, 6+/IP/15min rate limited, identical response time.',
+       owner:'Owner: Kennis (backend) + Brent (review)'},
+      {id:'entry', title:'Separate attendee and ops entry points', tags:['p0'],
+       desc:'Different subdomains or routes, server-side role enforcement. Fixes OTP enumeration on the attendee door. Pairs with the Clerk front-door work, do together.'},
+      {id:'authemails', title:'ops_authorized_emails table', tags:['p0'],
+       desc:'The allowlist SODA-042 checks against. Build first, the gate depends on it.'},
+      {id:'neutral', title:'Neutral response pattern on ops login', tags:['p0'],
+       desc:'Identical message for authorized and unauthorized: "If that address is authorized, you will receive a code shortly."'},
+      {id:'secrets', title:'Resolve secrets: Doppler vs Vercel env vars', tags:['conflict'],
+       desc:'Manual says Doppler, no .env files. SODA-030 says Vercel env vars. Pick one with Brent, log the winner in the Decision Log.'},
+      {id:'soda039', title:'SODA-039 · Chip migration text[] to jsonb[]', tags:['risk'],
+       desc:'Already in build checklist and risky ten. Confirmed here as a pre-LNT gate, Ghost-verified. Not new work.'},
+      {id:'chipalign', title:'Chip category alignment for LNT multi-ecosystem', tags:[],
+       desc:'Verify the seven-context taxonomy holds for the mix of ecosystems at LNT.'},
+    ]
+  },
+  {
+    id:'btw', name:'Before BTW Cincinnati', when:'July 14 to 16',
+    items:[
+      {id:'resolve', title:'resolveAttendeeScreen() server-side router', tags:[],
+       desc:'Named, tested utility. Single source of truth for which screen an attendee sees. Server-computed every load, never cached, never client-side. Returns ACTIVE_HOME / POST_EVENT_SURVEY / MATCHES_DELIVERED / WINDOW_CLOSED.'},
+      {id:'survey', title:'Survey-window architecture with Realtime close', tags:[],
+       desc:'Timer from server time, always visible. Window closes on server by removing the form from the API response, not hidden, not disabled. Close is a Realtime state change in place, not a redirect.'},
+      {id:'attempts', title:'ops_login_attempts audit table', tags:[],
+       desc:'Logs every ops login attempt, authorized or not.'},
+      {id:'loop', title:'loop_events ledger, append-only constraint in CI', tags:[],
+       desc:'The SODA-to-Equalpoint event ledger. CI verifies the append-only constraint so history cannot be rewritten.'},
+      {id:'ghost3a', title:'Ghost Mode 3 debt audit', tags:[],
+       desc:'Regression pass across all SODA surfaces.'},
+      {id:'study', title:'Nelson STUDY-001 research protocol locked', tags:[],
+       desc:'Documented as STUDY-001.'},
+    ]
+  },
+  {
+    id:'sept', name:'Before September 14 Launch', when:'Launch',
+    items:[
+      {id:'zustand', title:'Full Zustand store architecture (4 domain stores)', tags:[],
+       desc:'useEventStore, useAttendeeStore, useAuthStore, useOpsStore (separate, never reachable from attendee components). UI coordination only, never a trust boundary. Server stays the only authority.'},
+      {id:'otptable', title:'OTP token table', tags:['risk'],
+       desc:'One-time-use flag, email-bound, hash-only (plain OTP never stored), server-enforced 10-minute expiry.'},
+      {id:'ratelimit', title:'Rate limiting on all auth endpoints', tags:[],
+       desc:'Upstash or equivalent. 6+ attempts per IP per 15 min triggers a limit.'},
+      {id:'decisions', title:'DECISIONS.md in repo', tags:[],
+       desc:'Every locked non-negotiable with date, reason, owner. Port SODA-DECISIONS.md into the repo as the source.'},
+      {id:'pipeline', title:'PIPELINE.md · SODA-to-Equalpoint contract', tags:[],
+       desc:'Specifies what SODA writes and what Equalpoint reads.'},
+      {id:'tickets', title:'/docs/tickets/ seeded', tags:[],
+       desc:'SODA-039 spec, contract, and QA filed as the pattern.'},
+      {id:'ghost3b', title:'Ghost Mode 3 debt audit re-run', tags:[],
+       desc:'Final regression pass pre-launch. All regressions cleared.'},
+    ]
+  }
+];
+
+const TAG_LABEL = {p0:'P0', conflict:'Conflict', risk:'Risk'};
+const STORE_KEY = 'soda-ops-tracker-v1';
+let state = loadState();
+
+function loadState(){
+  try{ const r = window.__trackerState; if(r) return r; }catch(e){}
+  return {};
+}
+function saveState(){
+  window.__trackerState = state;
+  document.getElementById('save-note').textContent =
+    'Saved in memory for this session · ' + new Date().toLocaleTimeString();
+}
+
+function allItems(){ return DATA.flatMap(p=>p.items); }
+
+function render(){
+  const wrap = document.getElementById('phases');
+  wrap.innerHTML = '';
+  DATA.forEach(phase=>{
+    const done = phase.items.filter(i=>state[i.id]).length;
+    const total = phase.items.length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    const collapsed = phase._collapsed ? 'collapsed' : '';
+    const el = document.createElement('div');
+    el.className = 'phase '+collapsed;
+    el.innerHTML = `
+      <div class="phase-head" onclick="togglePhase('${phase.id}')">
+        <span class="chev">▼</span>
+        <div class="phase-title">
+          <div class="nm">${phase.name}</div>
+          <div class="when">${phase.when}</div>
+        </div>
+        <div class="phase-prog">
+          <div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div>
+          <span class="count">${done}/${total}</span>
+        </div>
+      </div>
+      <div class="items">
+        ${phase.items.map(it=>`
+          <div class="item ${state[it.id]?'done':''}" onclick="toggleItem('${it.id}')">
+            <div class="box">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M2 7L5 10L11 3" stroke="#06140a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="item-body">
+              <div class="item-top">
+                <span class="item-title">${it.title}</span>
+                ${it.tags.map(t=>`<span class="tag ${t}">${TAG_LABEL[t]}</span>`).join('')}
+              </div>
+              <div class="item-desc">${it.desc}</div>
+              ${it.owner?`<div class="item-owner">${it.owner}</div>`:''}
+            </div>
+          </div>`).join('')}
+      </div>`;
+    wrap.appendChild(el);
+  });
+  updateOverall();
+}
+
+function updateOverall(){
+  const items = allItems();
+  const done = items.filter(i=>state[i.id]).length;
+  const total = items.length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('overall-pct').textContent = pct+'%';
+  document.getElementById('overall-label').textContent = `${done} of ${total} units done`;
+  const circ = 2*Math.PI*26;
+  document.getElementById('ring-fill').style.strokeDashoffset = circ*(1-pct/100);
+}
+
+function toggleItem(id){
+  state[id] = !state[id];
+  saveState();
+  render();
+}
+function togglePhase(id){
+  const p = DATA.find(x=>x.id===id);
+  p._collapsed = !p._collapsed;
+  render();
+}
+function resetAll(){
+  if(!confirm('Clear all progress on this tracker?')) return;
+  state = {};
+  saveState();
+  render();
+}
+render();
+saveState();
+</script>
+</body>
+</html>
