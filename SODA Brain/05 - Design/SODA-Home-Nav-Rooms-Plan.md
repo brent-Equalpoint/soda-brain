@@ -39,6 +39,13 @@ door button in the middle of the pill. The door in the center reads as "this is 
 SODA is." Alternative if the raised button feels too loud: a plain four-tab bar
 Home / Rooms / People / Inbox with no center emphasis.
 
+**Evolved again 2026-07-23 (Brent: "Add the cards back now"):** the Card tab RETURNS. The
+bar becomes **Home, People | DOOR | Card, Inbox**, which also balances the raised door
+two-and-two. The Card screen stays the deep manage home (card + key card + edit); Home
+still gains the micro card up top. This softens decision 2 (the key card keeps living on
+/card) and retires the "drop the Card tab" half of Move 1; the tab-center move is now
+purely about the door.
+
 **Evolved 2026-07-23 (Brent, after walking the lab):** the center button is not the Rooms
 list first, it is **THE LIVE ROOM**. Whenever a room is open, one tap from anywhere puts
 you back in it (the real app routes to /room; with no live room it opens Rooms). The door
